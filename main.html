@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tu Partner Peludo - Panel Principal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .navbar-custom { border-bottom: 2px solid #000; }
+        .user-avatar { width: 40px; border: 2px solid #000; }
+    </style>
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-white navbar-custom p-3">
+        <div class="container">
+            
+            <a class="navbar-brand d-flex align-items-center fw-bold" href="#">
+            <img src="images/logo.png" alt="Logo" width="45" height="45" class="me-2 rounded-circle border border-dark">
+            Tu Partner Peludo
+        </a>
+            
+            <div class="d-flex align-items-center">
+                <span id="user-name" class="me-3 fw-bold small"></span>
+                <img id="user-img" src="" class="rounded-circle user-avatar">
+                <button onclick="logout()" class="btn btn-sm ms-3"><i class="fas fa-sign-out-alt"></i></button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-5 text-center">
+        <h1 class="display-5 fw-bold">Bienvenido a Tu Partner Peludo</h1>
+        
+        <div class="row mt-5">
+            <div class="col-md-4">
+                <a href="#" class="text-decoration-none text-dark">
+                    <div class="card p-4 border-2 border-dark shadow-sm">
+                        <i class="fas fa-bone fa-3x"></i>
+                        <h5>Placas Grabadas</h5>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="#" class="text-decoration-none text-dark">
+                    <div class="card p-4 border-2 border-dark shadow-sm">
+                        <i class="fas fa-dog fa-3x"></i>
+                        <h5>Accesorios</h5>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="#" class="text-decoration-none text-dark">
+                    <div class="card p-4 border-2 border-dark shadow-sm">
+                        <i class="fas fa-paw fa-3x"></i>
+                        <h5>Collar Personalizado</h5>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+
+    <script>
+        // Función para decodificar el token (igual que la anterior)
+        function parseJwt (token) {
+            var base64Url = token.split('.')[1];
+            var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            return JSON.parse(window.atob(base64));
+        };
+
+        window.onload = function() {
+            const token = localStorage.getItem('google_token');
+
+            if (!token) {
+                // Si no hay token, el usuario no debería estar aquí
+                window.location.href = "index.html";
+            } else {
+                const userData = parseJwt(token);
+                // Llenamos la información del usuario
+                document.getElementById('user-name').innerText = userData.name.toUpperCase();
+                document.getElementById('user-img').src = userData.picture;
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('google_token');
+            window.location.href = "index.html";
+        }
+    </script>
+</body>
+</html>
