@@ -1,6 +1,10 @@
 @PetShopApi_HostAddress = http://localhost:5175
+@PetShopApi_Externo = https://forty-papayas-pay.loca.lt
 
+### Prueba Local
 GET {{PetShopApi_HostAddress}}/weatherforecast/
 Accept: application/json
 
-###
+### Prueba Tunel Externo
+GET {{PetShopApi_Externo}}/weatherforecast/
+Accept: application/json

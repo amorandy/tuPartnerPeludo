@@ -1,6 +1,7 @@
 /**
  * Utilidades de Sesión y Autenticación
  */
+const API_BASE_URL = "https://forty-papayas-pay.loca.lt";
 function decodeJwtResponse(token) {
     let base64Url = token.split('.')[1];
     let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -98,7 +99,7 @@ async function procesarRegistro(event) {
     }
 
     try {
-        const response = await fetch('http://localhost:5175/api/usuarios/registrar', {
+        const response = await fetch(`${API_BASE_URL}/usuarios/registrar`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(usuario)
@@ -128,14 +129,14 @@ async function procesarRegistro(event) {
     }
 }
 
-document.getElementById('formLogin').addEventListener('submit', async (e) => {
+    document.getElementById('formLogin').addEventListener('submit', async (e) => {
     e.preventDefault();
     
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPass').value;
 
     try {
-        const response = await fetch('http://localhost:5175/api/usuarios/login', {
+        const response = await fetch(`${API_BASE_URL}/usuarios/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
