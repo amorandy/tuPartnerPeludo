@@ -16,8 +16,7 @@ namespace PetShopApi.Services
         public void EnviarCorreoValidacion(string emailDestino, string token)
         {
             var settings = _config.GetSection("EmailSettings");
-            var baseUrl = _config.GetSection("BaseUrl");
-            string enlace = $"{baseUrl}/api/usuarios/confirmar?token={token}";
+            string enlace = $"https://kind-islands-search.loca.lt/api/usuarios/confirmar?token={token}";
 
             var smtpPortString = settings["SmtpPort"];
             if (string.IsNullOrWhiteSpace(smtpPortString))
