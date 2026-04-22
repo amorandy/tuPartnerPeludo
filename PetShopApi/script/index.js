@@ -1,7 +1,7 @@
 /**
  * Utilidades de Sesión y Autenticación
  */
-const API_BASE_URL = "https://forty-papayas-pay.loca.lt";
+const API_BASE_URL = "https://kind-islands-search.loca.lt/api";
 function decodeJwtResponse(token) {
     let base64Url = token.split('.')[1];
     let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
