@@ -62,16 +62,62 @@
                 <h1 class="visually-hidden">Tu Partner Peludo</h1> </div>
 
             <div id="login-section">
-                <p class="text-muted mb-4 px-3">Ingresa para ver tus pedidos personalizados</p>
-                <div id="buttonDiv" class="d-flex justify-content-center mb-3"></div>
+                <p class="text-muted mb-4">Ingresa para ver tus pedidos personalizados</p>
                 
-                <hr class="border-dark opacity-25">
+                <form id="formLogin" class="mb-3">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text"><i class="fa-regular fa-envelope text-muted"></i></span>
+                        <input type="email" id="loginEmail" class="form-control form-control-premium with-icon" placeholder="Correo electrónico" required>
+                    </div>
+
+                    <div class="input-group mb-3">
+                        <span class="input-group-text"><i class="fa-solid fa-lock text-muted"></i></span>
+                        <input type="password" id="loginPass" class="form-control form-control-premium with-icon" placeholder="Contraseña" required>
+                    </div>
+
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-dark fw-bold border-0" style="background: #836f14;">ENTRAR</button>
+                    </div>
+                </form>
+
+                <div class="d-flex align-items-center mb-3">
+                    <hr class="flex-grow-1 border-secondary opacity-25">
+                    <span class="mx-2 small text-muted">O</span>
+                    <hr class="flex-grow-1 border-secondary opacity-25">
+                </div>
+
+                <div id="buttonDiv" class="d-flex justify-content-center mb-4"></div>
                 
-                <p class="small text-muted">¿Eres nuevo? 
-                    <a href="#" class="text-dark fw-bold">Regístrate aquí</a>
+                <p class="small text-muted mb-0">¿Eres nuevo? 
+                    <a href="javascript:void(0)" onclick="mostrarRegistro()" class="text-dark fw-bold text-decoration-none border-bottom border-dark">Regístrate aquí</a>
                 </p>
             </div>
 
+            <div id="register-section" class="d-none">
+                <h4 class="fw-bold mb-3">Crea tu cuenta</h4>
+                <form id="formRegistro" onsubmit="procesarRegistro(event)">
+                    <div class="mb-3 text-start">
+                        <label class="form-label small fw-bold">Nombre</label>
+                        <input type="text" id="reg-nombre" class="form-control" required placeholder="Ej: Jose">
+                    </div>
+                    <div class="mb-3 text-start">
+                        <label class="form-label small fw-bold">Apellido</label>
+                        <input type="text" id="reg-apellido" class="form-control" required placeholder="Ej: Perez">
+                    </div>
+                    <div class="mb-3 text-start">
+                        <label class="form-label small fw-bold">Correo Electrónico</label>
+                        <input type="email" id="reg-email" class="form-control" required placeholder="correo@ejemplo.com">
+                    </div>
+                    <div class="mb-3 text-start">
+                        <label class="form-label small fw-bold">Contraseña</label>
+                        <input type="password" id="reg-password" class="form-control" required placeholder="Crea tu contraseña (Mínimo 6 caracteres)">
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-dark fw-bold border-0" style="background: #000;">REGISTRARME</button>
+                        <button type="button" onclick="mostrarLogin()" class="btn btn-link text-muted btn-sm">Volver al inicio</button>
+                    </div>
+                </form>
+            </div>
             <div id="user-profile" class="d-none">
                 <div class="mb-3">
                     <img id="user-img" src="" class="rounded-circle border border-dark" style="width: 80px; height: 80px; object-fit: cover;">
@@ -87,53 +133,6 @@
 
         </div>
     </div>
-
-    <script>
-        function decodeJwtResponse(token) {
-            let base64Url = token.split('.')[1];
-            let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            let jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-            }).join(''));
-            return JSON.parse(jsonPayload);
-        }
-
-        function handleCredentialResponse(response) {
-            const responsePayload = decodeJwtResponse(response.credential);
-            localStorage.setItem('google_token', response.credential);
-
-            // Cambios Visuales Responsivos
-            document.getElementById("login-section").classList.add("d-none");
-            document.getElementById("user-profile").classList.remove("d-none");
-
-            // Llenado de datos
-            document.getElementById("user-name").innerText = responsePayload.name.toUpperCase();
-            document.getElementById("user-img").src = responsePayload.picture;
-            
-            // El logo se hace más pequeño para dar espacio al perfil
-            const logo = document.getElementById("main-logo");
-            logo.style.maxWidth = "80px";
-        }
-
-        window.onload = function () {
-            // Verificar si ya hay token (redirigir al Master Page si ya está logueado)
-            if (localStorage.getItem('google_token')) {
-                // window.location.href = "main.html"; // Activar en producción
-            }
-
-            google.accounts.id.initialize({
-                client_id: "85108018661-r3dis4gm7h25kg9or2fnnpckhme87raj.apps.googleusercontent.com",
-                callback: handleCredentialResponse
-            });
-
-            google.accounts.id.renderButton(
-                document.getElementById("buttonDiv"),
-                { theme: "outline", size: "large", width: "350", text: "signin_with", shape: "rectangular" }
-            );
-        }
-
-        function irAlMain() { window.location.href = "main.html"; }
-        function cerrarSesion() { localStorage.removeItem('google_token'); location.reload(); }
-    </script>
+    <script src="PetShopApi/script/index.js"></script>
 </body>
 </html>
