@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Buffers.Text;
+using System.Net;
 using System.Net.Mail;
 
 namespace PetShopApi.Services
@@ -15,8 +16,8 @@ namespace PetShopApi.Services
         public void EnviarCorreoValidacion(string emailDestino, string token)
         {
             var settings = _config.GetSection("EmailSettings");
-
-            string enlace = $"http://localhost:5175/api/usuarios/confirmar?token={token}";
+            var baseUrl = _config.GetSection("BaseUrl");
+            string enlace = $"{baseUrl}/api/usuarios/confirmar?token={token}";
 
             var smtpPortString = settings["SmtpPort"];
             if (string.IsNullOrWhiteSpace(smtpPortString))
