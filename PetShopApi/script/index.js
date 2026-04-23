@@ -1,7 +1,7 @@
 /**
  * Utilidades de Sesión y Autenticación
  */
-const API_BASE_URL = "https://kind-islands-search.loca.lt/api";
+const API_BASE_URL = "https://quick-buses-reply.loca.lt/api";
 function decodeJwtResponse(token) {
     let base64Url = token.split('.')[1];
     let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -69,6 +69,7 @@ window.onload = function () {
     }
 
     google.accounts.id.initialize({
+        itp_support: true,
         client_id: "85108018661-r3dis4gm7h25kg9or2fnnpckhme87raj.apps.googleusercontent.com",
         callback: handleCredentialResponse
     });
