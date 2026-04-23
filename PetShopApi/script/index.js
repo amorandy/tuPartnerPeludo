@@ -80,9 +80,6 @@ window.onload = function () {
     );
 }
 
-/**
- * Procesos de Registro y Login Manual
- */
 async function procesarRegistro(event) {
     event.preventDefault(); 
 
