@@ -28,27 +28,41 @@ function mostrarSeccionPerfil() {
         if (registerSection) registerSection.classList.add("d-none");
         userProfile.classList.remove("d-none");
 
-        const sessionManual = localStorage.getItem('user_session');
+        //const googleToken = localStorage.getItem('google_token');
+        const sessionData = localStorage.getItem('user_session');
 
         if (sessionManual) {
             const data = JSON.parse(sessionManual);
             document.getElementById("user-name").innerText = data.nombre.toUpperCase();
             document.getElementById("user-img").src = data.foto || "images/default-user.png";
         }
+        //if (googleToken) {
+        //    const userData = decodeJwtResponse(googleToken);
+        //    document.getElementById("user-name").innerText = userData.name.toUpperCase();
+        //    document.getElementById("user-img").src = userData.picture;
+        //} else if (sessionManual) {
+        //    const data = JSON.parse(sessionManual);
+        //    document.getElementById("user-name").innerText = data.nombre.toUpperCase();
+        //    document.getElementById("user-img").src = data.foto || "images/default-user.png";
+        //}
+
+        const logo = document.getElementById("main-logo");
+        if (logo) logo.style.maxWidth = "80px";
     }
 }
 
 function handleCredentialResponse(response) {
     const userData = decodeJwtResponse(response.credential);
 
-    localStorage.setItem('google_token', response.credential);
-
+    // UNIFICACIÓN: Guardamos en 'user_session' igual que el login manual
     const sesionGoogle = {
         nombre: userData.name,
         foto: userData.picture,
         tipo: "google"
     };
     localStorage.setItem('user_session', JSON.stringify(sesionGoogle));
+    // También puedes guardar el token por separado si tu API lo requiere
+    localStorage.setItem('session_token', response.credential);
 
     mostrarSeccionPerfil();
 }
@@ -108,8 +122,9 @@ async function procesarRegistro(event) {
             };
             localStorage.setItem('user_session', JSON.stringify(sesionManual));
             
-            alert("¡Registro exitoso!");
-            window.location.href = "main.html";
+            alert("¡Registro exitoso! Por favor, revisa tu bandeja de entrada y valida tu correo electrónico antes de iniciar sesión.");
+            mostrarLogin();
+            document.getElementById("formRegistro").reset();
         } else {
             alert("Error: " + data.mensaje);
         }
