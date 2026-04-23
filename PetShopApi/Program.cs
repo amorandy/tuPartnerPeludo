@@ -5,7 +5,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(policy =>
+    options.AddPolicy("PublicPolicy", policy =>
     {
         policy.AllowAnyOrigin()
               .AllowAnyHeader()
@@ -26,7 +26,7 @@ builder.Services.AddScoped<EmailService>();
 
 var app = builder.Build();
 
-app.UseCors();
+app.UseCors("PublicPolicy");
 
 if (app.Environment.IsDevelopment())
 {
