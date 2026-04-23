@@ -16,7 +16,7 @@ namespace PetShopApi.Services
         public void EnviarCorreoValidacion(string emailDestino, string token)
         {
             var settings = _config.GetSection("EmailSettings");
-            string enlace = $"https://quick-buses-reply.loca.lt/api/usuarios/confirmar?token={token}";
+            string enlace = $"https://light-wolves-kick.loca.lt/api/usuarios/confirmar?token={token}";
 
             var smtpPortString = settings["SmtpPort"];
             if (string.IsNullOrWhiteSpace(smtpPortString))

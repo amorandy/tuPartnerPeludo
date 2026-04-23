@@ -1,7 +1,4 @@
-/**
- * Utilidades de Sesión y Autenticación
- */
-const API_BASE_URL = "https://quick-buses-reply.loca.lt/api";
+const API_BASE_URL = "https://witty-paws-cheat.loca.lt/api";
 function decodeJwtResponse(token) {
     let base64Url = token.split('.')[1];
     let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -11,9 +8,6 @@ function decodeJwtResponse(token) {
     return JSON.parse(jsonPayload);
 }
 
-/**
- * Control de Interfaz (UI)
- */
 function mostrarRegistro() {
     document.getElementById("login-section").classList.add("d-none");
     document.getElementById("register-section").classList.remove("d-none");
@@ -31,49 +25,30 @@ function mostrarSeccionPerfil() {
 
     if (loginSection && userProfile) {
         loginSection.classList.add("d-none");
-        if(registerSection) registerSection.classList.add("d-none");
+        if (registerSection) registerSection.classList.add("d-none");
         userProfile.classList.remove("d-none");
 
-        //const googleToken = localStorage.getItem('google_token');
-        const sessionData = localStorage.getItem('user_session');
+        const sessionManual = localStorage.getItem('user_session');
 
-        if (sessionData) {
-            const data = JSON.parse(sessionData);
+        if (sessionManual) {
+            const data = JSON.parse(sessionManual);
             document.getElementById("user-name").innerText = data.nombre.toUpperCase();
             document.getElementById("user-img").src = data.foto || "images/default-user.png";
         }
-        //if (googleToken) {
-        //    const userData = decodeJwtResponse(googleToken);
-        //    document.getElementById("user-name").innerText = userData.name.toUpperCase();
-        //    document.getElementById("user-img").src = userData.picture;
-        //} else if (sessionManual) {
-        //    const data = JSON.parse(sessionManual);
-        //    document.getElementById("user-name").innerText = data.nombre.toUpperCase();
-        //    document.getElementById("user-img").src = data.foto || "images/default-user.png";
-        //}
-
-        const logo = document.getElementById("main-logo");
-        if (logo) logo.style.maxWidth = "80px";
     }
 }
 
-/**
- * Handlers de Autenticación
- */
 function handleCredentialResponse(response) {
     const userData = decodeJwtResponse(response.credential);
 
-    // UNIFICACIÓN: Guardamos en 'user_session' igual que el login manual
+    localStorage.setItem('google_token', response.credential);
+
     const sesionGoogle = {
         nombre: userData.name,
         foto: userData.picture,
-        tipo: "google",
-        token: response.credential
+        tipo: "google"
     };
-
     localStorage.setItem('user_session', JSON.stringify(sesionGoogle));
-    // También puedes guardar el token por separado si tu API lo requiere
-    localStorage.setItem('session_token', response.credential);
 
     mostrarSeccionPerfil();
 }
@@ -124,7 +99,6 @@ async function procesarRegistro(event) {
         const data = await response.json();
 
         if (response.ok) {
-            // Guardamos el token de la tabla SesionesActivas que viene de la API
             localStorage.setItem('session_token', data.token);
             
             const sesionManual = {
@@ -161,7 +135,6 @@ e.preventDefault();
         const data = await response.json();
 
         if (response.ok) {
-            // Guardamos el token de sesión único de tu DB
             localStorage.setItem('session_token', data.token);
 
             const sesionManual = {
@@ -181,9 +154,6 @@ e.preventDefault();
     }
 });
 
-/**
- * Navegación y Cierre
- */
 function irAlMain() { 
     window.location.href = "main.html"; 
 }
