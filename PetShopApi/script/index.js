@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://plenty-rooms-fly.loca.lt/api";
+const API_BASE_URL = "https://plenty-rooms-fly.loca.lt";
 function decodeJwtResponse(token) {
     let base64Url = token.split('.')[1];
     let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -91,7 +91,7 @@ async function procesarRegistro(event) {
     }
 
     try {
-        const response = await fetch(`${API_BASE_URL}/usuarios/registrar`, {
+        const response = await fetch(`${API_BASE_URL}/api/usuarios/registrar`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(usuario)
@@ -130,7 +130,7 @@ e.preventDefault();
     const password = document.getElementById('loginPass').value;
 
     try {
-        const response = await fetch(`${API_BASE_URL}/usuarios/login`, {
+        const response = await fetch(`${API_BASE_URL}/api/usuarios/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
