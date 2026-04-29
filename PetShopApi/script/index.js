@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://nasty-coats-call.loca.lt/api";
+const API_BASE_URL = "https://loose-swans-hunt.loca.lt/api";
 function decodeJwtResponse(token) {
     let base64Url = token.split('.')[1];
     let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -136,6 +136,8 @@ e.preventDefault();
 
         const data = await response.json();
 
+        MostrarSalidas(data);
+
         if (response.ok) {
             localStorage.setItem('session_token', data.token);
 
@@ -147,12 +149,13 @@ e.preventDefault();
             };
             
             localStorage.setItem('user_session', JSON.stringify(sesionManual));
-            window.location.replace("main.html");
-        } else {
-            alert(data.mensaje || "Credenciales incorrectas");
+            setTimeout(() => {
+                window.location.replace("main.html");
+            }, 1500);
         }
     } catch (error) {
         console.error("Error al conectar con la API:", error);
+        MostrarSalidas({ cpSalidas: [{ Codigo: -1, Mensaje: "Error de conexión con el servidor" }] });
     }
 });
 
@@ -165,4 +168,29 @@ function cerrarSesion() {
     localStorage.removeItem('user_session');
     localStorage.removeItem('session_token');
     window.location.href = "index.html";
+}
+
+function EnviarMensaje(codigo, mensaje) {
+    toastr.options = {
+        "closeButton": true,
+        "progressBar": true,
+        "positionClass": 'toast-bottom-right',
+        "timeOut": "5000"
+    };
+
+    if (codigo <= -1) {
+        toastr.error(mensaje);
+    } else if (codigo === 0) {
+        toastr.info(mensaje);
+    } else if (codigo >= 1) {
+        toastr.success(mensaje);
+    }
+}
+function MostrarSalidas(s) {
+    if (s && s.cpSalidas != null) {
+        s.cpSalidas.forEach(salida => EnviarMensaje(salida.Codigo, salida.Mensaje));
+        delete s.cpSalidas;
+    } else if (s.codigo !== undefined) {
+        EnviarMensaje(s.codigo, s.mensaje);
+    }
 }

@@ -77,16 +77,17 @@ public class UsuariosController : ControllerBase
             {
                 return Ok(new
                 {
+                    codigo = 1,
                     mensaje = $"¡Bienvenido {usuario.Nombre}!",
                     user = usuario.Nombre
                 });
             }
 
-            return Unauthorized(new { mensaje = "Email o contraseña incorrectos." });
+            return Unauthorized(new { codigo = 0, mensaje = "Email o contraseña incorrectos." });
         }
         catch (Exception ex)
         {
-            return BadRequest(new { mensaje = ex.Message });
+            return StatusCode(500, new { codigo = -1, mensaje = "Error: " + ex.Message });
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using MySqlConnector;
 using PetShopApi.Mmodels;
+using System.Data;
 
 namespace PetShopApi.DAL
 {
@@ -76,33 +77,42 @@ namespace PetShopApi.DAL
             using (var conexion = _conexionFll.ObtenerConexion())
             {
                 await conexion.OpenAsync();
-                string sql = "SELECT * FROM Usuarios WHERE Email = @Email";
-
-                using (var cmd = new MySqlCommand(sql, conexion))
+                using (var cmd = new MySqlCommand("sp_ValidarLogin", conexion))
                 {
-                    cmd.Parameters.AddWithValue("@Email", email);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@p_Email", email);
+
+                    var pCodigo = new MySqlParameter("@p_Codigo", MySqlDbType.Int32) { Direction = ParameterDirection.Output };
+                    var pMensaje = new MySqlParameter("@p_Mensaje", MySqlDbType.VarChar, 500) { Direction = ParameterDirection.Output };
+                    cmd.Parameters.Add(pCodigo);
+                    cmd.Parameters.Add(pMensaje);
+
                     using (var reader = await cmd.ExecuteReaderAsync())
                     {
                         if (await reader.ReadAsync())
                         {
-                            if (Convert.ToInt32(reader["EmailValidado"]) == 0)
-                            {
-                                throw new Exception("Debes validar tu correo antes de iniciar sesión.");
-                            }
+                            string hashAlmacenado = reader["PasswordHash"].ToString() ?? string.Empty;
 
-                            string hashAlmacenado = reader["PasswordHash"]?.ToString() ?? string.Empty;
-                            bool passwordCorrecto = BCrypt.Net.BCrypt.Verify(password, hashAlmacenado);
-
-                            if (passwordCorrecto)
+                            if (BCrypt.Net.BCrypt.Verify(password, hashAlmacenado))
                             {
                                 return new Usuario
                                 {
                                     Nombre = reader["Nombre"].ToString(),
-                                    Email = reader["Email"].ToString()
+                                    Email = reader["Email"].ToString(),
+                                    Telefono = reader["Telefono"].ToString()
                                 };
+                            }
+                            else
+                            {
+                                throw new Exception("La contraseña ingresada es incorrecta.");
                             }
                         }
                     }
+
+                    int resCodigo = Convert.ToInt32(pCodigo.Value);
+                    string resMensaje = pMensaje.Value?.ToString() ?? string.Empty;
+
+                    if (resCodigo != 1) throw new Exception(resMensaje);
                 }
             }
             return null;
