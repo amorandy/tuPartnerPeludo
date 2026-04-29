@@ -20,12 +20,12 @@ public class UsuariosController : ControllerBase
     [HttpPost("registrar")]
     public async Task<IActionResult> Registrar([FromBody] Usuario user)
     {
-        if (user == null) return BadRequest("Datos inválidos");
+        if (user == null) return BadRequest(new { codigo = 0, mensaje = "Datos inválidos" });
         try
         {
             if (string.IsNullOrWhiteSpace(user.Email))
             {
-                return BadRequest(new { mensaje = "El correo electrónico es obligatorio." });
+                return BadRequest(new { codigo = 0, mensaje = "El correo electrónico es obligatorio." });
             }
 
             string token = Guid.NewGuid().ToString();
@@ -34,13 +34,17 @@ public class UsuariosController : ControllerBase
             if (exito)
             {
                 _emailService.EnviarCorreoValidacion(user.Email, token);
-                return Ok(new { mensaje = "¡Registro casi listo! Revisa tu correo para activar tu cuenta." });
+                return Ok(new
+                {
+                    codigo = 1,
+                    mensaje = "¡Registro exitoso! Por favor, revisa tu bandeja de entrada o WhatsApp para validar tu cuenta."
+                });
             }
-            return BadRequest(new { mensaje = "No se pudo registrar." });
+            return BadRequest(new { codigo = 0, mensaje = "No se pudo completar el registro. El usuario ya podría existir." });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { mensaje = "Ocurrió un error interno.", detalle = ex.Message });
+            return StatusCode(500, new { cpSalidas = new[] { new { Codigo = -1, Mensaje = "Error interno: " + ex.Message }}});
         }
     }
 
@@ -65,29 +69,25 @@ public class UsuariosController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
-        if (request == null || string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
-        {
-            return BadRequest("Datos inválidos");
-        }
         try
         {
-            var usuario = await _usuarioDAL.Login(request.Email, request.Password);
+            var (usuario, salida) = await _usuarioDAL.Login(request.Email ?? "", request.Password ?? "");
 
-            if (usuario != null)
+            if (salida.Codigo == 1 && usuario != null)
             {
                 return Ok(new
                 {
-                    codigo = 1,
-                    mensaje = $"¡Bienvenido {usuario.Nombre}!",
+                    codigo = salida.Codigo,
+                    mensaje = salida.Mensaje,
                     user = usuario.Nombre
                 });
             }
 
-            return Unauthorized(new { codigo = 0, mensaje = "Email o contraseña incorrectos." });
+            return BadRequest(new { codigo = salida.Codigo, mensaje = salida.Mensaje });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { codigo = -1, mensaje = "Error: " + ex.Message });
+            return StatusCode(500, new { codigo = -1, mensaje = "Error crítico: " + ex.Message });
         }
     }
 }

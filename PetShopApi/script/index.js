@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://loose-swans-hunt.loca.lt/api";
+const API_BASE_URL = "https://plenty-rooms-fly.loca.lt/api";
 function decodeJwtResponse(token) {
     let base64Url = token.split('.')[1];
     let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -86,7 +86,7 @@ async function procesarRegistro(event) {
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(usuario.email)) {
-        alert("Por favor, ingresa un correo válido.");
+        EnviarMensaje(0, "Por favor, ingresa un correo válido.");
         return;
     }
 
@@ -99,25 +99,27 @@ async function procesarRegistro(event) {
 
         const data = await response.json();
 
-        if (response.ok) {
-            localStorage.setItem('session_token', data.token);
-            
-            const sesionManual = {
-                nombre: data.user || usuario.nombre, 
-                foto: data.foto || "images/default-user.png",
-                tipo: "manual"
-            };
-            localStorage.setItem('user_session', JSON.stringify(sesionManual));
-            
-            alert("¡Registro exitoso! Por favor, revisa tu bandeja de entrada y valida tu correo electrónico antes de iniciar sesión.");
-            mostrarLogin();
-            document.getElementById("formRegistro").reset();
-        } else {
-            alert("Error: " + data.mensaje);
+        MostrarSalidas(data);
+
+        if (response.ok && data.codigo === 1) {
+            //if (data.token) {
+            //    localStorage.setItem('session_token', data.token);
+            //    const sesionManual = {
+            //        nombre: data.user || usuario.nombre,
+            //        foto: data.foto || "images/default-user.png",
+            //        tipo: "manual"
+            //    };
+            //    localStorage.setItem('user_session', JSON.stringify(sesionManual));
+            //}
+
+            setTimeout(() => {
+                document.getElementById("formRegistro").reset();
+                mostrarLogin();
+            }, 2500);
         }
     } catch (error) {
         console.error("Error de conexión:", error);
-        alert("No se pudo conectar con el servidor.");
+        MostrarSalidas({ cpSalidas: [{ Codigo: -1, Mensaje: "No se pudo conectar con el servidor." }] });
     }
 }
 

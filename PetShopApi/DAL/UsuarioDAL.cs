@@ -1,5 +1,6 @@
 ﻿using MySqlConnector;
 using PetShopApi.Mmodels;
+using PetShopApi.Models;
 using System.Data;
 
 namespace PetShopApi.DAL
@@ -72,8 +73,10 @@ namespace PetShopApi.DAL
                 }
             }
         }
-        public async Task<Usuario?> Login(string email, string password)
+        public async Task<(Usuario? usuario, SalidaMod salida)> Login(string email, string password)
         {
+            var salida = new SalidaMod();
+            Usuario? usuarioEncontrado = null;
             using (var conexion = _conexionFll.ObtenerConexion())
             {
                 await conexion.OpenAsync();
@@ -95,7 +98,7 @@ namespace PetShopApi.DAL
 
                             if (BCrypt.Net.BCrypt.Verify(password, hashAlmacenado))
                             {
-                                return new Usuario
+                                usuarioEncontrado = new Usuario
                                 {
                                     Nombre = reader["Nombre"].ToString(),
                                     Email = reader["Email"].ToString(),
@@ -109,13 +112,11 @@ namespace PetShopApi.DAL
                         }
                     }
 
-                    int resCodigo = Convert.ToInt32(pCodigo.Value);
-                    string resMensaje = pMensaje.Value?.ToString() ?? string.Empty;
-
-                    if (resCodigo != 1) throw new Exception(resMensaje);
+                    salida.Codigo = Convert.ToInt32(pCodigo.Value);
+                    salida.Mensaje = pMensaje.Value?.ToString();
                 }
             }
-            return null;
+            return (usuarioEncontrado, salida);
         }
     }
 }
