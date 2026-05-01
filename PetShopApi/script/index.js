@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://tidy-planets-fold.loca.lt";
+const API_BASE_URL = "https://slimy-coins-throw.loca.lt/api";
 function decodeJwtResponse(token) {
     let base64Url = token.split('.')[1];
     let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -91,7 +91,7 @@ async function procesarRegistro(event) {
     }
 
     try {
-        const response = await fetch(`${API_BASE_URL}/api/usuarios/registrar`, {
+        const response = await fetch(`${API_BASE_URL}/usuarios/registrar`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(usuario)
@@ -130,7 +130,7 @@ e.preventDefault();
     const password = document.getElementById('loginPass').value;
 
     try {
-        const response = await fetch(`${API_BASE_URL}/api/usuarios/login`, {
+        const response = await fetch(`${API_BASE_URL}/usuarios/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
