@@ -21,7 +21,24 @@
 
     <style>
         body {
-            background-color: #f8f9fa; /* Fondo gris muy suave */
+            /* Ruta a tu imagen */
+            background-image: url('../images/mosaico-perritos.jpg'); 
+            
+            /* Esto hace que la imagen se repita en mosaico */
+            background-repeat: repeat; 
+            
+            /* Ajusta el tamaño del patrón (puedes jugar con este valor) */
+            background-size: 300px auto; 
+            
+            /* Mantiene el fondo quieto si la página es larga */
+            background-attachment: fixed; 
+            
+            /* Centrado del contenido del login */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
