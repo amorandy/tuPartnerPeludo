@@ -21,12 +21,21 @@
 
     <style>
         body {
-            background-image: url('images/mosaico-perritos.png'); /* Ajustado: sin el ../ si el HTML está en la raíz */
+            background-color: #b8a24b; 
+            background-image: url('images/mosaico-perritos.jpg'); 
+            
+            /* Esta es la clave: multiplica el dorado con las partes blancas de la foto */
+            background-blend-mode: screen; 
+            
+            /* Forzamos que el patrón se repita infinitamente */
             background-repeat: repeat; 
+            
+            /* Si la imagen no encaja bien, prueba bajando este valor poco a poco 
+               (ej. 250px, 200px) hasta que veas que las figuras coinciden en los cortes */
             background-size: 300px auto; 
+            
             background-attachment: fixed; 
             
-            /* Centrado del contenido */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -63,6 +72,8 @@
             .logo-medalla-img { max-width: 130px; }
             .card-premium { padding: 1.5rem !important; }
         }
+        background-color: #836f14; /* El dorado oscuro de tu botón */
+        background-blend-mode: multiply; /* En lugar de screen, usa multiply para un tono más bronce */
     </style>
 </head>
 <body>
