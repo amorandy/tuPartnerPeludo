@@ -27,6 +27,10 @@ public class UsuariosController : ControllerBase
             {
                 return BadRequest(new { codigo = 0, mensaje = "El correo electrónico es obligatorio." });
             }
+            //if (string.IsNullOrWhiteSpace(user.Telefono))
+            //{
+            //    return BadRequest(new { codigo = 0, mensaje = "El Telefono es obligatorio." });
+            //}
 
             string token = Guid.NewGuid().ToString();
             bool exito = await _usuarioDAL.RegistrarUsuarioConToken(user, token);
@@ -37,14 +41,14 @@ public class UsuariosController : ControllerBase
                 return Ok(new
                 {
                     codigo = 1,
-                    mensaje = "¡Registro exitoso! Por favor, revisa tu bandeja de entrada o WhatsApp para validar tu cuenta."
+                    mensaje = "¡Registro exitoso! Por favor, revisa tu bandeja de entrada de correo electronico o WhatsApp para validar tu cuenta."
                 });
             }
             return BadRequest(new { codigo = 0, mensaje = "No se pudo completar el registro. El usuario ya podría existir." });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { cpSalidas = new[] { new { Codigo = -1, Mensaje = "Error interno: " + ex.Message }}});
+            return StatusCode(500, new { cpSalidas = new[] { new { Codigo = -1, Mensaje = "Error interno: " + ex.Message } } });
         }
     }
 
@@ -82,7 +86,6 @@ public class UsuariosController : ControllerBase
                     user = usuario.Nombre
                 });
             }
-
             return BadRequest(new { codigo = salida.Codigo, mensaje = salida.Mensaje });
         }
         catch (Exception ex)

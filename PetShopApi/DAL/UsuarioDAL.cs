@@ -77,46 +77,54 @@ namespace PetShopApi.DAL
         {
             var salida = new SalidaMod();
             Usuario? usuarioEncontrado = null;
-            using (var conexion = _conexionFll.ObtenerConexion())
+            try
             {
-                await conexion.OpenAsync();
-                using (var cmd = new MySqlCommand("sp_ValidarLogin", conexion))
+                using (var conexion = _conexionFll.ObtenerConexion())
                 {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@p_Email", email);
-
-                    var pCodigo = new MySqlParameter("@p_Codigo", MySqlDbType.Int32) { Direction = ParameterDirection.Output };
-                    var pMensaje = new MySqlParameter("@p_Mensaje", MySqlDbType.VarChar, 500) { Direction = ParameterDirection.Output };
-                    cmd.Parameters.Add(pCodigo);
-                    cmd.Parameters.Add(pMensaje);
-
-                    using (var reader = await cmd.ExecuteReaderAsync())
+                    await conexion.OpenAsync();
+                    using (var cmd = new MySqlCommand("sp_ValidarLogin", conexion))
                     {
-                        if (await reader.ReadAsync())
-                        {
-                            string hashAlmacenado = reader["PasswordHash"].ToString() ?? string.Empty;
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@p_Email", email);
 
-                            if (BCrypt.Net.BCrypt.Verify(password, hashAlmacenado))
+                        var pCodigo = new MySqlParameter("@p_Codigo", MySqlDbType.Int32) { Direction = ParameterDirection.Output };
+                        var pMensaje = new MySqlParameter("@p_Mensaje", MySqlDbType.VarChar, 500) { Direction = ParameterDirection.Output };
+                        cmd.Parameters.Add(pCodigo);
+                        cmd.Parameters.Add(pMensaje);
+
+                        using (var reader = await cmd.ExecuteReaderAsync())
+                        {
+                            if (await reader.ReadAsync())
                             {
-                                usuarioEncontrado = new Usuario
+                                string hashAlmacenado = reader["PasswordHash"].ToString() ?? string.Empty;
+
+                                if (BCrypt.Net.BCrypt.Verify(password, hashAlmacenado))
                                 {
-                                    Nombre = reader["Nombre"].ToString(),
-                                    Email = reader["Email"].ToString(),
-                                    Telefono = reader["Telefono"].ToString()
-                                };
-                            }
-                            else
-                            {
-                                throw new Exception("La contraseña ingresada es incorrecta.");
+                                    usuarioEncontrado = new Usuario
+                                    {
+                                        Nombre = reader["Nombre"].ToString(),
+                                        Email = reader["Email"].ToString(),
+                                        Telefono = reader["Telefono"].ToString()
+                                    };
+                                }
+                                else
+                                {
+                                    salida.Codigo = 0; salida.Mensaje = "La contraseña ingresada es incorrecta.";
+                                    return (usuarioEncontrado, salida);
+                                }
                             }
                         }
+                        salida.Codigo = Convert.ToInt32(pCodigo.Value);
+                        salida.Mensaje = pMensaje.Value?.ToString();
                     }
-
-                    salida.Codigo = Convert.ToInt32(pCodigo.Value);
-                    salida.Mensaje = pMensaje.Value?.ToString();
                 }
+                return (usuarioEncontrado, salida);
             }
-            return (usuarioEncontrado, salida);
+            catch (Exception ex)
+            {
+                salida.Codigo = -1; salida.Mensaje = ex.Message;
+                return (usuarioEncontrado, salida);
+            }
         }
     }
 }

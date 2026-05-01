@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://wicked-vans-fail.loca.lt";
+const API_BASE_URL = "https://tidy-planets-fold.loca.lt";
 function decodeJwtResponse(token) {
     let base64Url = token.split('.')[1];
     let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
