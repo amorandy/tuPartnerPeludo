@@ -21,19 +21,12 @@
 
     <style>
         body {
-            /* Ruta a tu imagen */
-            background-image: url('../images/mosaico-perritos.jpg'); 
-            
-            /* Esto hace que la imagen se repita en mosaico */
+            background-image: url('images/mosaico-perritos.jpg'); /* Ajustado: sin el ../ si el HTML está en la raíz */
             background-repeat: repeat; 
-            
-            /* Ajusta el tamaño del patrón (puedes jugar con este valor) */
             background-size: 300px auto; 
-            
-            /* Mantiene el fondo quieto si la página es larga */
             background-attachment: fixed; 
             
-            /* Centrado del contenido del login */
+            /* Centrado del contenido */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -41,50 +34,34 @@
             margin: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-
-        .login-section { /* O la clase que uses para tu contenedor blanco */
-            background-color: #ffffff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2); /* Sombra más fuerte para separar del fondo */
-            z-index: 1;
+    
+        /* Esta es la tarjeta blanca que debe resaltar sobre el fondo */
+        .card-premium {
+            background-color: #ffffff !important; /* Fondo blanco sólido para que no se vea el mosaico detrás */
+            border: 2px solid #000;
+            border-radius: 0; 
+            max-width: 420px;
             width: 100%;
-            max-width: 400px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3); /* Sombra un poco más profunda para dar profundidad */
+            z-index: 2;
         }
-
-        /* Centrado perfecto vertical y horizontal */
+    
         .vh-centrado {
-            height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-
-        /* Estilo minimalista de medalla para la tarjeta */
-        .card-premium {
-            border: 2px solid #000;
-            border-radius: 0; /* Minimalista cuadrado */
-            background-color: #fff;
-            max-width: 420px;
             width: 100%;
         }
-
-        /* SVG del Logo: Adaptable y Premium */
-        .logo-medalla-svg {
-            max-width: 180px; /* Tamaño máximo en desktop */
+    
+        .logo-medalla-img {
+            max-width: 180px;
             width: 100%;
             height: auto;
-            transition: all 0.5s ease;
         }
-
-        /* Ajuste responsivo para celulares */
+    
         @media (max-width: 576px) {
-            .logo-medalla-svg {
-                max-width: 130px;
-            }
-            .card-premium {
-                padding: 1.5rem !important;
-            }
+            .logo-medalla-img { max-width: 130px; }
+            .card-premium { padding: 1.5rem !important; }
         }
     </style>
 </head>
