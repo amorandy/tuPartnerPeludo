@@ -21,38 +21,30 @@
 
     <style>
         body {
-            background-color: #b8a24b; 
-            background-image: url('images/mosaico-perritos.png'); 
+            /* Usamos el dorado exacto de tu botón para que todo combine */
+            background-color: #836f14; 
+            background-image: url('images/mosaico-perritos.jpg'); 
             
-            /* Esta es la clave: multiplica el dorado con las partes blancas de la foto */
-            background-blend-mode: screen; 
+            /* MULTIPLY: Mantiene el negro y tiñe el blanco con el color de fondo */
+            background-blend-mode: multiply; 
             
-            /* Forzamos que el patrón se repita infinitamente */
-            background-repeat: repeat; 
-            
-            /* Si la imagen no encaja bien, prueba bajando este valor poco a poco 
-               (ej. 250px, 200px) hasta que veas que las figuras coinciden en los cortes */
-            background-size: 300px auto; 
-            
-            background-attachment: fixed; 
-            
+            /* Para que el patrón compagine mejor, subamos el tamaño un poco */
+            background-size: 400px auto; 
+            background-repeat: repeat;
+            background-attachment: fixed;
+            background-position: center;
+        
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-    
-        /* Esta es la tarjeta blanca que debe resaltar sobre el fondo */
+        
+        /* IMPORTANTE: Asegúrate de que la tarjeta sea blanca sólida */
         .card-premium {
-            background-color: #ffffff !important; /* Fondo blanco sólido para que no se vea el mosaico detrás */
-            border: 2px solid #000;
-            border-radius: 0; 
-            max-width: 420px;
-            width: 100%;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.3); /* Sombra un poco más profunda para dar profundidad */
-            z-index: 2;
+            background-color: #ffffff !important;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5); /* Sombra más oscura para resaltar */
         }
     
         .vh-centrado {
