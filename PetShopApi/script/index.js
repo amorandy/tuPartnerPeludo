@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://calm-walls-lose.loca.lt/api";
+const API_BASE_URL = "https://pink-stars-go.loca.lt/api";
 function decodeJwtResponse(token) {
     let base64Url = token.split('.')[1];
     let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -102,25 +102,58 @@ async function procesarRegistro(event) {
 
         MostrarSalidas(data);
 
-        if (response.ok && data.codigo === 1) {
-            //if (data.token) {
-            //    localStorage.setItem('session_token', data.token);
-            //    const sesionManual = {
-            //        nombre: data.user || usuario.nombre,
-            //        foto: data.foto || "images/default-user.png",
-            //        tipo: "manual"
-            //    };
-            //    localStorage.setItem('user_session', JSON.stringify(sesionManual));
-            //}
 
-            setTimeout(() => {
-                document.getElementById("formRegistro").reset();
-                mostrarLogin();
-            }, 2500);
+        if (response.ok && data.codigo === 1) {
+            localStorage.setItem('email_pendiente', usuario.email);
+
+            // 2. Ocultamos el formulario de registro y mostramos el de verificación
+            document.getElementById("formRegistro").style.display = "none";
+            document.getElementById("seccion-verificacion").style.display = "block";
+
+            EnviarMensaje(1, "¡Código enviado! Por favor revisa tu WhatsApp.");
+
+            //setTimeout(() => {
+            //    document.getElementById("formRegistro").reset();
+            //    mostrarLogin();
+            //}, 2500);
         }
     } catch (error) {
         console.error("Error de conexión:", error);
         MostrarSalidas({ cpSalidas: [{ Codigo: -1, Mensaje: "No se pudo conectar con el servidor." }] });
+    }
+}
+
+async function confirmarCodigo() {
+    const email = localStorage.getItem('email_pendiente');
+    const codigo = document.getElementById("codigo-verificacion").value;
+
+    if (codigo.length < 6) {
+        EnviarMensaje(0, "Por favor, ingresa los 6 dígitos.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/usuarios/verificar-codigo`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email, codigo: codigo })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.codigo === 1) {
+            EnviarMensaje(1, "¡Cuenta verificada con éxito! Ya puedes iniciar sesión.");
+
+            // Redirigir al login después de 2 segundos
+            setTimeout(() => {
+                location.reload(); // O tu función mostrarLogin()
+            }, 2000);
+        } else {
+            EnviarMensaje(0, data.mensaje || "Código incorrecto.");
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        EnviarMensaje(0, "Error de conexión al verificar.");
     }
 }
 

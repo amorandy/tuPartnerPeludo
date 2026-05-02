@@ -15,38 +15,29 @@ namespace PetShopApi.DAL
         }
         public async Task<bool> RegistrarUsuario(Usuario user, string tokenEmail, string codigoWhatsApp)
         {
-            try
+            using (var conexion = _conexionFll.ObtenerConexion())
             {
-                using (var conexion = _conexionFll.ObtenerConexion())
-                {
-                    await conexion.OpenAsync();
+                await conexion.OpenAsync();
 
-                    string sql = @"INSERT INTO Usuarios 
-                       (Nombre, Apellido, Email, Telefono, PasswordHash, TokenValidacion, CodigoWhatsApp, EstaValidado) 
+                string sql = @"INSERT INTO Usuarios 
+                       (Nombre, Apellido, Email, Telefono, PasswordHash, TokenValidacion, CodigoWhatsApp, EmailValidado) 
                        VALUES 
                        (@Nombre, @Apellido, @Email, @Telefono, @Pass, @TokenEmail, @CodigoWS, 0)";
 
-                    using (var cmd = new MySqlCommand(sql, conexion))
-                    {
-                        cmd.Parameters.AddWithValue("@Nombre", user.Nombre);
-                        cmd.Parameters.AddWithValue("@Apellido", user.Apellido ?? "");
-                        cmd.Parameters.AddWithValue("@Email", user.Email);
-                        cmd.Parameters.AddWithValue("@Telefono", user.Telefono);
+                using (var cmd = new MySqlCommand(sql, conexion))
+                {
+                    cmd.Parameters.AddWithValue("@Nombre", user.Nombre);
+                    cmd.Parameters.AddWithValue("@Apellido", user.Apellido ?? "");
+                    cmd.Parameters.AddWithValue("@Email", user.Email);
+                    cmd.Parameters.AddWithValue("@Telefono", user.Telefono);
+                    cmd.Parameters.AddWithValue("@Pass", BCrypt.Net.BCrypt.HashPassword(user.Password));
 
-                        string passwordHashed = BCrypt.Net.BCrypt.HashPassword(user.Password);
-                        cmd.Parameters.AddWithValue("@Pass", passwordHashed);
-                        cmd.Parameters.AddWithValue("@TokenEmail", tokenEmail);
-                        cmd.Parameters.AddWithValue("@CodigoWS", codigoWhatsApp);
+                    cmd.Parameters.AddWithValue("@TokenEmail", tokenEmail);
+                    cmd.Parameters.AddWithValue("@CodigoWS", codigoWhatsApp);
 
-                        int filasAfectadas = await cmd.ExecuteNonQueryAsync();
-                        return filasAfectadas > 0;
-                    }
+                    int filasAfectadas = await cmd.ExecuteNonQueryAsync();
+                    return filasAfectadas > 0;
                 }
-            }
-            catch (Exception)
-            {
-
-                throw;
             }
         }
         public async Task<bool> RegistrarUsuarioConToken(Usuario user, string token)
@@ -138,6 +129,27 @@ namespace PetShopApi.DAL
             {
                 salida.Codigo = -1; salida.Mensaje = ex.Message;
                 return (usuarioEncontrado, salida);
+            }
+        }
+        public async Task<bool> ValidarCodigoWhatsApp(string email, string codigo)
+        {
+            using (var conexion = _conexionFll.ObtenerConexion())
+            {
+                await conexion.OpenAsync();
+
+                string sql = @"UPDATE Usuarios 
+                       SET EstaValidado = 1, EmailValidado = 1 
+                       WHERE Email = @Email AND CodigoWhatsApp = @Codigo";
+
+                using (var cmd = new MySqlCommand(sql, conexion))
+                {
+                    cmd.Parameters.AddWithValue("@Email", email);
+                    cmd.Parameters.AddWithValue("@Codigo", codigo);
+
+                    int filasAfectadas = await cmd.ExecuteNonQueryAsync();
+
+                    return filasAfectadas > 0;
+                }
             }
         }
     }

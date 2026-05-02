@@ -22,40 +22,31 @@ public class UsuariosController : ControllerBase
     [HttpPost("registrar")]
     public async Task<IActionResult> Registrar([FromBody] Usuario user)
     {
-        Random generator = new Random();
         if (user == null) return BadRequest(new { codigo = 0, mensaje = "Datos inválidos" });
+
         try
         {
-            if (string.IsNullOrWhiteSpace(user.Email))
-            {
-                return BadRequest(new { codigo = 0, mensaje = "El correo electrónico es obligatorio." });
-            }
-            if (string.IsNullOrWhiteSpace(user.Telefono))
-            {
-                return BadRequest(new { codigo = 0, mensaje = "El Telefono es obligatorio." });
-            }
-            
-            string codigoWhatsApp = generator.Next(0, 1000000).ToString("D6");
-            string token = Guid.NewGuid().ToString();
-            string tokenEmail = Guid.NewGuid().ToString();
-            bool exito = await _usuarioDAL.RegistrarUsuarioConToken(user, token);
+            if (string.IsNullOrWhiteSpace(user.Email)) return BadRequest(new { codigo = 0, mensaje = "Email obligatorio" });
+            if (string.IsNullOrWhiteSpace(user.Telefono)) return BadRequest(new { codigo = 0, mensaje = "Teléfono obligatorio" });
 
-            var salida = await _usuarioDAL.RegistrarUsuario(user, tokenEmail, codigoWhatsApp);
+            string codigoWS = new Random().Next(100000, 999999).ToString();
+            string tokenEmail = Guid.NewGuid().ToString();
+
+            bool exito = await _usuarioDAL.RegistrarUsuario(user, tokenEmail, codigoWS);
 
             if (exito)
             {
-                _emailService.EnviarCorreoValidacion(user.Email, token);
-                return Ok(new
-                {
-                    codigo = 1,
-                    mensaje = "¡Registro exitoso! Por favor, revisa tu bandeja de entrada de correo electronico o WhatsApp para validar tu cuenta."
-                });
+                _emailService.EnviarCorreoValidacion(user.Email, tokenEmail);
+                await _whatsappService.EnviarCodigoValidacion(user.Telefono, codigoWS);
+
+                return Ok(new { codigo = 1, mensaje = "¡Registro exitoso! Revisa tu WhatsApp o Email." });
             }
-            return BadRequest(new { codigo = 0, mensaje = "No se pudo completar el registro. El usuario ya podría existir." });
+
+            return BadRequest(new { codigo = 0, mensaje = "Error al registrar. El usuario ya podría existir." });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { cpSalidas = new[] { new { Codigo = -1, Mensaje = "Error interno: " + ex.Message } } });
+            return StatusCode(500, new { codigo = -1, mensaje = "Error: " + ex.Message });
         }
     }
 
@@ -99,5 +90,20 @@ public class UsuariosController : ControllerBase
         {
             return StatusCode(500, new { codigo = -1, mensaje = "Error crítico: " + ex.Message });
         }
+    }
+    [HttpPost("verificar-codigo")]
+    public async Task<IActionResult> VerificarCodigo([FromBody] dynamic data)
+    {
+        string email = data.GetProperty("email").GetString();
+        string codigo = data.GetProperty("codigo").GetString();
+
+        var esValido = await _usuarioDAL.ValidarCodigoWhatsApp(email, codigo);
+
+        if (esValido)
+        {
+            return Ok(new { codigo = 1, mensaje = "Validado" });
+        }
+
+        return BadRequest(new { codigo = 0, mensaje = "Código inválido" });
     }
 }
