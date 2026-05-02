@@ -157,6 +157,23 @@
                     <button onclick="cerrarSesion()" class="btn btn-link text-danger btn-sm fw-bold">Cerrar Sesión</button>
                 </div>
             </div>
+            <div id="seccion-verificacion" style="display: none;" class="text-center animate__animated animate__fadeIn">
+                <h4 class="mb-3">¡Casi listo! 🐾</h4>
+                <p>Hemos enviado un código de 6 dígitos a tu WhatsApp.</p>
+                
+                <div class="mb-3">
+                    <input type="text" id="codigo-verificacion" class="form-control form-control-lg text-center" 
+                           placeholder="000000" maxlength="6" style="letter-spacing: 5px; font-weight: bold;">
+                </div>
+                
+                <button type="button" class="btn btn-primary w-100" onclick="confirmarCodigo()">
+                    Verificar Cuenta
+                </button>
+                
+                <button type="button" class="btn btn-link btn-sm mt-3" onclick="mostrarRegistro()">
+                    Volver al registro
+                </button>
+            </div>
 
         </div>
     </div>
