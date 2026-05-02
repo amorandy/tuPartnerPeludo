@@ -126,12 +126,14 @@
                         <input type="email" id="reg-email" class="form-control" required placeholder="correo@ejemplo.com">
                     </div>
                     <div class="mb-3 text-start">
-                        <label class="form-label small fw-bold">Teléfono (WhatsApp)</label>
+                        <label class="form-label small fw-bold text-dark">WhatsApp (Con código de país)</label>
                         <div class="input-group">
-                            <span class="input-group-text">+</span>
-                            <input type="text" id="reg-telefono" class="form-control" required placeholder="5491100000000">
+                            <span class="input-group-text bg-light"><i class="fa-brands fa-whatsapp text-success"></i></span>
+                            <input type="text" id="reg-telefono" class="form-control" placeholder="Ej: 5491122334455" required>
                         </div>
-                        <div class="form-text small">Incluye código de país, área y número sin espacios.</div>
+                        <div class="form-text text-muted" style="font-size: 0.75rem;">
+                            No incluyas el signo "+", solo números.
+                        </div>
                     </div>
                     <div class="mb-3 text-start">
                         <label class="form-label small fw-bold">Contraseña</label>
