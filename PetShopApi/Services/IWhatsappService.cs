@@ -20,17 +20,19 @@ namespace PetShopApi.Services
         public async Task<WhatsappResponse> EnviarCodigoValidacion(string telefono, string codigo)
         {
             using var client = new HttpClient();
-            var mensaje = $"🐾 ¡Hola! Tu código de validación para Tu Partner Peludo es: {codigo}";
 
+            // 1. Cambiamos los nombres para que coincidan con el CURL
             var payload = new
             {
-                number = telefono,
-                message = mensaje
+                telefono = telefono, // Antes decía 'number'
+                codigo = codigo      // Antes decía 'message' y enviaba todo el texto
             };
 
             try
             {
-                var url = $"{_settings.BaseUrl}/send-message";
+                // 2. Cambiamos 'send-message' por 'enviar-codigo'
+                var url = $"{_settings.BaseUrl}/enviar-codigo";
+
                 var response = await client.PostAsJsonAsync(url, payload);
 
                 return new WhatsappResponse
