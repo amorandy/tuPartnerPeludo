@@ -1,4 +1,5 @@
 using PetShopApi.DAL;
+using PetShopApi.Models;
 using PetShopApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,6 +24,8 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddScoped<ConexionFll>();
 builder.Services.AddScoped<UsuarioDAL>();
 builder.Services.AddScoped<EmailService>();
+builder.Services.Configure<WhatsappSettings>(builder.Configuration.GetSection("WhatsappSettings"));
+builder.Services.AddScoped<IWhatsappService, WhatsappService>();
 
 var app = builder.Build();
 

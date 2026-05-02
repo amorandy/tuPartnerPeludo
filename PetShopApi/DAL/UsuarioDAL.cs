@@ -13,26 +13,40 @@ namespace PetShopApi.DAL
         {
             _conexionFll = conexionFll;
         }
-        public async Task<bool> RegistrarUsuario(Usuario user)
+        public async Task<bool> RegistrarUsuario(Usuario user, string tokenEmail, string codigoWhatsApp)
         {
-            using (var conexion = _conexionFll.ObtenerConexion())
+            try
             {
-                await conexion.OpenAsync();
-
-                string sql = "INSERT INTO Usuarios (Nombre, Apellido, Email, PasswordHash) VALUES (@Nombre, @Apellido, @Email, @Pass)";
-
-                using (var cmd = new MySqlCommand(sql, conexion))
+                using (var conexion = _conexionFll.ObtenerConexion())
                 {
-                    cmd.Parameters.AddWithValue("@Nombre", user.Nombre);
-                    cmd.Parameters.AddWithValue("@Apellido", user.Apellido ?? "");
-                    cmd.Parameters.AddWithValue("@Email", user.Email);
+                    await conexion.OpenAsync();
 
-                    string passwordHashed = BCrypt.Net.BCrypt.HashPassword(user.Password);
-                    cmd.Parameters.AddWithValue("@Pass", passwordHashed);
+                    string sql = @"INSERT INTO Usuarios 
+                       (Nombre, Apellido, Email, Telefono, PasswordHash, TokenValidacion, CodigoWhatsApp, EstaValidado) 
+                       VALUES 
+                       (@Nombre, @Apellido, @Email, @Telefono, @Pass, @TokenEmail, @CodigoWS, 0)";
 
-                    int filasAfectadas = await cmd.ExecuteNonQueryAsync();
-                    return filasAfectadas > 0;
+                    using (var cmd = new MySqlCommand(sql, conexion))
+                    {
+                        cmd.Parameters.AddWithValue("@Nombre", user.Nombre);
+                        cmd.Parameters.AddWithValue("@Apellido", user.Apellido ?? "");
+                        cmd.Parameters.AddWithValue("@Email", user.Email);
+                        cmd.Parameters.AddWithValue("@Telefono", user.Telefono);
+
+                        string passwordHashed = BCrypt.Net.BCrypt.HashPassword(user.Password);
+                        cmd.Parameters.AddWithValue("@Pass", passwordHashed);
+                        cmd.Parameters.AddWithValue("@TokenEmail", tokenEmail);
+                        cmd.Parameters.AddWithValue("@CodigoWS", codigoWhatsApp);
+
+                        int filasAfectadas = await cmd.ExecuteNonQueryAsync();
+                        return filasAfectadas > 0;
+                    }
                 }
+            }
+            catch (Exception)
+            {
+
+                throw;
             }
         }
         public async Task<bool> RegistrarUsuarioConToken(Usuario user, string token)

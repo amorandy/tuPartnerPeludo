@@ -10,16 +10,19 @@ public class UsuariosController : ControllerBase
 {
     private readonly UsuarioDAL _usuarioDAL;
     private readonly EmailService _emailService;
+    private readonly IWhatsappService _whatsappService;
 
-    public UsuariosController(UsuarioDAL usuarioDAL, EmailService emailService)
+    public UsuariosController(UsuarioDAL usuarioDAL, EmailService emailService, IWhatsappService whatsappService)
     {
         _usuarioDAL = usuarioDAL;
         _emailService = emailService;
+        _whatsappService = whatsappService;
     }
 
     [HttpPost("registrar")]
     public async Task<IActionResult> Registrar([FromBody] Usuario user)
     {
+        Random generator = new Random();
         if (user == null) return BadRequest(new { codigo = 0, mensaje = "Datos inválidos" });
         try
         {
@@ -27,13 +30,17 @@ public class UsuariosController : ControllerBase
             {
                 return BadRequest(new { codigo = 0, mensaje = "El correo electrónico es obligatorio." });
             }
-            //if (string.IsNullOrWhiteSpace(user.Telefono))
-            //{
-            //    return BadRequest(new { codigo = 0, mensaje = "El Telefono es obligatorio." });
-            //}
-
+            if (string.IsNullOrWhiteSpace(user.Telefono))
+            {
+                return BadRequest(new { codigo = 0, mensaje = "El Telefono es obligatorio." });
+            }
+            
+            string codigoWhatsApp = generator.Next(0, 1000000).ToString("D6");
             string token = Guid.NewGuid().ToString();
+            string tokenEmail = Guid.NewGuid().ToString();
             bool exito = await _usuarioDAL.RegistrarUsuarioConToken(user, token);
+
+            var salida = await _usuarioDAL.RegistrarUsuario(user, tokenEmail, codigoWhatsApp);
 
             if (exito)
             {
