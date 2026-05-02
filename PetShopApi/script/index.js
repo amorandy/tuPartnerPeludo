@@ -81,7 +81,8 @@ async function procesarRegistro(event) {
         nombre: document.getElementById("reg-nombre").value,
         apellido: document.getElementById("reg-apellido").value,
         email: document.getElementById("reg-email").value,
-        password: document.getElementById("reg-password").value
+        password: document.getElementById("reg-password").value,
+        telefono: document.getElementById("reg-telefono").value
     };
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
