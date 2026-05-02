@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://slimy-coins-throw.loca.lt/api";
+const API_BASE_URL = "https://calm-walls-lose.loca.lt/api";
 function decodeJwtResponse(token) {
     let base64Url = token.split('.')[1];
     let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
