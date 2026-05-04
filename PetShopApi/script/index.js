@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://192.168.1.82:8080/api";
+const API_BASE_URL = "https://192.168.1.82:4431/api";
 function decodeJwtResponse(token) {
     let base64Url = token.split('.')[1];
     let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
