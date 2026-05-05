@@ -9,3 +9,5 @@
 /.vscode
 /PetShopApi/PetShopApi.csproj.user
 /PetShopApi/appsettings.Development.json
+/PetShopApi/bin/Release/net9.0
+/PetShopApi/Properties/PublishProfiles
