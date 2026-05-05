@@ -76,13 +76,24 @@ window.onload = function () {
 
 async function procesarRegistro(event) {
     event.preventDefault(); 
+    const telefonoRaw = document.getElementById("reg-telefono").value;
+    const telefonoRecibido = req.body.telefono; // O como lo recibas
+
+    // 1. Quitamos TODO lo que no sea un número (limpia +, espacios, guiones)
+    const soloNumeros = telefonoRecibido.replace(/\D/g, "");
+
+    // 2. Formateamos el ID exacto que pide la librería
+    const chatId = `${soloNumeros}@c.us`;
+    const telefonoLimpio = telefonoRaw.replace(/\D/g, "");
+
+    console.log("Intentando enviar a:", chatId);
 
     const usuario = {
         nombre: document.getElementById("reg-nombre").value,
         apellido: document.getElementById("reg-apellido").value,
         email: document.getElementById("reg-email").value,
         password: document.getElementById("reg-password").value,
-        telefono: document.getElementById("reg-telefono").value
+        telefono: telefonoLimpio
     };
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
