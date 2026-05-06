@@ -77,15 +77,7 @@ window.onload = function () {
 async function procesarRegistro(event) {
     event.preventDefault(); 
     const telefonoRaw = document.getElementById("reg-telefono").value;
-
-    // 1. Quitamos TODO lo que no sea un número (limpia +, espacios, guiones)
-    const soloNumeros = telefonoRaw.replace(/\D/g, "");
-
-    // 2. Formateamos el ID exacto que pide la librería
-    const chatId = `${soloNumeros}@c.us`;
     const telefonoLimpio = telefonoRaw.replace(/\D/g, "");
-
-    console.log("Intentando enviar a:", chatId);
 
     const usuario = {
         nombre: document.getElementById("reg-nombre").value,
@@ -112,20 +104,11 @@ async function procesarRegistro(event) {
 
         MostrarSalidas(data);
 
-
         if (response.ok && data.codigo === 1) {
             localStorage.setItem('email_pendiente', usuario.email);
-
-            // 2. Ocultamos el formulario de registro y mostramos el de verificación
             document.getElementById("formRegistro").style.display = "none";
             document.getElementById("seccion-verificacion").style.display = "block";
-
             EnviarMensaje(1, "¡Código enviado! Por favor revisa tu WhatsApp.");
-
-            //setTimeout(() => {
-            //    document.getElementById("formRegistro").reset();
-            //    mostrarLogin();
-            //}, 2500);
         }
     } catch (error) {
         console.error("Error de conexión:", error);
