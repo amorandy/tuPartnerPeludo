@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://lucky-humans-visit.loca.lt/api";
+const API_BASE_URL = "https://porcelain-sensitive-combine-lloyd.trycloudflare.com";
 function decodeJwtResponse(token) {
     let base64Url = token.split('.')[1];
     let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
