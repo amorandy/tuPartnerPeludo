@@ -106,4 +106,65 @@ public class UsuariosController : ControllerBase
 
         return BadRequest(new { codigo = 0, mensaje = "Código inválido" });
     }
+    [HttpPost("solicitar-recuperacion")]
+    public async Task<IActionResult> SolicitarRecuperacion([FromBody] RecuperarRequest request,SalidaMod salida)
+    {
+        // 1. Buscar al usuario por el teléfono (limpio)
+        if (string.IsNullOrWhiteSpace(request.Telefono))
+        {
+            return Ok(new { codigo = 0, mensaje = "Si el número existe, recibirás un mensaje." });
+        }
+
+        var usuario = await _usuarioDAL.ObtenerPorTelefono(request.Telefono,salida);
+
+        if (usuario == null || usuario.Telefono != request.Telefono)
+        {
+            return Ok(new { codigo = 0, mensaje = "Si el número existe, recibirás un mensaje." });
+        }
+
+        // 2. Generar un Token único (un GUID es perfecto porque es difícil de adivinar)
+        string token = Guid.NewGuid().ToString();
+        usuario.TokenRecuperacion = token;
+        usuario.FechaExpiracionToken = DateTime.Now.AddMinutes(15);
+
+        bool guardado = await _usuarioDAL.ActualizarTokenRecuperacion(usuario.UsuarioID, token, usuario.FechaExpiracionToken.Value, salida);
+
+        if (!guardado)
+        {
+            return Ok(new { codigo = -1, mensaje = "Error al generar el token de seguridad." });
+        }
+        // 3. Armar el enlace (Usa la URL de tu GitHub Pages)
+        string enlace = $"https://amorandy.github.io/reset-password.html?token={token}";
+        string mensajeWs = $"Hola {usuario.Nombre}, haz clic aquí para restablecer tu contraseña: {enlace}";
+
+        // 4. Llamar a tu servicio de WhatsApp que ya configuramos
+        await _whatsappService.EnviarMensajeAsync(usuario.Telefono, mensajeWs);
+
+        return Ok(new { codigo = 1, mensaje = "Enlace enviado con éxito." });
+    }
+    [HttpPost("restablecer-final")]
+    public async Task<IActionResult> RestablecerFinal([FromBody] RestablecerRequest request)
+    {
+        // 1. Validaciones de entrada
+        if (string.IsNullOrEmpty(request.Token) || string.IsNullOrEmpty(request.NuevaPassword))
+        {
+            return Ok(new { codigo = 0, mensaje = "Por favor, completa todos los campos." });
+        }
+
+        // 2. Encriptar usando BCrypt (Igual que en tu método RegistrarUsuario)
+        //
+        string passHash = BCrypt.Net.BCrypt.HashPassword(request.NuevaPassword);
+
+        // 3. Llamar a la DAL para actualizar en la base de datos
+        bool exito = await _usuarioDAL.RestablecerPasswordFinal(request.Token, passHash);
+
+        if (exito)
+        {
+            return Ok(new { codigo = 1, mensaje = "¡Contraseña actualizada con éxito!" });
+        }
+        else
+        {
+            return Ok(new { codigo = -1, mensaje = "El enlace es inválido o ya ha expirado." });
+        }
+    }
 }

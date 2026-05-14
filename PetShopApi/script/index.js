@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://porcelain-sensitive-combine-lloyd.trycloudflare.com/api";
+const API_BASE_URL = "https://halo-handhelds-medications-mens.trycloudflare.com/api";
 function decodeJwtResponse(token) {
     let base64Url = token.split('.')[1];
     let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -112,7 +112,7 @@ async function procesarRegistro(event) {
         }
     } catch (error) {
         console.error("Error de conexión:", error);
-        MostrarSalidas({ cpSalidas: [{ Codigo: -1, Mensaje: "No se pudo conectar con el servidor." }] });
+        MostrarSalidas({ cpSalidas: [{ Codigo: -1, Mensaje: "No se pudo conectar con el servidor o servidor no disponible." }] });
     }
 }
 
@@ -186,6 +186,31 @@ e.preventDefault();
         console.error("Error al conectar con la API:", error);
         MostrarSalidas({ cpSalidas: [{ Codigo: -1, Mensaje: "Error de conexión con el servidor" }] });
     }
+});
+
+async function solicitarRecuperacion() {
+    const telefono = document.getElementById("recuperar-telefono").value;
+    const telefonoLimpio = telefono.replace(/\D/g, ""); // Limpieza que ya aprendimos[cite: 1]
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/usuarios/solicitar-recuperacion`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ telefono: telefonoLimpio })
+        });
+
+        if (response.ok) {
+            EnviarMensaje(1, "Enlace de recuperación enviado por WhatsApp.");
+        }
+    } catch (error) {
+        console.error("Error:", error);
+    }
+}
+
+const response = await fetch(`${API_BASE_URL}/usuarios/solicitar-recuperacion`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ telefono: telefonoLimpio })
 });
 
 function irAlMain() { 

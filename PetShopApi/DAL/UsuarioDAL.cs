@@ -152,5 +152,93 @@ namespace PetShopApi.DAL
                 }
             }
         }
+        // Método 1: Buscar usuario por teléfono
+        public async Task<Usuario> ObtenerPorTelefono(string telefono,SalidaMod salida)
+        {
+            try
+            {
+                Usuario usuario = new();
+                using (var conexion = _conexionFll.ObtenerConexion())
+                {
+                    await conexion.OpenAsync();
+                    string sql = "SELECT * FROM Usuarios WHERE Telefono = @Telefono LIMIT 1";
+
+                    using var cmd = new MySqlCommand(sql, conexion);
+                    cmd.Parameters.AddWithValue("@Telefono", telefono);
+                    using var reader = await cmd.ExecuteReaderAsync();
+                    if (await reader.ReadAsync())
+                    {
+                        return new Usuario
+                        {
+                            UsuarioID = reader.GetInt32("UsuarioID"),
+                            Nombre = reader.GetString("Nombre"),
+                            Telefono = reader.GetString("Telefono")
+                            // Agrega aquí los demás campos que necesites mapear
+                        };
+                    }
+                }
+                salida = new SalidaMod { Codigo = 0, Mensaje = "No se encontró un usuario con ese teléfono." };
+                return usuario;
+            }
+            catch (Exception ex)
+            {
+                salida = new SalidaMod { Codigo = -1, Mensaje = $"Ocurrió un error al buscar el usuario: {ex.Message}" };
+                return new Usuario(); // Retorna un usuario vacío en caso de error
+            }
+            
+        }
+
+        // Método 2: Guardar el Token de recuperación
+        public async Task<bool> ActualizarTokenRecuperacion(int idUsuario, string token, DateTime expiracion,SalidaMod salida)
+        {
+            try
+            {
+                using var conexion = _conexionFll.ObtenerConexion();
+                await conexion.OpenAsync();
+                string sql = @"UPDATE Usuarios 
+                       SET TokenRecuperacion = @Token, 
+                           FechaExpiracionToken = @Expiracion 
+                       WHERE IdUsuario = @Id";
+
+                using var cmd = new MySqlCommand(sql, conexion);
+                cmd.Parameters.AddWithValue("@Token", token);
+                cmd.Parameters.AddWithValue("@Expiracion", expiracion);
+                cmd.Parameters.AddWithValue("@Id", idUsuario);
+
+                int filas = await cmd.ExecuteNonQueryAsync();
+                salida = new SalidaMod { Codigo = filas > 0 ? 1 : 0, Mensaje = filas > 0 ? "Token actualizado correctamente." : "No se pudo actualizar el token." };
+                return filas > 0;
+            }
+            catch (Exception)
+            {
+                salida = new SalidaMod { Codigo = -1, Mensaje = "Ocurrió un error al actualizar el token." };
+                return false;
+            }
+        }
+        public async Task<bool> RestablecerPasswordFinal(string token, string nuevoPasswordHash)
+        {
+            using (var conexion = _conexionFll.ObtenerConexion())
+            {
+                await conexion.OpenAsync();
+
+                // Solo actualiza si el token coincide y no ha pasado la fecha de expiración
+                string sql = @"UPDATE Usuarios 
+                       SET PasswordHash = @Pass, 
+                           TokenRecuperacion = NULL, 
+                           FechaExpiracionToken = NULL 
+                       WHERE TokenRecuperacion = @Token 
+                       AND FechaExpiracionToken > @Ahora";
+
+                using (var cmd = new MySqlCommand(sql, conexion))
+                {
+                    cmd.Parameters.AddWithValue("@Pass", nuevoPasswordHash);
+                    cmd.Parameters.AddWithValue("@Token", token);
+                    cmd.Parameters.AddWithValue("@Ahora", DateTime.Now);
+
+                    int filasAfectadas = await cmd.ExecuteNonQueryAsync();
+                    return filasAfectadas > 0;
+                }
+            }
+        }
     }
 }
