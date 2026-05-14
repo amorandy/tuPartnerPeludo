@@ -72,13 +72,6 @@ async function procesarRecuperacion(event) {
     btn.innerText = "ENVIANDO...";
 
     try {
-        const urlFinal = `${CONFIG.API_BASE_URL}/usuarios/solicitar-recuperacion`;
-        const response = await fetch(urlFinal, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ Telefono: telefono })
-        });
-
         const data = await response.json();
 
         if (data.codigo === 1) {
