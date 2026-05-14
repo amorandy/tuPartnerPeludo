@@ -41,14 +41,6 @@ async function procesarRecuperacion(event) {
     btn.innerText = "ENVIANDO...";
 
     try {
-        const urlFinal = `${CONFIG.API_BASE_URL}/usuarios/solicitar-recuperacion`;
-        // Usamos CONFIG.API_BASE_URL definido en config.js
-        const response = await fetch(urlFinal, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ Telefono: telefono })
-        });
-
         const data = await response.json();
         if (data.codigo === 1) {
             toastr.success(data.mensaje);
