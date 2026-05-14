@@ -1,7 +1,3 @@
-// PetShopApi/script/index.js
-
-// NO declares CONFIG aquí, ya viene de config.js
-
 function decodeJwtResponse(token) {
     let base64Url = token.split('.')[1];
     let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -11,7 +7,6 @@ function decodeJwtResponse(token) {
     return JSON.parse(jsonPayload);
 }
 
-// Funciones de Navegación (Asegúrate de que coincidan con los IDs de tu HTML)
 function mostrarRecuperar() {
     document.getElementById('login-section').classList.add('d-none');
     document.getElementById('register-section').classList.add('d-none');
@@ -67,9 +62,8 @@ async function confirmarCodigo() {
         if (response.ok && data.codigo === 1) {
             EnviarMensaje(1, "¡Cuenta verificada con éxito! Ya puedes iniciar sesión.");
 
-            // Redirigir al login después de 2 segundos
             setTimeout(() => {
-                location.reload(); // O tu función mostrarLogin()
+                location.reload();
             }, 2000);
         } else {
             EnviarMensaje(0, data.mensaje || "Código incorrecto.");
@@ -170,12 +164,7 @@ async function solicitarRecuperacion() {
     const telefonoLimpio = telefono.replace(/\D/g, "");
 
     try {
-        const urlFinal = `${CONFIG.API_BASE_URL}/usuarios/solicitar-recuperacion`;
-        const response = await fetch(urlFinal, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ Telefono: telefonoLimpio })
-        });
+
 
         if (response.ok) {
             EnviarMensaje(1, "Enlace de recuperación enviado por WhatsApp.");
