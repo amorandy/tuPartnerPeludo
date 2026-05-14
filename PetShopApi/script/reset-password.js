@@ -1,5 +1,3 @@
-const response = `${CONFIG.API_BASE_URL}/api`;
-
 const pass1 = document.getElementById('pass1');
 const pass2 = document.getElementById('pass2');
 const btn = document.getElementById('btnGuardar');

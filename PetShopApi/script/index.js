@@ -275,12 +275,6 @@ async function solicitarRecuperacion() {
         console.error("Error:", error);
     }
 }
-const urlFinal = `${CONFIG.API_BASE_URL}/usuarios/solicitar-recuperacion`;
-const response = await fetch(urlFinal, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ telefono: telefonoLimpio })
-});
 
 function irAlMain() { 
     window.location.href = "main.html"; 
