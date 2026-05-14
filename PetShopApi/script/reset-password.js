@@ -1,4 +1,4 @@
-const response = await fetch(`${CONFIG.API_BASE_URL}/api`);
+const response = `${CONFIG.API_BASE_URL}/api`;
 
 const pass1 = document.getElementById('pass1');
 const pass2 = document.getElementById('pass2');
@@ -58,7 +58,8 @@ document.getElementById('formRestablecer').addEventListener('submit', async (e) 
     }
 
     try {
-        const response = await fetch(`${CONFIG.API_BASE_URL}/usuarios/restablecer-final`, {
+        const urlFinal = `${CONFIG.API_BASE_URL}/usuarios/restablecer-final`;
+        const response = await fetch(urlFinal, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 

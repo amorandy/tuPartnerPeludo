@@ -41,8 +41,9 @@ async function procesarRecuperacion(event) {
     btn.innerText = "ENVIANDO...";
 
     try {
+        const urlFinal = `${CONFIG.API_BASE_URL}/usuarios/solicitar-recuperacion`;
         // Usamos CONFIG.API_BASE_URL definido en config.js
-        const response = await fetch(`${CONFIG.API_BASE_URL}/usuarios/solicitar-recuperacion`, {
+        const response = await fetch(urlFinal, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ Telefono: telefono })
@@ -79,7 +80,8 @@ async function procesarRecuperacion(event) {
     btn.innerText = "ENVIANDO...";
 
     try {
-        const response = await fetch(`${CONFIG.API_BASE_URL}/usuarios/solicitar-recuperacion`, {
+        const urlFinal = `${CONFIG.API_BASE_URL}/usuarios/solicitar-recuperacion`;
+        const response = await fetch(urlFinal, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ Telefono: telefono })
@@ -157,7 +159,8 @@ async function procesarRegistro(event) {
     }
 
     try {
-        const response = await fetch(`${CONFIG.API_BASE_URL}/usuarios/registrar`, {
+        const urlFinal = `${CONFIG.API_BASE_URL}/usuarios/registrar`;
+        const response = await fetch(urlFinal, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(usuario)
@@ -189,7 +192,8 @@ async function confirmarCodigo() {
     }
 
     try {
-        const response = await fetch(`${CONFIG.API_BASE_URL}/usuarios/verificar-codigo`, {
+        const urlFinal = `${CONFIG.API_BASE_URL}/usuarios/verificar-codigo`;
+        const response = await fetch(urlFinal, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: email, codigo: codigo })
@@ -220,7 +224,8 @@ e.preventDefault();
     const password = document.getElementById('loginPass').value;
 
     try {
-        const response = await fetch(`${API_BASE_URL}/usuarios/login`, {
+        const urlFinal = `${CONFIG.API_BASE_URL}/usuarios/login`;
+        const response = await fetch(urlFinal, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
@@ -256,7 +261,8 @@ async function solicitarRecuperacion() {
     const telefonoLimpio = telefono.replace(/\D/g, ""); // Limpieza que ya aprendimos[cite: 1]
 
     try {
-        const response = await fetch(`${CONFIG.API_BASE_URL}/usuarios/solicitar-recuperacion`, {
+        const urlFinal = `${CONFIG.API_BASE_URL}/usuarios/solicitar-recuperacion`;
+        const response = await fetch(urlFinal, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ telefono: telefonoLimpio })
@@ -269,8 +275,8 @@ async function solicitarRecuperacion() {
         console.error("Error:", error);
     }
 }
-
-const response = await fetch(`${CONFIG.API_BASE_URL}/usuarios/solicitar-recuperacion`, {
+const urlFinal = `${CONFIG.API_BASE_URL}/usuarios/solicitar-recuperacion`;
+const response = await fetch(urlFinal, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ telefono: telefonoLimpio })
