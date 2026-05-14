@@ -253,13 +253,6 @@ async function solicitarRecuperacion() {
     const telefonoLimpio = telefono.replace(/\D/g, ""); // Limpieza que ya aprendimos[cite: 1]
 
     try {
-        const urlFinal = `${CONFIG.API_BASE_URL}/usuarios/solicitar-recuperacion`;
-        const response = await fetch(urlFinal, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ telefono: telefonoLimpio })
-        });
-
         if (response.ok) {
             EnviarMensaje(1, "Enlace de recuperación enviado por WhatsApp.");
         }
