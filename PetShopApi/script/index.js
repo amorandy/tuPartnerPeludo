@@ -1,12 +1,6 @@
-function decodeJwtResponse(token) {
-    let base64Url = token.split('.')[1];
-    let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    let jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
-    return JSON.parse(jsonPayload);
-}
+// PetShopApi/script/index.js
 
+// 1. FUNCIONES DE NAVEGACIÓN (Control de vistas)
 function mostrarRecuperar() {
     document.getElementById('login-section').classList.add('d-none');
     document.getElementById('register-section').classList.add('d-none');
@@ -26,189 +20,89 @@ function mostrarLogin() {
     document.getElementById('login-section').classList.remove('d-none');
 }
 
-function handleCredentialResponse(response) {
-    const userData = decodeJwtResponse(response.credential);
+// 2. MÉTODOS DE LA API (Basados en tu Swagger)
 
-    const sesionGoogle = {
-        nombre: userData.name,
-        foto: userData.picture,
-        tipo: "google"
-    };
-    localStorage.setItem('user_session', JSON.stringify(sesionGoogle));
-    localStorage.setItem('session_token', response.credential);
-
-    mostrarSeccionPerfil();
-}
-
-async function confirmarCodigo() {
-    const email = localStorage.getItem('email_pendiente');
-    const codigo = document.getElementById("codigo-verificacion").value;
-
-    if (codigo.length < 6) {
-        EnviarMensaje(0, "Por favor, ingresa los 6 dígitos.");
-        return;
-    }
-
+// Endpoint: /usuarios/login
+async function loginUsuario(email, password) {
     try {
-        const urlFinal = `${CONFIG.API_BASE_URL}/usuarios/verificar-codigo`;
-        const response = await fetch(urlFinal, {
+        const response = await fetch(`${CONFIG.API_BASE_URL}/usuarios/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: email, codigo: codigo })
+            body: JSON.stringify({ Email: email, Password: password })
         });
-
         const data = await response.json();
-
         if (response.ok && data.codigo === 1) {
-            EnviarMensaje(1, "¡Cuenta verificada con éxito! Ya puedes iniciar sesión.");
-
-            setTimeout(() => {
-                location.reload();
-            }, 2000);
+            localStorage.setItem('user_session', JSON.stringify(data.objeto));
+            irAlMain();
         } else {
-            EnviarMensaje(0, data.mensaje || "Código incorrecto.");
+            EnviarMensaje(data.codigo, data.mensaje);
         }
     } catch (error) {
-        console.error("Error:", error);
-        EnviarMensaje(0, "Error de conexión al verificar.");
-    }
-}
-
-document.getElementById('formLogin').addEventListener('submit', async (e) => {
-e.preventDefault();
-    
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPass').value;
-
-    try {
-        const urlFinal = `${CONFIG.API_BASE_URL}/usuarios/login`;
-        const response = await fetch(urlFinal, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
-        });
-
-        const data = await response.json();
-
-        MostrarSalidas(data);
-
-        if (response.ok) {
-            localStorage.setItem('session_token', data.token);
-
-            const sesionManual = {
-                nombre: data.user, 
-                foto: data.foto || "images/default-user.png",
-                tipo: "manual",
-                token: data.token
-            };
-            
-            localStorage.setItem('user_session', JSON.stringify(sesionManual));
-            setTimeout(() => {
-                window.location.replace("main.html");
-            }, 1500);
-        }
-    } catch (error) {
-        console.error("Error al conectar con la API:", error);
-        MostrarSalidas({ cpSalidas: [{ Codigo: -1, Mensaje: "Error de conexión con el servidor" }] });
-    }
-});
-
-async function procesarRegistro(event) {
-    event.preventDefault(); 
-    const telefonoRaw = document.getElementById("reg-telefono").value;
-    const telefonoLimpio = telefonoRaw.replace(/\D/g, "");
-
-    const usuario = {
-        nombre: document.getElementById("reg-nombre").value,
-        apellido: document.getElementById("reg-apellido").value,
-        email: document.getElementById("reg-email").value,
-        password: document.getElementById("reg-password").value,
-        telefono: telefonoLimpio
-    };
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(usuario.email)) {
-        EnviarMensaje(0, "Por favor, ingresa un correo válido.");
-        return;
-    }
-
-    try {
-        const urlFinal = `${CONFIG.API_BASE_URL}/usuarios/registrar`;
-        const response = await fetch(urlFinal, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(usuario)
-        });
-
-        const data = await response.json();
-
-        MostrarSalidas(data);
-
-        if (response.ok && data.codigo === 1) {
-            localStorage.setItem('email_pendiente', usuario.email);
-            document.getElementById("formRegistro").style.display = "none";
-            document.getElementById("seccion-verificacion").style.display = "block";
-            EnviarMensaje(1, "¡Código enviado! Por favor revisa tu WhatsApp.");
-        }
-    } catch (error) {
-        console.error("Error de conexión:", error);
-        MostrarSalidas({ cpSalidas: [{ Codigo: -1, Mensaje: "No se pudo conectar con el servidor o servidor no disponible." }] });
-    }
-}
-
-async function solicitarRecuperacion() {
-    const telefonoInput = document.getElementById("recuperar-telefono");
-    if (!telefonoInput) return;
-
-    const telefono = telefonoInput.value;
-    const telefonoLimpio = telefono.replace(/\D/g, "");
-
-    try {
-
-
-        if (response.ok) {
-            EnviarMensaje(1, "Enlace de recuperación enviado por WhatsApp.");
-        } else {
-            EnviarMensaje(-1, "Error al enviar el enlace.");
-        }
-    } catch (error) {
-        console.error("Error:", error);
+        console.error("Error Login:", error);
         EnviarMensaje(-1, "No se pudo conectar con el servidor.");
     }
 }
 
+// Endpoint: /usuarios/registrar
+async function registrarUsuario(datosUsuario) {
+    try {
+        const response = await fetch(`${CONFIG.API_BASE_URL}/usuarios/registrar`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datosUsuario)
+        });
+        const data = await response.json();
+        EnviarMensaje(data.codigo, data.mensaje);
+        if (data.codigo === 1) mostrarLogin();
+    } catch (error) {
+        console.error("Error Registro:", error);
+        EnviarMensaje(-1, "Error al procesar el registro.");
+    }
+}
+
+// Endpoint: /usuarios/solicitar-recuperacion (WhatsApp)
+async function solicitarRecuperacion() {
+    const telefonoInput = document.getElementById("recuperar-telefono");
+    if (!telefonoInput) return;
+
+    const telefonoLimpio = telefonoInput.value.replace(/\D/g, "");
+
+    try {
+        const response = await fetch(`${CONFIG.API_BASE_URL}/usuarios/solicitar-recuperacion`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ Telefono: telefonoLimpio })
+        });
+
+        const data = await response.json();
+        EnviarMensaje(data.codigo, data.mensaje);
+        if (data.codigo === 1) setTimeout(() => mostrarLogin(), 3000);
+    } catch (error) {
+        console.error("Error Recuperación:", error);
+        EnviarMensaje(-1, "Error de conexión.");
+    }
+}
+
+// 3. UTILIDADES Y SESIÓN
 function irAlMain() { 
     window.location.href = "main.html"; 
 }
 
 function cerrarSesion() {
-    localStorage.removeItem('google_token');
-    localStorage.removeItem('user_session');
-    localStorage.removeItem('session_token');
+    localStorage.clear();
     window.location.href = "index.html";
 }
 
 function EnviarMensaje(codigo, mensaje) {
-    toastr.options = {
-        "closeButton": true,
-        "progressBar": true,
-        "positionClass": 'toast-bottom-right',
-        "timeOut": "5000"
-    };
-
-    if (codigo <= -1) {
-        toastr.error(mensaje);
-    } else if (codigo === 0) {
-        toastr.info(mensaje);
-    } else if (codigo >= 1) {
-        toastr.success(mensaje);
-    }
+    toastr.options = { "closeButton": true, "progressBar": true, "positionClass": 'toast-bottom-right' };
+    if (codigo <= -1) toastr.error(mensaje);
+    else if (codigo === 0) toastr.info(mensaje);
+    else toastr.success(mensaje);
 }
-function MostrarSalidas(s) {
-    if (s && s.cpSalidas != null) {
-        s.cpSalidas.forEach(salida => EnviarMensaje(salida.Codigo, salida.Mensaje));
-        delete s.cpSalidas;
-    } else if (s.codigo !== undefined) {
-        EnviarMensaje(s.codigo, s.mensaje);
-    }
+
+// Función para Google Login
+function handleCredentialResponse(response) {
+    // Lógica para decodificar JWT y enviar al endpoint de Google del Swagger si fuera necesario
+    console.log("Token Google recibido");
+    irAlMain();
 }
