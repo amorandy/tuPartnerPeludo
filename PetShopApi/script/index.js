@@ -270,7 +270,7 @@ async function solicitarRecuperacion() {
     }
 }
 
-const response = await fetch(`${API_BASE_URL}/usuarios/solicitar-recuperacion`, {
+const response = await fetch(`${CONFIG.API_BASE_URL}/usuarios/solicitar-recuperacion`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ telefono: telefonoLimpio })
