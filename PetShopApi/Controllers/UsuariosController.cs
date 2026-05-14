@@ -107,8 +107,9 @@ public class UsuariosController : ControllerBase
         return BadRequest(new { codigo = 0, mensaje = "Código inválido" });
     }
     [HttpPost("solicitar-recuperacion")]
-    public async Task<IActionResult> SolicitarRecuperacion([FromBody] RecuperarRequest request,SalidaMod salida)
+    public async Task<IActionResult> SolicitarRecuperacion([FromBody] RecuperarRequest request)
     {
+        SalidaMod salida = new SalidaMod();
         // 1. Buscar al usuario por el teléfono (limpio)
         if (string.IsNullOrWhiteSpace(request.Telefono))
         {
