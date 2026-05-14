@@ -109,39 +109,43 @@ public class UsuariosController : ControllerBase
     [HttpPost("solicitar-recuperacion")]
     public async Task<IActionResult> SolicitarRecuperacion([FromBody] RecuperarRequest request)
     {
+        // 1. Validar entrada
+        if (request == null || string.IsNullOrWhiteSpace(request.Telefono))
+        {
+            return Ok(new { codigo = 0, mensaje = "Si el número existe, recibirás un mensaje." });
+        }
+
+        // 2. Usar SalidaMod internamente
         SalidaMod salida = new SalidaMod();
-        // 1. Buscar al usuario por el teléfono (limpio)
-        if (string.IsNullOrWhiteSpace(request.Telefono))
+        var usuario = await _usuarioDAL.ObtenerPorTelefono(request.Telefono, salida);
+
+        if (usuario == null)
         {
             return Ok(new { codigo = 0, mensaje = "Si el número existe, recibirás un mensaje." });
         }
 
-        var usuario = await _usuarioDAL.ObtenerPorTelefono(request.Telefono,salida);
-
-        if (usuario == null || usuario.Telefono != request.Telefono)
+        if (string.IsNullOrEmpty(usuario.Telefono))
         {
             return Ok(new { codigo = 0, mensaje = "Si el número existe, recibirás un mensaje." });
         }
 
-        // 2. Generar un Token único (un GUID es perfecto porque es difícil de adivinar)
+        // 3. Generar Token y actualizar
         string token = Guid.NewGuid().ToString();
         usuario.TokenRecuperacion = token;
         usuario.FechaExpiracionToken = DateTime.Now.AddMinutes(15);
 
-        bool guardado = await _usuarioDAL.ActualizarTokenRecuperacion(usuario.UsuarioID, token, usuario.FechaExpiracionToken.Value, salida);
+        // NOTA: Usa el método de tu DAL para guardar, ya que SaveChanges() no existe en tu clase
+        bool guardado = await _usuarioDAL.ActualizarTokenRecuperacion(usuario.UsuarioID, token);
 
-        if (!guardado)
+        if (guardado)
         {
-            return Ok(new { codigo = -1, mensaje = "Error al generar el token de seguridad." });
+            string enlace = $"https://amorandy.github.io/reset-password.html?token={token}";
+            string mensajeWs = $"Hola {usuario.Nombre}, haz clic aquí para restablecer tu contraseña: {enlace}";
+            await _whatsappService.EnviarMensajeAsync(usuario.Telefono, mensajeWs);
+            return Ok(new { codigo = 1, mensaje = "Enlace enviado con éxito." });
         }
-        // 3. Armar el enlace (Usa la URL de tu GitHub Pages)
-        string enlace = $"https://amorandy.github.io/reset-password.html?token={token}";
-        string mensajeWs = $"Hola {usuario.Nombre}, haz clic aquí para restablecer tu contraseña: {enlace}";
 
-        // 4. Llamar a tu servicio de WhatsApp que ya configuramos
-        await _whatsappService.EnviarMensajeAsync(usuario.Telefono, mensajeWs);
-
-        return Ok(new { codigo = 1, mensaje = "Enlace enviado con éxito." });
+        return Ok(new { codigo = -1, mensaje = "Error al procesar la solicitud." });
     }
     [HttpPost("restablecer-final")]
     public async Task<IActionResult> RestablecerFinal([FromBody] RestablecerRequest request)

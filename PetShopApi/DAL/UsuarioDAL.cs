@@ -189,10 +189,11 @@ namespace PetShopApi.DAL
         }
 
         // Método 2: Guardar el Token de recuperación
-        public async Task<bool> ActualizarTokenRecuperacion(int idUsuario, string token, DateTime expiracion,SalidaMod salida)
+        public async Task<bool> ActualizarTokenRecuperacion(int idUsuario, string token)
         {
             try
             {
+                DateTime expiracion = DateTime.Now.AddMinutes(15); // El token expirará en 15 minutos
                 using var conexion = _conexionFll.ObtenerConexion();
                 await conexion.OpenAsync();
                 string sql = @"UPDATE Usuarios 
@@ -206,12 +207,12 @@ namespace PetShopApi.DAL
                 cmd.Parameters.AddWithValue("@Id", idUsuario);
 
                 int filas = await cmd.ExecuteNonQueryAsync();
-                salida = new SalidaMod { Codigo = filas > 0 ? 1 : 0, Mensaje = filas > 0 ? "Token actualizado correctamente." : "No se pudo actualizar el token." };
+                //salida = new SalidaMod { Codigo = filas > 0 ? 1 : 0, Mensaje = filas > 0 ? "Token actualizado correctamente." : "No se pudo actualizar el token." };
                 return filas > 0;
             }
             catch (Exception)
             {
-                salida = new SalidaMod { Codigo = -1, Mensaje = "Ocurrió un error al actualizar el token." };
+                //salida = new SalidaMod { Codigo = -1, Mensaje = "Ocurrió un error al actualizar el token." };
                 return false;
             }
         }
