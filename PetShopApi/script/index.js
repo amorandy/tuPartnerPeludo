@@ -157,7 +157,7 @@ async function procesarRegistro(event) {
     }
 
     try {
-        const response = await fetch(`${API_BASE_URL}/usuarios/registrar`, {
+        const response = await fetch(`${CONFIG.API_BASE_URL}/usuarios/registrar`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(usuario)
@@ -189,7 +189,7 @@ async function confirmarCodigo() {
     }
 
     try {
-        const response = await fetch(`${API_BASE_URL}/usuarios/verificar-codigo`, {
+        const response = await fetch(`${CONFIG.API_BASE_URL}/usuarios/verificar-codigo`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: email, codigo: codigo })
@@ -256,7 +256,7 @@ async function solicitarRecuperacion() {
     const telefonoLimpio = telefono.replace(/\D/g, ""); // Limpieza que ya aprendimos[cite: 1]
 
     try {
-        const response = await fetch(`${API_BASE_URL}/usuarios/solicitar-recuperacion`, {
+        const response = await fetch(`${CONFIG.API_BASE_URL}/usuarios/solicitar-recuperacion`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ telefono: telefonoLimpio })
