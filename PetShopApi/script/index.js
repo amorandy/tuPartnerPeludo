@@ -144,7 +144,12 @@ async function procesarRegistro(event) {
     }
 
     try {
-        
+        const urlFinal = `${CONFIG.API_BASE_URL}/usuarios/registrar`;
+        const response = await fetch(urlFinal, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(usuario)
+        });
 
         const data = await response.json();
 
@@ -172,7 +177,12 @@ async function confirmarCodigo() {
     }
 
     try {
-        
+        const urlFinal = `${CONFIG.API_BASE_URL}/usuarios/verificar-codigo`;
+        const response = await fetch(urlFinal, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email, codigo: codigo })
+        });
 
         const data = await response.json();
 
@@ -199,12 +209,12 @@ e.preventDefault();
     const password = document.getElementById('loginPass').value;
 
     try {
-        const urlFinal = `${CONFIG.API_BASE_URL}/usuarios/login`;
-        const response = await fetch(urlFinal, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
-        });
+        //const urlFinal = `${CONFIG.API_BASE_URL}/usuarios/login`;
+        //const response = await fetch(urlFinal, {
+        //    method: 'POST',
+        //    headers: { 'Content-Type': 'application/json' },
+        //    body: JSON.stringify({ email, password })
+        //});
 
         const data = await response.json();
 
