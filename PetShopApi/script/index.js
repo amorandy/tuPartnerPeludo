@@ -1,4 +1,7 @@
-const response = await fetch(`${CONFIG.API_BASE_URL}/api`);
+// PetShopApi/script/index.js
+
+// NO declares CONFIG aquí, ya viene de config.js
+
 function decodeJwtResponse(token) {
     let base64Url = token.split('.')[1];
     let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -8,6 +11,7 @@ function decodeJwtResponse(token) {
     return JSON.parse(jsonPayload);
 }
 
+// Funciones de Navegación (Asegúrate de que coincidan con los IDs de tu HTML)
 function mostrarRecuperar() {
     document.getElementById('login-section').classList.add('d-none');
     document.getElementById('register-section').classList.add('d-none');
@@ -15,34 +19,47 @@ function mostrarRecuperar() {
 }
 
 function mostrarRegistro() {
-    document.getElementById("login-section").classList.add("d-none");
-    document.getElementById("register-section").classList.remove("d-none");
+    document.getElementById('login-section').classList.add('d-none');
+    document.getElementById('recuperar-section').classList.add('d-none');
+    document.getElementById('register-section').classList.remove('d-none');
 }
 
 function mostrarLogin() {
-    document.getElementById("register-section").classList.add("d-none");
-    document.getElementById("login-section").classList.remove("d-none");
+    document.getElementById('register-section').classList.add('d-none');
+    document.getElementById('recuperar-section').classList.add('d-none');
+    document.getElementById('user-profile').classList.add('d-none');
+    document.getElementById('login-section').classList.remove('d-none');
 }
 
-function mostrarSeccionPerfil() {
-    const loginSection = document.getElementById("login-section");
-    const userProfile = document.getElementById("user-profile");
-    const registerSection = document.getElementById("register-section");
+// Procesa la recuperación usando la configuración global
+async function procesarRecuperacion(event) {
+    event.preventDefault();
+    const telefono = document.getElementById('rec-telefono').value.trim();
+    const btn = document.getElementById('btnEnviarRecuperar');
 
-    if (loginSection && userProfile) {
-        loginSection.classList.add("d-none");
-        if (registerSection) registerSection.classList.add("d-none");
-        userProfile.classList.remove("d-none");
+    btn.disabled = true;
+    btn.innerText = "ENVIANDO...";
 
-        const sessionData = localStorage.getItem('user_session');
+    try {
+        // Usamos CONFIG.API_BASE_URL definido en config.js
+        const response = await fetch(`${CONFIG.API_BASE_URL}/usuarios/solicitar-recuperacion`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ Telefono: telefono })
+        });
 
-        if (sessionManual) {
-            const data = JSON.parse(sessionManual);
-            document.getElementById("user-name").innerText = data.nombre.toUpperCase();
-            document.getElementById("user-img").src = data.foto || "images/default-user.png";
+        const data = await response.json();
+        if (data.codigo === 1) {
+            toastr.success(data.mensaje);
+            setTimeout(() => mostrarLogin(), 3000);
+        } else {
+            toastr.info(data.mensaje);
         }
-        const logo = document.getElementById("main-logo");
-        if (logo) logo.style.maxWidth = "80px";
+    } catch (error) {
+        toastr.error("Error de conexión con el servidor.");
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "ENVIAR ENLACE";
     }
 }
 
