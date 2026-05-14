@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://require-radios-assists-local.trycloudflare.com/api"; // Usa tu URL de Cloudflare
+const response = await fetch(`${CONFIG.API_BASE_URL}/api`);
 
 const pass1 = document.getElementById('pass1');
 const pass2 = document.getElementById('pass2');

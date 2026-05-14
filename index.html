@@ -12,12 +12,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    
     <script src="PetShopApi/script/index.js" defer></script>
+    <script src="PetShopApi/script/config.js"></script>
+    <script src="PetShopApi/script/reset-password.js"></script>
 
     <style>
         body {
@@ -95,6 +94,10 @@
                     <div class="d-grid mb-3">
                         <button type="submit" class="btn btn-dark fw-bold border-0" style="background: #836f14;">ENTRAR</button>
                     </div>
+
+                    <div class="text-center mb-3">
+                        <a href="javascript:void(0)" onclick="mostrarRecuperar()" class="small text-muted text-decoration-none">¿Olvidaste tu contraseña?</a>
+                    </div>
                 </form>
 
                 <div class="d-flex align-items-center mb-3">
@@ -145,6 +148,26 @@
                     </div>
                 </form>
             </div>
+            <div id="recuperar-section" class="d-none">
+                <h4 class="fw-bold mb-3">Recuperar Acceso</h4>
+                <p class="text-muted small mb-4">Ingresa tu número de WhatsApp para recibir un enlace de restablecimiento.</p>
+                
+                <form id="formRecuperar" onsubmit="procesarRecuperacion(event)">
+                    <div class="mb-3 text-start">
+                        <label class="form-label small fw-bold">WhatsApp</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="fa-brands fa-whatsapp text-success"></i></span>
+                            <input type="text" id="rec-telefono" class="form-control" placeholder="Ej: 56912345678" required>
+                        </div>
+                        <div class="form-text text-muted" style="font-size: 0.7rem;">Solo números, sin el signo "+".</div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" id="btnEnviarRecuperar" class="btn btn-dark fw-bold border-0" style="background: #836f14;">ENVIAR ENLACE</button>
+                        <button type="button" onclick="mostrarLogin()" class="btn btn-link text-muted btn-sm">Volver al inicio</button>
+                    </div>
+                </form>
+            </div>
             <div id="user-profile" class="d-none">
                 <div class="mb-3">
                     <img id="user-img" src="" class="rounded-circle border border-dark" style="width: 80px; height: 80px; object-fit: cover;">
@@ -177,6 +200,7 @@
 
         </div>
     </div>
+    <script src="PetShopApi/script/config.js"></script>
     <script src="PetShopApi/script/index.js"></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://halo-handhelds-medications-mens.trycloudflare.com/api";
+const response = await fetch(`${CONFIG.API_BASE_URL}/api`);
 function decodeJwtResponse(token) {
     let base64Url = token.split('.')[1];
     let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -6,6 +6,12 @@ function decodeJwtResponse(token) {
         return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
     }).join(''));
     return JSON.parse(jsonPayload);
+}
+
+function mostrarRecuperar() {
+    document.getElementById('login-section').classList.add('d-none');
+    document.getElementById('register-section').classList.add('d-none');
+    document.getElementById('recuperar-section').classList.remove('d-none');
 }
 
 function mostrarRegistro() {
@@ -37,6 +43,46 @@ function mostrarSeccionPerfil() {
         }
         const logo = document.getElementById("main-logo");
         if (logo) logo.style.maxWidth = "80px";
+    }
+}
+
+async function procesarRecuperacion(event) {
+    event.preventDefault();
+    
+    const telefono = document.getElementById('rec-telefono').value.trim();
+    const btn = document.getElementById('btnEnviarRecuperar');
+    
+    if (!telefono) {
+        toastr.warning("Por favor, ingresa tu número de WhatsApp");
+        return;
+    }
+
+    // Bloquear botón para evitar múltiples clics
+    btn.disabled = true;
+    btn.innerText = "ENVIANDO...";
+
+    try {
+        const response = await fetch(`${CONFIG.API_BASE_URL}/usuarios/solicitar-recuperacion`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ Telefono: telefono })
+        });
+
+        const data = await response.json();
+
+        if (data.codigo === 1) {
+            toastr.success("¡Listo! Revisa tu WhatsApp para continuar.");
+            setTimeout(() => mostrarLogin(), 3000); // Volver al login después de 3 seg
+        } else {
+            // Mostramos el mensaje genérico por seguridad (anti-enumeración de usuarios)
+            toastr.info(data.mensaje);
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        toastr.error("No se pudo conectar con el servidor.");
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "ENVIAR ENLACE";
     }
 }
 
