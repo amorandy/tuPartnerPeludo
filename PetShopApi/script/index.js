@@ -31,35 +31,16 @@ function mostrarLogin() {
     document.getElementById('login-section').classList.remove('d-none');
 }
 
-// Procesa la recuperación usando la configuración global
-async function procesarRecuperacion(event) {
-    event.preventDefault();
-    const telefono = document.getElementById('rec-telefono').value.trim();
-    const btn = document.getElementById('btnEnviarRecuperar');
-
-    btn.disabled = true;
-    btn.innerText = "ENVIANDO...";
-
-    try {
-        const data = await response.json();
-        if (data.codigo === 1) {
-            toastr.success(data.mensaje);
-            setTimeout(() => mostrarLogin(), 3000);
-        } else {
-            toastr.info(data.mensaje);
-        }
-    } catch (error) {
-        toastr.error("Error de conexión con el servidor.");
-    } finally {
-        btn.disabled = false;
-        btn.innerText = "ENVIAR ENLACE";
-    }
-}
-
 async function procesarRecuperacion(event) {
     event.preventDefault();
     
     const telefono = document.getElementById('rec-telefono').value.trim();
+    const urlFinal = `${CONFIG.API_BASE_URL}/usuarios/solicitar-recuperacion`;
+    const response = await fetch(urlFinal, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ Telefono: telefono })
+    });
     const btn = document.getElementById('btnEnviarRecuperar');
     
     if (!telefono) {
@@ -209,12 +190,12 @@ e.preventDefault();
     const password = document.getElementById('loginPass').value;
 
     try {
-        //const urlFinal = `${CONFIG.API_BASE_URL}/usuarios/login`;
-        //const response = await fetch(urlFinal, {
-        //    method: 'POST',
-        //    headers: { 'Content-Type': 'application/json' },
-        //    body: JSON.stringify({ email, password })
-        //});
+        const urlFinal = `${CONFIG.API_BASE_URL}/usuarios/login`;
+        const response = await fetch(urlFinal, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
 
         const data = await response.json();
 
