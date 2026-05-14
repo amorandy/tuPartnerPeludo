@@ -1,7 +1,7 @@
 body {
     /* Usamos el dorado exacto de tu botón para que todo combine */
     background-color: #836f14; 
-    background-image: url('../../images/patron-dorado.png'); /* Asegúrate de que esta ruta sea correcta */
+    background-image: url('../../images/mosaico-perritos.png'); /* Asegúrate de que esta ruta sea correcta */
     
     /* MULTIPLY: Mantiene el negro y tiñe el blanco con el color de fondo */
     background-blend-mode: multiply; 
