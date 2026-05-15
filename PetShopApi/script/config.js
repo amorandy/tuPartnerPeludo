@@ -1,3 +1,3 @@
 const CONFIG = {
-    API_BASE_URL: "https://halo-handhelds-medications-mens.trycloudflare.com" 
+    API_BASE_URL: "https://calculation-cities-plugin-accomplish.trycloudflare.com" 
 };
