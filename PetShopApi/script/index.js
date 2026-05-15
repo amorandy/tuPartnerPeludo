@@ -100,9 +100,16 @@ function EnviarMensaje(codigo, mensaje) {
     else toastr.success(mensaje);
 }
 
-// Función para Google Login
 function handleCredentialResponse(response) {
-    // Lógica para decodificar JWT y enviar al endpoint de Google del Swagger si fuera necesario
-    console.log("Token Google recibido");
-    irAlMain();
+    const userData = decodeJwtResponse(response.credential);
+
+    const sesionGoogle = {
+        nombre: userData.name,
+        foto: userData.picture,
+        tipo: "google"
+    };
+    localStorage.setItem('user_session', JSON.stringify(sesionGoogle));
+    localStorage.setItem('session_token', response.credential);
+
+    mostrarSeccionPerfil();
 }
