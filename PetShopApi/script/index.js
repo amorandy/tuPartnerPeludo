@@ -45,6 +45,7 @@ async function loginUsuario(email, password) {
 
 // Endpoint: /usuarios/registrar
 async function registrarUsuario(datosUsuario) {
+    console.log("Datos enviados a la API:", JSON.stringify(datosUsuario));
     try {
         const response = await fetch(`${CONFIG.API_BASE_URL}/usuarios/registrar`, {
             method: 'POST',
