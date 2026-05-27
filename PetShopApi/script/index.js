@@ -90,7 +90,7 @@ function procesarRegistro(event) {
     // Recogemos los datos del formulario
     const datos = {
         Nombre: document.getElementById('reg-nombre').value,
-        Apellido: document.getElementById('reg-apellido').value,
+        Apellido: document.getElementById('reg-apellido').value || "Sin apellido",
         Email: document.getElementById('reg-email').value,
         Telefono: document.getElementById('reg-telefono').value,
         Password: document.getElementById('reg-password').value
