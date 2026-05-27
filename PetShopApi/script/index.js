@@ -143,6 +143,18 @@ function mostrarSeccionPerfil() {
     }
 }
 
+function mostrarVerificacion() {
+    document.getElementById('register-section').classList.add('d-none');
+    document.getElementById('seccion-verificacion').style.display = 'block';
+}
+
+async function confirmarCodigo() {
+    const codigo = document.getElementById('codigo-verificacion').value;
+    // Aquí deberías tener una llamada a tu API para validar el código
+    // Por ejemplo: fetch(`${CONFIG.API_BASE_URL}/usuarios/verificar-codigo`, ...)
+    console.log("Validando código:", codigo);
+}
+
 // También es recomendable agregar esta validación al cargar la página
 window.onload = function() {
     if (localStorage.getItem('user_session')) {
