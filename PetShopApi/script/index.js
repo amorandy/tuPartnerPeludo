@@ -53,10 +53,10 @@ document.getElementById("formLogin").addEventListener("submit", function(event) 
 });
 
 async function iniciarSesion() {
-    const email = document.getElementById("loginEmail").value;
-    const password = document.getElementById("loginPass").value;
+    const Email = document.getElementById("loginEmail").value;
+    const Password = document.getElementById("loginPass").value;
     
-    if (!email || !password) {
+    if (!Email || !Password) {
         EnviarMensaje(0, "Por favor, completa todos los campos.");
         return;
     }
@@ -64,7 +64,7 @@ async function iniciarSesion() {
         const response = await fetch(`${CONFIG.API_BASE_URL}/usuarios/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
+            body: JSON.stringify({ Email, Password })
         });
 
         const data = await response.json();
