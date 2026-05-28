@@ -56,11 +56,11 @@ async function iniciarSesion() {
     const email = document.getElementById("loginEmail").value;
     const password = document.getElementById("loginPass").value;
 
-    if (!Email || !Password) {
+    if (!email || !password) {
         EnviarMensaje(0, "Por favor, completa todos los campos.");
         return;
     }
-    
+
     const payload = {
         Email: email,    // Cambiado a mayúscula
         Password: password // Cambiado a mayúscula
