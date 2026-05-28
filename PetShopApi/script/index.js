@@ -57,11 +57,9 @@ async function iniciarSesion() {
     const password = document.getElementById("loginPass").value;
     
     if (!email || !password) {
-        alert("Por favor, completa todos los campos.");
+        EnviarMensaje(0, "Por favor, completa todos los campos.");
         return;
     }
-    console.log("Email capturado:", email);
-    console.log("Password capturado:", password);
     try {
         const response = await fetch(`${CONFIG.API_BASE_URL}/usuarios/login`, {
             method: 'POST',
