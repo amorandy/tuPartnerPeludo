@@ -72,15 +72,15 @@ async function registrarUsuario(datosUsuario) {
         const codigoRespuesta = data.regCodigo;
         const mensajeRespuesta = data.regMensaje;
 
-        EnviarMensaje(codigoRespuesta, mensajeRespuesta);
         if (codigoRespuesta === 1) {
+            EnviarMensaje(codigoRespuesta, mensajeRespuesta);
             mostrarVerificacion();
         } else {
             EnviarMensaje(codigoRespuesta || 0, mensajeRespuesta || "Error al registrar.");
         }
     } catch (error) {
         console.error("Error completo:", error);
-        EnviarMensaje(-1, "Error: " + "Error al Procesar el registro"); 
+        EnviarMensaje(-1, "Error: Error al Procesar el registro"); 
     } finally {
         btnRegistrar.disabled = false;
         btnRegistrar.innerText = "REGISTRARME";
@@ -174,14 +174,14 @@ async function confirmarCodigo() {
     const codigo = document.getElementById('codigo-verificacion').value;
     const email = document.getElementById('reg-email').value;
     const btnConfirmar = document.getElementById("btn-verificar");
-    btnConfirmar.disabled = true;
-    btnConfirmar.innerText = "Verificando Codigo Whatsapp...";
-
 
     if (!codigo) {
         EnviarMensaje(-1, "Por favor, ingresa el código de 6 dígitos.");
         return;
     }
+
+    btnConfirmar.disabled = true;
+    btnConfirmar.innerText = "Verificando Codigo Whatsapp...";
 
     try {
         const response = await fetch(`${CONFIG.API_BASE_URL}/Usuarios/verificar-codigo`, {
@@ -204,7 +204,7 @@ async function confirmarCodigo() {
     finally
     {
         btnConfirmar.disabled = false;
-        btnConfirmar.innerText = "Verificar Cuenta"
+        btnConfirmar.innerText = "Verificar Cuenta";
     }
 }
 
