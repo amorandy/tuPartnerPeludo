@@ -69,6 +69,7 @@ async function iniciarSesion() {
         if (data.codigo === 1) {
             localStorage.setItem('user_session', JSON.stringify(data.usuario));
             mostrarSeccionPerfil(); 
+        }
         EnviarMensaje(data.codigo, data.mensaje);
     } catch (error) {
         console.error("Error:", error);
