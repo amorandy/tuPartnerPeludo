@@ -76,7 +76,7 @@ async function iniciarSesion() {
         EnviarMensaje(data.codigo, data.mensaje);
     } catch (error) {
         console.error("Error:", error);
-        EnviarMensaje(data.codigo, data.mensaje);
+        if (data.codigo === -1){EnviarMensaje(data.codigo, data.mensaje);}
     }
 }
 // Endpoint: /usuarios/registrar
