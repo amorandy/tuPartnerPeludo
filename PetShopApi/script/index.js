@@ -92,8 +92,6 @@ async function registrarUsuario(datosUsuario) {
     btnRegistrar.disabled = true;
     btnRegistrar.innerText = "Procesando...";
 
-    console.log("Datos enviados a la API:", JSON.stringify(datosUsuario));
-
     try {
         const response = await fetch(`${CONFIG.API_BASE_URL}/usuarios/registrar`, {
             method: 'POST',
@@ -101,15 +99,18 @@ async function registrarUsuario(datosUsuario) {
             body: JSON.stringify(datosUsuario)
         });
         const data = await response.json();
-        if (data.codigo === 1) {
-            EnviarMensaje(data.codigo, data.mensaje);
+        const codigoRespuesta = data.regCodigo;
+        const mensajeRespuesta = data.regMensaje;
+
+        EnviarMensaje(codigoRespuesta, mensajeRespuesta);
+        if (codigoRespuesta === 1) {
             mostrarVerificacion();
         } else {
-            EnviarMensaje(data.codigo || 0, data.mensaje || "Error al registrar.");
+            EnviarMensaje(codigoRespuesta || 0, mensajeRespuesta || "Error al registrar.");
         }
     } catch (error) {
-        console.error("Error completo:", error); // Esto te dirá exactamente qué falló
-        EnviarMensaje(-1, "Error: " + error.message); 
+        console.error("Error completo:", error);
+        EnviarMensaje(-1, "Error: " + "Error al Procesar el registro"); 
     } finally {
         btnRegistrar.disabled = false;
         btnRegistrar.innerText = "REGISTRARME";
