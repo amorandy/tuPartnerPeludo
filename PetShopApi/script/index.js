@@ -40,15 +40,15 @@ async function iniciarSesion() {
         });
 
         const data = await response.json();
-        id (data.codigo === 1) { 
+        //id (data.codigo === 1) { 
             
             EnviarMensaje(1, data.mensaje);
-            setTimeout(() => {
-                window.location.href = "main.html";
-            }, 1000);
-        } else {
-            EnviarMensaje(data.codigo || 0, data.mensaje || "Error al iniciar sesión");
-        }
+            //setTimeout(() => {
+                //window.location.href = "main.html";
+            //}, 1000);
+        }// else {
+            //EnviarMensaje(data.codigo || 0, data.mensaje || "Error al iniciar sesión");
+        //}
     } catch (error) {
         console.error("Error:", error);
         EnviarMensaje(-1, "No se pudo conectar con el servidor.");
