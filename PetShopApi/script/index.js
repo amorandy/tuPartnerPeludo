@@ -41,7 +41,7 @@ async function iniciarSesion() {
 
         const data = await response.json();
         id (data.codigo === 1) { 
-            localStorage.setItem('user_session', JSON.stringify(data.usuario));
+            
             EnviarMensaje(1, data.mensaje);
             setTimeout(() => {
                 window.location.href = "main.html";
