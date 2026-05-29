@@ -46,7 +46,7 @@ async function iniciarSesion() {
             //setTimeout(() => {
                 //window.location.href = "main.html";
             //}, 1000);
-        }// else {
+        //} else {
             //EnviarMensaje(data.codigo || 0, data.mensaje || "Error al iniciar sesión");
         //}
     } catch (error) {
