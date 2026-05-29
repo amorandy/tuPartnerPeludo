@@ -40,12 +40,14 @@ async function iniciarSesion() {
         });
 
         const data = await response.json();
-
-        if (response.ok && data.codigo === 1) {
+        id (data.codigo === 1) { 
             localStorage.setItem('user_session', JSON.stringify(data.usuario));
-            mostrarSeccionPerfil();
+            EnviarMensaje(1, data.mensaje);
+            setTimeout(() => {
+                window.location.href = "main.html";
+            }, 1000);
         } else {
-            EnviarMensaje(data.codigo || 0, data.mensaje || "Error desconocido");
+            EnviarMensaje(data.codigo || 0, data.mensaje || "Error al iniciar sesión");
         }
     } catch (error) {
         console.error("Error:", error);
