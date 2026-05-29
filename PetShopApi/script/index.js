@@ -41,7 +41,6 @@ async function iniciarSesion() {
 
         const data = await response.json();
         id (data.codigo === 1) { 
-            localStorage.setItem('session_token', data.token);
             localStorage.setItem('user_session', JSON.stringify(data.usuario));
             EnviarMensaje(1, data.mensaje);
             setTimeout(() => {
