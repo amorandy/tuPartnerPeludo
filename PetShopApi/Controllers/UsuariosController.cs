@@ -22,28 +22,43 @@ public class UsuariosController : ControllerBase
     [HttpPost("registrar")]
     public async Task<IActionResult> Registrar([FromBody] Usuario user)
     {
-        if (user == null) return BadRequest(new { codigo = 0, mensaje = "Datos inválidos" });
-
         try
         {
+            if (user == null) return BadRequest(new { codigo = 0, mensaje = "Datos inválidos" });
             if (string.IsNullOrWhiteSpace(user.Email)) return BadRequest(new { codigo = 0, mensaje = "Email obligatorio" });
             if (string.IsNullOrWhiteSpace(user.Telefono)) return BadRequest(new { codigo = 0, mensaje = "Teléfono obligatorio" });
 
             string codigoWS = new Random().Next(100000, 999999).ToString();
             string tokenEmail = Guid.NewGuid().ToString();
 
-            var (codigo, mensaje) = await _usuarioDAL.RegistrarUsuario(user, tokenEmail, codigoWS);
+            var (regCodigo, regMensaje) = await _usuarioDAL.RegistrarUsuario(user, tokenEmail, codigoWS);
 
-            if (codigo == 1)
+            if (regCodigo == 1)
             {
-                _emailService.EnviarCorreoValidacion(user.Email, tokenEmail);
-                await _whatsappService.EnviarCodigoValidacion(user.Telefono, codigoWS);
+                var (emailCodigo, emailMensaje) = await _emailService.EnviarCorreoValidacion(user.Email, tokenEmail);
+                var (wsCodigo, wsMensaje) = await _whatsappService.EnviarCodigoValidacion(user.Telefono, codigoWS);
 
-                return Ok(new { codigo, mensaje });
+                if (emailCodigo == 1 && wsCodigo == 1)
+                {
+                    return Ok(new { regCodigo, regMensaje });
+                }
+                else if (emailCodigo != 1) 
+                {
+                    return Ok(new { emailCodigo, emailMensaje });
+                }
+                else if (wsCodigo != 1)
+                {
+                    return Ok(new { wsCodigo, wsMensaje });
+                }
+                else 
+                {                     
+                    return StatusCode(500, new { codigo = -1, mensaje = "Error desconocido en la validación." });
+                }
             }
             else
             {
-                return BadRequest(new { codigo, mensaje });
+                (regCodigo, regMensaje) = await _usuarioDAL.EliminaRegistroUsuario(user);
+                return BadRequest(new { regCodigo, regMensaje });
             }
         }
         catch (Exception ex)
@@ -75,18 +90,19 @@ public class UsuariosController : ControllerBase
     {
         try
         {
-            var (usuario, salida) = await _usuarioDAL.Login(request.Email ?? "", request.Password ?? "");
-
-            if (salida.Codigo == 1 && usuario != null)
+            string token = Guid.NewGuid().ToString();
+            var (usuario, salida, tokenn) = await _usuarioDAL.Login(request.Email ?? "", request.Password ?? "", token);
+            if (salida.Codigo == -1)
             {
-                return Ok(new
-                {
-                    codigo = salida.Codigo,
-                    mensaje = salida.Mensaje,
-                    user = usuario.Nombre
-                });
+                return StatusCode(500, salida);
             }
-            return BadRequest(new { codigo = salida.Codigo, mensaje = salida.Mensaje });
+
+            return Ok(new
+            {
+                codigo = salida.Codigo,
+                mensaje = salida.Mensaje,
+                user = usuario?.Nombre
+            });
         }
         catch (Exception ex)
         {

@@ -30,7 +30,7 @@ builder.Services.AddScoped<IWhatsappService, WhatsappService>();
 var app = builder.Build();
 
 app.UseCors("PublicPolicy");
-app.UseAuthorization();
+//app.UseAuthorization();
 app.UseRouting();
 app.UseSwagger();
 app.UseSwaggerUI(c =>

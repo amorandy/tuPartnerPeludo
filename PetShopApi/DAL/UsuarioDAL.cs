@@ -1,7 +1,9 @@
-﻿using MySqlConnector;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using MySqlConnector;
 using PetShopApi.Mmodels;
 using PetShopApi.Models;
 using System.Data;
+using System.Diagnostics.Eventing.Reader;
 
 namespace PetShopApi.DAL
 {
@@ -42,6 +44,7 @@ namespace PetShopApi.DAL
         //}
         public async Task<(int? codigo, string? mensaje)> RegistrarUsuario(Usuario user, string tokenEmail, string codigoWhatsApp)
         {
+            //string codigoWhatsApp = new Random().Next(100000, 999999).ToString();
             using (var conexion = _conexionFll.ObtenerConexion())
             {
                 await conexion.OpenAsync();
@@ -70,24 +73,26 @@ namespace PetShopApi.DAL
                 }
             }
         }
-        public async Task<bool> RegistrarUsuarioConToken(Usuario user, string token)
+        public async Task<(int? codigo, string? mensaje)> EliminaRegistroUsuario(Usuario user)
         {
             using (var conexion = _conexionFll.ObtenerConexion())
             {
                 await conexion.OpenAsync();
-                string sql = @"INSERT INTO Usuarios (Nombre, Apellido, Email, PasswordHash, TokenValidacion, EmailValidado) 
-                       VALUES (@Nombre, @Apellido, @Email, @Pass, @Token, 0)";
-
+                string sql = @"DELETE FROM Usuarios WHERE Email = @Email AND Telefono = @Telefono";
                 using (var cmd = new MySqlCommand(sql, conexion))
                 {
-                    cmd.Parameters.AddWithValue("@Nombre", user.Nombre);
-                    cmd.Parameters.AddWithValue("@Apellido", user.Apellido ?? "");
                     cmd.Parameters.AddWithValue("@Email", user.Email);
-                    cmd.Parameters.AddWithValue("@Pass", BCrypt.Net.BCrypt.HashPassword(user.Password));
-                    cmd.Parameters.AddWithValue("@Token", token);
+                    cmd.Parameters.AddWithValue("@Telefono", user.Telefono);
 
                     int filas = await cmd.ExecuteNonQueryAsync();
-                    return filas > 0;
+                    if (filas > 0)
+                    {
+                        return (1, "Usuario eliminado correctamente.");
+                    }
+                    else
+                    {
+                        return (0, "No se encontró un usuario.");
+                    }
                 }
             }
         }
@@ -108,7 +113,7 @@ namespace PetShopApi.DAL
                 }
             }
         }
-        public async Task<(Usuario? usuario, SalidaMod salida)> Login(string email, string password)
+        public async Task<(Usuario? usuario, SalidaMod salida, string token)> Login(string email, string password, string token)
         {
             var salida = new SalidaMod();
             Usuario? usuarioEncontrado = null;
@@ -129,36 +134,61 @@ namespace PetShopApi.DAL
 
                         using (var reader = await cmd.ExecuteReaderAsync())
                         {
+                            // 1. Intentamos leer la fila del usuario
                             if (await reader.ReadAsync())
                             {
-                                string hashAlmacenado = reader["PasswordHash"].ToString() ?? string.Empty;
-
-                                if (BCrypt.Net.BCrypt.Verify(password, hashAlmacenado))
+                                usuarioEncontrado = new Usuario
                                 {
-                                    usuarioEncontrado = new Usuario
+                                    UsuarioID = Convert.ToInt32(reader["UsuarioID"]),
+                                    Nombre = reader["Nombre"]?.ToString(),
+                                    Email = reader["Email"]?.ToString(),
+                                    Telefono = reader["Telefono"]?.ToString()
+                                };
+                                string hashAlmacenado = reader["PasswordHash"]?.ToString() ?? string.Empty;
+                                
+                                reader.Close();
+
+                                int codigo = Convert.ToInt32(pCodigo.Value);
+                                string? mensaje = pMensaje.Value?.ToString();
+
+                                if (codigo == 1 && BCrypt.Net.BCrypt.Verify(password, hashAlmacenado))
+                                {
+                                    
+                                    string query = "INSERT INTO SesionesActivas (UsuarioID, Token, FechaExpiracion) VALUES (@UsuarioID, @Token, DATE_ADD(NOW(), INTERVAL 1 DAY))";
+                                    using (var cmd2 = new MySqlCommand(query, conexion))
                                     {
-                                        Nombre = reader["Nombre"].ToString(),
-                                        Email = reader["Email"].ToString(),
-                                        Telefono = reader["Telefono"].ToString()
-                                    };
+                                        cmd2.Parameters.AddWithValue("@UsuarioID", usuarioEncontrado.UsuarioID);
+                                        cmd2.Parameters.AddWithValue("@Token", token);
+                                        cmd2.ExecuteNonQuery();
+                                    }
+                                    salida.Codigo = codigo;
+                                    salida.Mensaje = mensaje;
+                                    return (usuarioEncontrado, salida, token);
                                 }
                                 else
                                 {
-                                    salida.Codigo = 0; salida.Mensaje = "La contraseña ingresada es incorrecta.";
-                                    return (usuarioEncontrado, salida);
+                                    salida.Codigo = 0;
+                                    salida.Mensaje = "Correo o contraseña incorrectos.";
+                                    return (usuarioEncontrado, salida, token);
                                 }
                             }
+                            else
+                            {
+                                // Usuario no existe (el reader no devolvió filas)
+                                reader.Close();
+                                salida.Codigo = Convert.ToInt32(pCodigo.Value);
+                                salida.Mensaje = pMensaje.Value?.ToString() ?? "Usuario no encontrado.";
+                                return (null, salida, token);
+                            }
                         }
-                        salida.Codigo = Convert.ToInt32(pCodigo.Value);
-                        salida.Mensaje = pMensaje.Value?.ToString();
                     }
                 }
-                return (usuarioEncontrado, salida);
             }
             catch (Exception ex)
             {
-                salida.Codigo = -1; salida.Mensaje = ex.Message;
-                return (usuarioEncontrado, salida);
+                salida.Codigo = -1;
+                salida.Mensaje = "Error interno: " + ex.Message;
+                return (null, salida, token);
             }
         }
         public async Task<bool> ValidarCodigoWhatsApp(string email, string codigo)
@@ -183,7 +213,7 @@ namespace PetShopApi.DAL
             }
         }
         // Método 1: Buscar usuario por teléfono
-        public async Task<Usuario> ObtenerPorTelefono(string telefono,SalidaMod salida)
+        public async Task<Usuario> ObtenerPorTelefono(string telefono, SalidaMod salida)
         {
             try
             {
@@ -215,7 +245,7 @@ namespace PetShopApi.DAL
                 salida = new SalidaMod { Codigo = -1, Mensaje = $"Ocurrió un error al buscar el usuario: {ex.Message}" };
                 return new Usuario(); // Retorna un usuario vacío en caso de error
             }
-            
+
         }
 
         // Método 2: Guardar el Token de recuperación
