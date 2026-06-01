@@ -6,7 +6,6 @@ function ProcesarRespuesta(data) {
     }
 }
 
-async function iniciarSesion() {
-    const data = await response.json();
+async function iniciarSesion(data) {
     ProcesarRespuesta(data); 
 }
