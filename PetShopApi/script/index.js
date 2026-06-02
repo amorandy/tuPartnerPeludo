@@ -52,6 +52,7 @@ async function iniciarSesion(event) {
             setTimeout(() => {
                 window.location.href = "main.html";
             }, 1000);
+        }
             
     } catch (error) {
         console.error("Error Login:", error);
