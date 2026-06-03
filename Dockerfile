@@ -2,7 +2,7 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /app
 COPY . .
-RUN dotnet publish -c Release -o out
+RUN dotnet publish "PetShopApi/PetShopApi.csproj" -c Release -o out
 
 # Usa la imagen de runtime 9.0 para ejecutar
 FROM mcr.microsoft.com/dotnet/aspnet:9.0
