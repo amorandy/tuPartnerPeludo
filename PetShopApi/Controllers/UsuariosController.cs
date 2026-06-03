@@ -54,6 +54,7 @@ public class UsuariosController : ControllerBase
                 //}
                 else 
                 {
+                    (regCodigo, regMensaje) = await _usuarioDAL.EliminaRegistroUsuario(user);
                     return StatusCode(500, new { codigo = -1, mensaje = $"Error desconocido en la validación. {emailMensaje}" } );
                 }
                 
