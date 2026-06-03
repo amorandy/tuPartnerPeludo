@@ -22,7 +22,7 @@ public class UsuariosController : ControllerBase
     [HttpPost("registrar")]
     public async Task<IActionResult> Registrar([FromBody] Usuario user)
     {
-        Console.WriteLine("Datos recibidos: " + datos.ToString());
+        Console.WriteLine("Datos recibidos: " + user.ToString());
         try
         {
             if (user == null) return BadRequest(new { codigo = 0, mensaje = "Datos inválidos" });
