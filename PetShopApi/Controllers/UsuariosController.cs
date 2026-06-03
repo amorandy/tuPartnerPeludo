@@ -36,27 +36,27 @@ public class UsuariosController : ControllerBase
 
             if (regCodigo == 1)
             {
-                return Ok(new { regCodigo, regMensaje });
-                //var (emailCodigo, emailMensaje) = await _emailService.EnviarCorreoValidacion(user.Email, tokenEmail);
+                //return Ok(new { regCodigo, regMensaje });
+                var (emailCodigo, emailMensaje) = await _emailService.EnviarCorreoValidacion(user.Email, tokenEmail);
                 //var (wsCodigo, wsMensaje) = await _whatsappService.EnviarCodigoValidacion(user.Telefono, codigoWS);
-/*
-                if (emailCodigo == 1 && wsCodigo == 1)
-                {
-                    return Ok(new { regCodigo, regMensaje });
-                }
-                else if (emailCodigo != 1) 
+
+                //if (emailCodigo == 1 && wsCodigo == 1)
+                //{
+                //    return Ok(new { regCodigo, regMensaje });
+                //}
+                if (emailCodigo != 1) 
                 {
                     return Ok(new { emailCodigo, emailMensaje });
                 }
-                else if (wsCodigo != 1)
-                {
-                    return Ok(new { wsCodigo, wsMensaje });
-                }
+                //else if (wsCodigo != 1)
+                //{
+                //    return Ok(new { wsCodigo, wsMensaje });
+                //}
                 else 
-                {                     
-                    return StatusCode(500, new { codigo = -1, mensaje = "Error desconocido en la validación." });
+                {
+                    return StatusCode(500, new { codigo = -1, mensaje = $"Error desconocido en la validación. {emailMensaje}" } );
                 }
-                */
+                
             }
             else
             {
