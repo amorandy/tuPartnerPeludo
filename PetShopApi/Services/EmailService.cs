@@ -12,7 +12,7 @@ namespace PetShopApi.Services
         {
             _config = config;
         }
-
+/*
         public async Task<(int codigo, string mensaje)> EnviarCorreoValidacion(string emailDestino, string token)
         {
             try
@@ -76,6 +76,37 @@ namespace PetShopApi.Services
                 string detalle = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
                 Console.WriteLine($"Error detallado enviando correo: {detalle}"); // Esto saldrá en los logs de Render
                 return (-1, "Error: " + detalle); 
+            }
+        }*/
+        public async Task<int> EnviarCorreoValidacion(string emailDestino, string nombre, string token)
+        {
+            // La URL de la API de Brevo para enviar correos
+            var url = "https://api.brevo.com/v3/smtp/email";
+            
+            // Obtén tu API Key desde la configuración
+            var apiKey = _configuration["EmailSettings:SenderPassword"]; 
+
+            using (var httpClient = new HttpClient())
+            {
+                // El header debe ser 'api-key' con tu clave
+                httpClient.DefaultRequestHeaders.Add("api-key", apiKey);
+
+                // Prepara el JSON (asegúrate de usar Newtonsoft.Json)
+                var payload = new
+                {
+                    sender = new { name = "Tu Partner Peludo", email = "adb95a001@smtp-brevo.com" }, // Usa el remitente autorizado
+                    to = new[] { new { email = emailDestino, name = nombre } },
+                    subject = "Activa tu cuenta",
+                    htmlContent = $"<p>Haz clic aquí para validar: <a href='{_baseUrl}/confirmar?token={token}'>Validar</a></p>"
+                };
+
+                var json = Newtonsoft.Json.JsonConvert.SerializeObject(payload);
+                var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+
+                // Realiza la petición POST
+                var response = await httpClient.PostAsync(url, content);
+
+                return response.IsSuccessStatusCode ? 1 : -1;
             }
         }
     }
