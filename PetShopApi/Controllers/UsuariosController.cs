@@ -32,17 +32,12 @@ public class UsuariosController : ControllerBase
             string codigoWS = new Random().Next(100000, 999999).ToString();
             string tokenEmail = Guid.NewGuid().ToString();
 
-            //var (regCodigo, regMensaje) = await _usuarioDAL.RegistrarUsuario(user, tokenEmail, codigoWS);
-            var (emailCodigo, emailMensaje) = await _emailService.EnviarCorreoValidacion(
-                user.Email, 
-                user.Nombre, // <-- Este es el tercer parámetro que faltaba
-                tokenEmail
-            );
+            var (regCodigo, regMensaje) = await _usuarioDAL.RegistrarUsuario(user, tokenEmail, codigoWS);
 
             if (regCodigo == 1)
             {
                 //return Ok(new { regCodigo, regMensaje });
-                var (emailCodigo, emailMensaje) = await _emailService.EnviarCorreoValidacion(user.Email, tokenEmail);
+                var (emailCodigo, emailMensaje) = await _emailService.EnviarCorreoValidacion(user.Email, user.Nombre ?? "Usuario", tokenEmail);
                 //var (wsCodigo, wsMensaje) = await _whatsappService.EnviarCodigoValidacion(user.Telefono, codigoWS);
 
                 //if (emailCodigo == 1 && wsCodigo == 1)
