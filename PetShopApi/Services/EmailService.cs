@@ -9,11 +9,14 @@ namespace PetShopApi.Services
 {
     public class EmailService
     {
-        private readonly IConfiguration _config;
+        private readonly IConfiguration _configuration;
+        private readonly string _baseUrl;
 
-        public EmailService(IConfiguration config)
+        // EL CONSTRUCTOR: Es aquí donde inicializas las variables
+        public EmailService(IConfiguration configuration)
         {
-            _config = config;
+            _configuration = configuration;
+            _baseUrl = _configuration["EmailSettings:BaseUrl"];
         }
 /*
         public async Task<(int codigo, string mensaje)> EnviarCorreoValidacion(string emailDestino, string token)
