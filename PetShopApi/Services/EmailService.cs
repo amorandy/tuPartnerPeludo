@@ -1,6 +1,9 @@
 ﻿using System.Buffers.Text;
 using System.Net;
 using System.Net.Mail;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
 
 namespace PetShopApi.Services
 {
@@ -78,35 +81,34 @@ namespace PetShopApi.Services
                 return (-1, "Error: " + detalle); 
             }
         }*/
-        public async Task<int> EnviarCorreoValidacion(string emailDestino, string nombre, string token)
+
+        public async Task<(int emailCodigo, string emailMensaje)> EnviarCorreoValidacion(string emailDestino, string nombre, string token)
         {
-            // La URL de la API de Brevo para enviar correos
             var url = "https://api.brevo.com/v3/smtp/email";
-            
-            // Obtén tu API Key desde la configuración
-            var apiKey = _configuration["EmailSettings:SenderPassword"]; 
+            var apiKey = _configuration["EmailSettings:SenderPassword"];
 
             using (var httpClient = new HttpClient())
             {
-                // El header debe ser 'api-key' con tu clave
                 httpClient.DefaultRequestHeaders.Add("api-key", apiKey);
 
-                // Prepara el JSON (asegúrate de usar Newtonsoft.Json)
                 var payload = new
                 {
-                    sender = new { name = "Tu Partner Peludo", email = "adb95a001@smtp-brevo.com" }, // Usa el remitente autorizado
+                    sender = new { name = "Tu Partner Peludo", email = "adb95a001@smtp-brevo.com" },
                     to = new[] { new { email = emailDestino, name = nombre } },
-                    subject = "Activa tu cuenta",
-                    htmlContent = $"<p>Haz clic aquí para validar: <a href='{_baseUrl}/confirmar?token={token}'>Validar</a></p>"
+                    subject = "Activa tu cuenta de Partner Peludo",
+                    htmlContent = $"<p>Hola {nombre}, para completar tu registro haz clic aquí: <a href='{_baseUrl}/confirmar?token={token}'>Validar</a></p>"
                 };
 
-                var json = Newtonsoft.Json.JsonConvert.SerializeObject(payload);
-                var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+                // Convertimos a JSON usando System.Text.Json (nativo)
+                var json = JsonSerializer.Serialize(payload);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                // Realiza la petición POST
                 var response = await httpClient.PostAsync(url, content);
 
-                return response.IsSuccessStatusCode ? 1 : -1;
+                if (response.IsSuccessStatusCode)
+                    return (1, "Correo enviado correctamente");
+                else
+                    return (-1, "Error: " + await response.Content.ReadAsStringAsync());
             }
         }
     }
