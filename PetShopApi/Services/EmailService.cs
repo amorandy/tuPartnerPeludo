@@ -19,30 +19,32 @@ namespace PetShopApi.Services
         }
         public async Task<(int emailCodigo, string emailMensaje)> EnviarCorreoValidacion(string emailDestino, string nombre, string token)
         {
-            var url = "https://api.brevo.com/v3/smtp/email";
-            var apiKey = _configuration["EmailSettings:SenderPassword"];
-
-            using (var httpClient = new HttpClient())
+            try
             {
-                httpClient.DefaultRequestHeaders.Add("api-key", apiKey);
+                var smtpServer = _configuration["EmailSettings:SmtpServer"];
+                var port = int.Parse(_configuration["EmailSettings:SmtpPort"]);
+                var senderEmail = _configuration["EmailSettings:SenderEmail"];
+                var password = _configuration["EmailSettings:SenderPassword"];
 
-                var payload = new
+                using (var client = new SmtpClient(smtpServer, port))
                 {
-                    sender = new { name = "Tu Partner Peludo", email = "smtp.gmail.com" },
-                    to = new[] { new { email = emailDestino, name = nombre } },
-                    subject = "Activa tu cuenta de Partner Peludo",
-                    htmlContent = $"<p>Hola {nombre}, para completar tu registro haz clic aquí: <a href='{_baseUrl}/confirmar?token={token}'>Validar</a></p>"
-                };
+                    client.EnableSsl = true;
+                    client.Credentials = new NetworkCredential(senderEmail, password);
 
-                var json = JsonSerializer.Serialize(payload);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                    var mailMessage = new MailMessage(senderEmail, emailDestino)
+                    {
+                        Subject = "Activa tu cuenta",
+                        Body = $"Hola {nombre}, haz clic aquí: {_baseUrl}/confirmar?token={token}",
+                        IsBodyHtml = true
+                    };
 
-                var response = await httpClient.PostAsync(url, content);
-
-                if (response.IsSuccessStatusCode)
+                    await client.SendMailAsync(mailMessage);
                     return (1, "Correo enviado correctamente");
-                else
-                    return (-1, "Error: " + await response.Content.ReadAsStringAsync());
+                }
+            }
+            catch (Exception ex)
+            {
+                return (-1, "Error: " + ex.Message);
             }
         }
     }
