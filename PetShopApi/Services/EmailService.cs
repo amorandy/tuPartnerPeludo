@@ -1,70 +1,57 @@
-﻿using System.Buffers.Text;
-using System.Net;
+﻿using System.Net;
 using System.Net.Mail;
-using System.Net.Http;
-using System.Text;
-using System.Text.Json;
+using Microsoft.Extensions.Configuration;
 
 namespace PetShopApi.Services
 {
     public class EmailService
     {
         private readonly IConfiguration _configuration;
-        private readonly string _baseUrl;
+        private readonly string? _baseUrl;
 
         public EmailService(IConfiguration configuration)
         {
             _configuration = configuration;
             _baseUrl = _configuration["EmailSettings:BaseUrl"];
         }
+
         public async Task<(int emailCodigo, string emailMensaje)> EnviarCorreoValidacion(string emailDestino, string nombre, string token)
         {
-            var url = "https://api.brevo.com/v3/smtp/email";
-            
-            // 1. Asegúrate de que esta variable en Render tenga la clave xkeysib-...
-            var apiKey = _configuration["EmailSettings:SenderPassword"];
-
-            // 2. Asegúrate de que esta variable en Render sea el correo verificado de tu panel
-            var senderEmail = _configuration["EmailSettings:SenderEmail"];
-
-            using (var httpClient = new HttpClient())
+            try
             {
-                httpClient.DefaultRequestHeaders.Add("api-key", apiKey);
-
-                var payload = new
+                var smtpServer = _configuration["EmailSettings:SmtpServer"];
+                var portString = _configuration["EmailSettings:SmtpPort"];
+                if (string.IsNullOrWhiteSpace(portString))
                 {
-                    sender = new { name = "Tu Partner Peludo", email = senderEmail },
-                    to = new[] { new { email = emailDestino, name = nombre } },
-                    subject = "Activa tu cuenta de Partner Peludo",
-                    htmlContent = $"<p>Hola {nombre}, para completar tu registro haz clic aquí: <a href='{_baseUrl}/confirmar?token={token}'>Validar cuenta</a></p>"
-                };
-
-                var json = JsonSerializer.Serialize(payload);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                try 
+                    throw new InvalidOperationException("El puerto SMTP no está configurado.");
+                }
+                int port = int.Parse(portString);
+                var senderEmail = _configuration["EmailSettings:SenderEmail"];
+                if (string.IsNullOrWhiteSpace(senderEmail))
                 {
-                    From = new MailAddress(senderEmail, "Partner Peludo"),
-                    Subject = "Activa tu cuenta de Partner Peludo",
-                    Body = $@"
-                    <h2>¡Bienvenido a Tu Partner Peludo!</h2>
-                    <p>Para completar tu registro, haz clic en el siguiente botón:</p>
-                    <a href='{enlace}' style='padding: 10px 20px; background-color: #28a745; color: white; text-decoration: none; border-radius: 5px;'>Validar mi cuenta</a>
-                    <p>Si el botón no funciona, copia y pega este enlace: <br> {enlace}</p>",
-                    IsBodyHtml = true
-                };
+                    throw new InvalidOperationException("El correo del remitente no está configurado.");
+                }
+                var password = _configuration["EmailSettings:SenderPassword"];
 
-                mailMessage.To.Add(emailDestino);
-                //client.Send(mailMessage);
-                await client.SendMailAsync(mailMessage);
-                codigo = 1;
-                mensaje = "Correo de validación enviado correctamente.";
-                return (codigo, mensaje);
+                using (var client = new SmtpClient(smtpServer, port))
+                {
+                    client.EnableSsl = true;
+                    client.Credentials = new NetworkCredential(senderEmail, password);
+
+                    var mailMessage = new MailMessage(senderEmail, emailDestino)
+                    {
+                        Subject = "Activa tu cuenta de Partner Peludo",
+                        Body = $"Hola {nombre}, para completar tu registro haz clic aquí: {_baseUrl}/confirmar?token={token}",
+                        IsBodyHtml = true
+                    };
+
+                    await client.SendMailAsync(mailMessage);
+                    return (1, "Correo enviado correctamente");
+                }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error enviando correo: {ex.Message}");
-                return (-1, $"No se pudo enviar el correo de validación. Intenta nuevamente. {ex.Message} ");
+                return (-1, "Error al enviar correo: " + ex.Message);
             }
         }
     }
