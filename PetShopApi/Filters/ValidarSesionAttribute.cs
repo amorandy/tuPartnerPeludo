@@ -14,6 +14,12 @@ public class ValidarSesionAttribute : ActionFilterAttribute
     }
     public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
+        var path = context.HttpContext.Request.Path.Value?.ToLower() ?? "";
+        if (path.Contains("/api/usuarios/confirmar"))
+        {
+            await next();
+            return;
+        }
         if (context.ActionDescriptor.EndpointMetadata.Any(m => m is AllowAnonymousAttribute))
         {
             return;
