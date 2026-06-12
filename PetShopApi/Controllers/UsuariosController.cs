@@ -76,12 +76,32 @@ public class UsuariosController : ControllerBase
     public async Task<IActionResult> Confirmar([FromQuery] string token)
     {
         if (string.IsNullOrEmpty(token)) return BadRequest("Token no proporcionado.");
+    
         try
         {
             bool confirmado = await _usuarioDAL.ConfirmarEmail(token);
             if (confirmado)
             {
-                return Content("<html><body><h1>¡Cuenta activada!</h1><p>Ya puedes iniciar sesión en PetShop.</p></body></html>", "text/html");
+                string htmlResponse = $@"
+                <html>
+                    <head>
+                        <style>
+                            body {{ font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f4f7f6; }}
+                            .card {{ background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; }}
+                            .btn {{ background-color: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; margin-top: 20px; }}
+                            h1 {{ color: #333; }}
+                        </style>
+                    </head>
+                    <body>
+                        <div class='card'>
+                            <h1>¡Cuenta activada con éxito!</h1>
+                            <p>Tu correo ha sido verificado. Ya eres parte de la comunidad de <b>PetShop</b>.</p>
+                            <a href='https://tupartnerpeludo.onrender.com/login' class='btn'>Iniciar Sesión</a>
+                        </div>
+                    </body>
+                </html>";
+
+                return Content(htmlResponse, "text/html");
             }
             return BadRequest("El enlace es inválido o ya ha expirado.");
         }
