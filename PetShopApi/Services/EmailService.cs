@@ -38,7 +38,7 @@ namespace PetShopApi.Services
                     Text = $"<p>Hola {nombre}, para completar tu registro haz clic aquí: <a href='{_baseUrl}/confirmar?token={token}'>Validar cuenta</a></p>"
                 };
 
-                using (var client = new SmtpClient())
+                using (var client = new MailKit.Net.Smtp.SmtpClient()) 
                 {
                     await client.ConnectAsync(smtpHost, smtpPort, MailKit.Security.SecureSocketOptions.StartTls);
                     await client.AuthenticateAsync(smtpUser, smtpPass);
@@ -46,12 +46,12 @@ namespace PetShopApi.Services
                     await client.DisconnectAsync(true);
                 }
 
-                return 1; 
+                return (1, "Correo enviado correctamente");
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error SMTP: {ex.Message}");
-                return -1;
+                return (-1, "Error SMTP: " + ex.Message);
             }
         }
     }
