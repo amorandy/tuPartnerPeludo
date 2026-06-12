@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc.Filters;
 using PetShopApi.DAL;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using System.Linq;
 
 public class ValidarSesionAttribute : ActionFilterAttribute
 {
@@ -12,10 +14,14 @@ public class ValidarSesionAttribute : ActionFilterAttribute
     }
     public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
+        if (context.ActionDescriptor.EndpointMetadata.Any(m => m is AllowAnonymousAttribute))
+        {
+            return;
+        }
         var path = context.HttpContext.Request.Path.Value?.ToLower() ?? string.Empty;
 
         // EXCLUIR RUTAS PÚBLICAS
-        if (path.Contains("/login") || path.Contains("/registrar") || path.Contains("/verificar-codigo"))
+        if (path.Contains("/login") || path.Contains("/registrar") || path.Contains("/verificar-codigo") || path.Contains("/api/usuarios/confirmar"))
         {
             await next();
             return; // Permite que continúe sin validar nada
