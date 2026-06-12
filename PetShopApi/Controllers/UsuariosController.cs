@@ -79,13 +79,7 @@ public class UsuariosController : ControllerBase
         try
         {
             bool confirmado = await _usuarioDAL.ConfirmarEmail(token);
-            Console.WriteLine($"DEBUG: Token={token}, estamos pasando por aca");
-            if (confirmado)
-            {
-                Console.WriteLine($"Exitoso");
-                return Ok("¡ÉXITO! La cuenta ha sido activada correctamente.");
-            }
-            /*if (confirmado)
+        if (confirmado)
             {
                 string htmlResponse = $@"
                 <html>
@@ -105,18 +99,15 @@ public class UsuariosController : ControllerBase
                         </div>
                     </body>
                 </html>";
-
                 return Content(htmlResponse, "text/html");
-            }*/
+            }
             else
             {
-                Console.WriteLine($"Falloso");
                 return BadRequest("El enlace es inválido o ya ha expirado.");
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Falloso en el catch");
             return StatusCode(500, $"Error al confirmar: {ex.Message}");
         }
     }
