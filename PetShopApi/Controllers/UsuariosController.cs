@@ -3,6 +3,7 @@ using PetShopApi.DAL;
 using PetShopApi.Mmodels;
 using PetShopApi.Models;
 using PetShopApi.Services;
+using Microsoft.AspNetCore.Authorization;
 
 [ApiController]
 [Route("api/[controller]")]
