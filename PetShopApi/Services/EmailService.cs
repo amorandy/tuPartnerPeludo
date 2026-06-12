@@ -26,7 +26,7 @@ namespace PetShopApi.Services
             var smtpUser = Environment.GetEnvironmentVariable("SMTP_USER");
             var smtpPass = Environment.GetEnvironmentVariable("SMTP_PASS");
             var emailFrom = Environment.GetEnvironmentVariable("EMAIL_FROM");
-
+            Console.WriteLine($"DEBUG: Host={smtpHost}, User={smtpUser}, Pass={smtpPass}, Email={emailFrom}");
             try
             {
                 var message = new MimeMessage();
