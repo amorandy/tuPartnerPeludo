@@ -42,7 +42,7 @@ namespace PetShopApi.DAL
         //        }
         //    }
         //}
-        public async Task<(int? codigo, string? mensaje)> RegistrarUsuario(Usuario user, string tokenEmail, string codigoWhatsApp)
+        public async Task<SalidaMod> RegistrarUsuario(Usuario user, string tokenEmail, string codigoWhatsApp)
         {
             //string codigoWhatsApp = new Random().Next(100000, 999999).ToString();
             using (var conexion = _conexionFll.ObtenerConexion())
@@ -69,11 +69,15 @@ namespace PetShopApi.DAL
 
                     await cmd.ExecuteNonQueryAsync();
 
-                    return (pCodigo.Value is int codigo ? codigo : (int?)null, pMensaje.Value?.ToString());
+                    return new SalidaMod
+                    {
+                        Codigo = pCodigo.Value != null && pCodigo.Value != DBNull.Value ? Convert.ToInt32(pCodigo.Value) : 0,
+                        Mensaje = pMensaje.Value?.ToString()
+                    };
                 }
             }
         }
-        public async Task<(SalidaMod)> EliminaRegistroUsuario(Usuario user)
+        public async Task<SalidaMod> EliminaRegistroUsuario(Usuario user)
         {
             using (var conexion = _conexionFll.ObtenerConexion())
             {

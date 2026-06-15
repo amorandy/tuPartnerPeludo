@@ -30,25 +30,26 @@ public class UsuariosController : ControllerBase
             if (string.IsNullOrWhiteSpace(user.Email)) return BadRequest(new { codigo = 0, mensaje = "Email obligatorio" });
             if (string.IsNullOrWhiteSpace(user.Telefono)) return BadRequest(new { codigo = 0, mensaje = "Teléfono obligatorio" });
 
-            string codigoWS = new Random().Next(100000, 999999).ToString();
+                string codigoWS = new Random().Next(100000, 999999).ToString();
             string tokenEmail = Guid.NewGuid().ToString();
+            SalidaMod salida = new SalidaMod();
 
-            var (regCodigo, regMensaje) = await _usuarioDAL.RegistrarUsuario(user, tokenEmail, codigoWS);
-            Console.WriteLine("Mensaje de RegistrarUsuario: " + regMensaje);
+            (salida) = await _usuarioDAL.RegistrarUsuario(user, tokenEmail, codigoWS);
+            Console.WriteLine("Mensaje de RegistrarUsuario: " + salida.Mensaje);
 
-            if (regCodigo != 1)
+            if (salida.Codigo != 1)
             {
                 await _usuarioDAL.EliminaRegistroUsuario(user);
-                return BadRequest(new SalidaMod { Codigo = regCodigo, Mensaje = regMensaje });
+                return BadRequest(salida);
             }
-            if (regCodigo == 1)
+            if (salida.Codigo == 1)
             {
                 //return Ok(new { regCodigo, regMensaje });
-                var (emailCodigo, emailMensaje) = await _emailService.EnviarCorreoValidacion(user.Email, user.Nombre ?? "Usuario", tokenEmail);
-                if (emailCodigo == 1) 
+                salida = await _emailService.EnviarCorreoValidacion(user.Email, user.Nombre ?? "Usuario", tokenEmail);
+                if (salida.Codigo == 1) 
                 {
-                    Console.WriteLine("Envio Correo: " + emailMensaje);
-                    return Ok(new SalidaMod { Codigo = emailCodigo, Mensaje = emailMensaje });
+                    Console.WriteLine("Envio Correo: " + salida.Mensaje);
+                    return Ok(salida);
                 }
                 //var (wsCodigo, wsMensaje) = await _whatsappService.EnviarCodigoValidacion(user.Telefono, codigoWS);
                 //if (emailCodigo == 1 && wsCodigo == 1)
@@ -61,17 +62,16 @@ public class UsuariosController : ControllerBase
                 //}
                 else 
                 {
-                    Console.WriteLine("Elimino registro: " + regMensaje);
+                    Console.WriteLine("Elimino registro: " + salida.Mensaje);
                     await _usuarioDAL.EliminaRegistroUsuario(user);
-                    return StatusCode(500, new SalidaMod { Codigo = emailCodigo, Mensaje = $"Error desconocido en la validación. {emailMensaje}" } );
+                    return StatusCode(500, salida);
                 }
-                
             }
             else
             {
-                Console.WriteLine("Elimino registro: " + regMensaje);
+                Console.WriteLine("Elimino registro: " + salida.Mensaje);
                 await _usuarioDAL.EliminaRegistroUsuario(user);
-                return BadRequest(new SalidaMod { Codigo = regCodigo, Mensaje = regMensaje });
+                return BadRequest(salida);
             }
         }
         catch (Exception ex)

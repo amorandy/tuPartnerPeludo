@@ -19,13 +19,17 @@ namespace PetShopApi.Services
             _configuration = configuration;
             _baseUrl = Environment.GetEnvironmentVariable("BASE_URL") ?? "http://localhost:5000";
         }
-        public async Task<(int emailCodigo, string emailMensaje)> EnviarCorreoValidacion(string emailDestino, string nombre, string token)
+        public async Task<SalidaMod> EnviarCorreoValidacion(string emailDestino, string nombre, string token)
         {
             var smtpHost = Environment.GetEnvironmentVariable("SMTP_HOST");
             var smtpPort = int.Parse(Environment.GetEnvironmentVariable("SMTP_PORT") ?? "587");
             var smtpUser = Environment.GetEnvironmentVariable("SMTP_USER");
             var smtpPass = Environment.GetEnvironmentVariable("SMTP_PASS");
             var emailFrom = Environment.GetEnvironmentVariable("EMAIL_FROM");
+            if (string.IsNullOrWhiteSpace(smtpHost) || string.IsNullOrWhiteSpace(smtpUser) || string.IsNullOrWhiteSpace(smtpPass) || string.IsNullOrWhiteSpace(emailFrom))
+            {
+                throw new InvalidOperationException("SMTP_HOST, SMTP_USER, SMTP_PASS o EMAIL_FROM no están configurados en las variables de entorno.");
+            }
             try
             {
                 var message = new MimeMessage();
@@ -45,11 +49,11 @@ namespace PetShopApi.Services
                     await client.DisconnectAsync(true);
                 }
 
-                return (1, "Correo enviado correctamente");
+                return new SalidaMod { Codigo = 1, Mensaje = "Correo enviado correctamente" };
             }
             catch (Exception ex)
             {
-                return (-1, "Error SMTP: " + ex.Message);
+                return new SalidaMod { Codigo = -1, Mensaje = "Error SMTP: " + ex.Message };
             }
         }
     }
