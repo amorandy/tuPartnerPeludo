@@ -5,6 +5,12 @@ const btn = document.getElementById('btnGuardar');
 const urlParams = new URLSearchParams(window.location.search);
 const tokenActual = urlParams.get('token');
 
+if (!tokenActual) {
+    toastr.error("Enlace no válido. Solicita uno nuevo.");
+    // Opcional: Redirigir al login
+    // window.location.href = "index.html"; 
+}
+
 const validarPassword = () => {
     const val = pass1.value;
     
