@@ -12,12 +12,14 @@ public class UsuariosController : ControllerBase
     private readonly UsuarioDAL _usuarioDAL;
     private readonly EmailService _emailService;
     private readonly IWhatsappService _whatsappService;
+    private readonly IConfiguration _configuration;
 
     public UsuariosController(UsuarioDAL usuarioDAL, EmailService emailService, IWhatsappService whatsappService)
     {
         _usuarioDAL = usuarioDAL;
         _emailService = emailService;
         _whatsappService = whatsappService;
+        _configuration = new ConfigurationBuilder().AddEnvironmentVariables().Build();
     }
 
     [HttpPost("registrar")]
@@ -84,6 +86,7 @@ public class UsuariosController : ControllerBase
     public async Task<IActionResult> Confirmar([FromQuery] string token)
     {
         if (string.IsNullOrEmpty(token)) return BadRequest("Token no proporcionado.");
+        if (_configuration["PaginaIndex"] == null) return StatusCode(500, "La URL de la página de inicio no está configurada.");
         try
         {
             bool confirmado = await _usuarioDAL.ConfirmarEmail(token);
@@ -104,7 +107,7 @@ public class UsuariosController : ControllerBase
                         <div class='card'>
                             <h1>¡Cuenta activada con éxito!</h1>
                             <p>Tu correo ha sido verificado. Ya eres parte de la comunidad de <b>PetShop</b>.</p>
-                            <a href='https://amorandy.github.io/tuPartnerPeludo/index.html' class='btn'>Iniciar Sesión</a>
+                            <a href='{_configuration["PaginaIndex"]}' class='btn'>Iniciar Sesión</a>
                         </div>
                     </body>
                 </html>";
@@ -173,27 +176,28 @@ public class UsuariosController : ControllerBase
 
         if (request.Metodo == "WHATSAPP")
         {
-            usuario = await _usuarioDAL.ObtenerPorTelefono(request.Telefono ?? "", salida);
+            (usuario, salida) = await _usuarioDAL.ObtenerPorTelefono(request.Telefono ?? "", salida);
             if (usuario == null)
             {
-                return Ok(new { codigo = 1, mensaje = "No existen cuentas asociadas a este numero telefonico" });
+                return Ok(new { salida });
             }
         }
             
         if (request.Metodo == "EMAIL")
         {
-            usuario = await _usuarioDAL.ObtenerPorEmail(request.Email ?? "", salida);
+            (usuario, salida) = await _usuarioDAL.ObtenerPorEmail(request.Email ?? "", salida);
             if (usuario == null)
             {
-                return Ok(new { codigo = 1, mensaje = "No existen cuentas asociadas a este correo" });
+                return Ok(new { salida });
             }
         }
 
-        //if (usuario == null)
-        //    return Ok(new { codigo = 1, mensaje = "Si los datos existen, recibirás el enlace." });
-
         // 3. Generar Token y actualizar
         string token = Guid.NewGuid().ToString();
+        if (usuario == null)
+        {
+            return Ok(new { salida });
+        }
         bool guardado = await _usuarioDAL.ActualizarTokenRecuperacion(usuario.UsuarioID, token);
 
         if (guardado)
@@ -202,7 +206,8 @@ public class UsuariosController : ControllerBase
             {
                 if (!string.IsNullOrWhiteSpace(usuario.Telefono))
                 {
-                    string enlace = $"https://amorandy.github.io/tuPartnerPeludo/reset-password.html?token={token}";
+                    if (_configuration["PaginaIndex"] == null) return StatusCode(500, "La URL de la página de inicio no está configurada.");
+                    string enlace = $"{_configuration["PaginaIndex"]}reset-password.html?token={token}";
                     await _whatsappService.EnviarMensajeAsync(usuario.Telefono, $"Hola {usuario.Nombre}, tu enlace: {enlace}");
                 }
                 else
@@ -215,7 +220,8 @@ public class UsuariosController : ControllerBase
                 if (!string.IsNullOrWhiteSpace(usuario.Email))
                 {
                     // Nota: Aquí usarías tu EmailService
-                    string enlace = $"https://amorandy.github.io/tuPartnerPeludo/reset-password.html?token={token}";
+                    if (_configuration["PaginaIndex"] == null) return StatusCode(500, "La URL de la página de inicio no está configurada.");
+                    string enlace = $"{_configuration["PaginaIndex"]}reset-password.html?token={token}";
                     string cuerpo = $"<h1>Recuperación de contraseña</h1><p>Hola {usuario.Nombre}, haz clic aquí: <a href='{enlace}'>Restablecer</a></p>";
                     await _emailService.EnviarEmailAsync(usuario.Email, "Recupera tu contraseña", cuerpo);
                 }

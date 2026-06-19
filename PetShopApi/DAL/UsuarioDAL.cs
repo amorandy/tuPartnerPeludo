@@ -231,7 +231,7 @@ namespace PetShopApi.DAL
             }
         }
         // Método 1: Buscar usuario por teléfono
-        public async Task<Usuario> ObtenerPorTelefono(string telefono, SalidaMod salida)
+        public async Task<(Usuario?, SalidaMod)> ObtenerPorTelefono(string telefono, SalidaMod salida)
         {
             try
             {
@@ -246,26 +246,27 @@ namespace PetShopApi.DAL
                     using var reader = await cmd.ExecuteReaderAsync();
                     if (await reader.ReadAsync())
                     {
-                        return new Usuario
+                        usuario = new Usuario
                         {
                             UsuarioID = reader.GetInt32("UsuarioID"),
                             Nombre = reader.GetString("Nombre"),
                             Telefono = reader.GetString("Telefono")
                             // Agrega aquí los demás campos que necesites mapear
                         };
+                        return (usuario, new SalidaMod { Codigo = 1, Mensaje = "Usuario encontrado." });
                     }
                 }
                 salida = new SalidaMod { Codigo = 0, Mensaje = "No se encontró un usuario con ese teléfono." };
-                return usuario;
+                return (null, salida);
             }
             catch (Exception ex)
             {
                 salida = new SalidaMod { Codigo = -1, Mensaje = $"Ocurrió un error al buscar el usuario: {ex.Message}" };
-                return new Usuario(); // Retorna un usuario vacío en caso de error
+                return (null, salida); // Retorna un usuario vacío en caso de error
             }
 
         }
-        public async Task<Usuario?> ObtenerPorEmail(string email, SalidaMod salida)
+        public async Task<(Usuario?, SalidaMod)> ObtenerPorEmail(string email, SalidaMod salida)
         {
             Usuario? usuario = null;
             try
@@ -300,7 +301,7 @@ namespace PetShopApi.DAL
                 salida.Codigo = -1;
                 salida.Mensaje = "Error al consultar usuario: " + ex.Message;
             }
-            return usuario;
+            return (usuario, salida);
         }
 
         // Método 2: Guardar el Token de recuperación
@@ -341,7 +342,9 @@ namespace PetShopApi.DAL
                 string sql = @"UPDATE Usuarios 
                        SET PasswordHash = @Pass, 
                            TokenRecuperacion = NULL, 
-                           FechaExpiracionToken = NULL 
+                           FechaExpiracionToken = NULL,
+                           FechaBloqueo = NULL,
+                           IntentosFallidos = 0
                        WHERE TokenRecuperacion = @Token 
                        AND FechaExpiracionToken > @Ahora";
 
