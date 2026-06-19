@@ -202,7 +202,7 @@ public class UsuariosController : ControllerBase
             {
                 if (!string.IsNullOrWhiteSpace(usuario.Telefono))
                 {
-                    string enlace = $"https://amorandy.github.io/reset-password.html?token={token}";
+                    string enlace = $"https://amorandy.github.io/tuPartnerPeludo/reset-password.html?token={token}";
                     await _whatsappService.EnviarMensajeAsync(usuario.Telefono, $"Hola {usuario.Nombre}, tu enlace: {enlace}");
                 }
                 else
@@ -215,7 +215,7 @@ public class UsuariosController : ControllerBase
                 if (!string.IsNullOrWhiteSpace(usuario.Email))
                 {
                     // Nota: Aquí usarías tu EmailService
-                    string enlace = $"https://amorandy.github.io/reset-password.html?token={token}";
+                    string enlace = $"https://amorandy.github.io/tuPartnerPeludo/reset-password.html?token={token}";
                     string cuerpo = $"<h1>Recuperación de contraseña</h1><p>Hola {usuario.Nombre}, haz clic aquí: <a href='{enlace}'>Restablecer</a></p>";
                     await _emailService.EnviarEmailAsync(usuario.Email, "Recupera tu contraseña", cuerpo);
                 }
