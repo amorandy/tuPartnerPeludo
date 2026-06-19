@@ -305,8 +305,9 @@ namespace PetShopApi.DAL
         }
 
         // Método 2: Guardar el Token de recuperación
-        public async Task<bool> ActualizarTokenRecuperacion(int idUsuario, string token)
+        public async Task<SalidaMod> ActualizarTokenRecuperacion(int idUsuario, string token)
         {
+            SalidaMod salida = new SalidaMod();
             try
             {
                 DateTime expiracion = DateTime.Now.AddMinutes(15); // El token expirará en 15 minutos
@@ -323,13 +324,13 @@ namespace PetShopApi.DAL
                 cmd.Parameters.AddWithValue("@Id", idUsuario);
 
                 int filas = await cmd.ExecuteNonQueryAsync();
-                //salida = new SalidaMod { Codigo = filas > 0 ? 1 : 0, Mensaje = filas > 0 ? "Token actualizado correctamente." : "No se pudo actualizar el token." };
-                return filas > 0;
+                salida = new SalidaMod { Codigo = filas > 0 ? 1 : 0, Mensaje = filas > 0 ? "Datos actualizados correctamente." : "No se pudo actualizar el token." };
+                return (salida);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                //salida = new SalidaMod { Codigo = -1, Mensaje = "Ocurrió un error al actualizar el token." };
-                return false;
+                salida = new SalidaMod { Codigo = -1, Mensaje = "Ocurrió un error al actualizar el token: " + ex.Message };
+                return (salida);
             }
         }
         public async Task<bool> RestablecerPasswordFinal(string token, string nuevoPasswordHash)

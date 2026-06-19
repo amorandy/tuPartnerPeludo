@@ -85,8 +85,9 @@ public class UsuariosController : ControllerBase
     [HttpGet("/api/Usuarios/confirmar")]
     public async Task<IActionResult> Confirmar([FromQuery] string token)
     {
+        string? paginaIndex = _configuration["ConnectionStrings:PaginaIndex"];
         if (string.IsNullOrEmpty(token)) return BadRequest("Token no proporcionado.");
-        if (_configuration["PaginaIndex"] == null) return StatusCode(500, "La URL de la página de inicio no está configurada.");
+        if (string.IsNullOrEmpty(paginaIndex)) return StatusCode(500, "La URL de la página de inicio no está configurada.");
         try
         {
             bool confirmado = await _usuarioDAL.ConfirmarEmail(token);
@@ -107,7 +108,7 @@ public class UsuariosController : ControllerBase
                         <div class='card'>
                             <h1>¡Cuenta activada con éxito!</h1>
                             <p>Tu correo ha sido verificado. Ya eres parte de la comunidad de <b>PetShop</b>.</p>
-                            <a href='{_configuration["PaginaIndex"]}' class='btn'>Iniciar Sesión</a>
+                            <a href='{paginaIndex}' class='btn'>Iniciar Sesión</a>
                         </div>
                     </body>
                 </html>";
@@ -171,6 +172,8 @@ public class UsuariosController : ControllerBase
         if (string.IsNullOrWhiteSpace(request.Metodo))
             return BadRequest(new { mensaje = "El método de recuperación es requerido." });
 
+        string? paginaIndex = _configuration["ConnectionStrings:PaginaIndex"];
+        if (string.IsNullOrEmpty(paginaIndex)) return StatusCode(500, "La URL de la página de inicio no está configurada.");
         Usuario? usuario = null;
         SalidaMod salida = new SalidaMod();
 
@@ -192,26 +195,25 @@ public class UsuariosController : ControllerBase
             }
         }
 
-        // 3. Generar Token y actualizar
         string token = Guid.NewGuid().ToString();
         if (usuario == null)
         {
             return Ok(new { salida });
         }
-        bool guardado = await _usuarioDAL.ActualizarTokenRecuperacion(usuario.UsuarioID, token);
+        salida = await _usuarioDAL.ActualizarTokenRecuperacion(usuario.UsuarioID, token);
 
-        if (guardado)
+        if (salida.Codigo == 1)
         {
             if (request.Metodo == "WHATSAPP")
             {
                 if (!string.IsNullOrWhiteSpace(usuario.Telefono))
                 {
-                    if (_configuration["PaginaIndex"] == null) return StatusCode(500, "La URL de la página de inicio no está configurada.");
-                    string enlace = $"{_configuration["PaginaIndex"]}reset-password.html?token={token}";
+                    if (string.IsNullOrEmpty(paginaIndex)) return StatusCode(500, "La URL de la página de inicio no está configurada.");
+                    string enlace = $"{paginaIndex}reset-password.html?token={token}";
                     await _whatsappService.EnviarMensajeAsync(usuario.Telefono, $"Hola {usuario.Nombre}, tu enlace: {enlace}");
                 }
                 else
-                                    {
+                {
                     return Ok(new { codigo = 1, mensaje = "Si los datos existen, recibirás el enlace." });
                 }
             }
@@ -220,21 +222,21 @@ public class UsuariosController : ControllerBase
                 if (!string.IsNullOrWhiteSpace(usuario.Email))
                 {
                     // Nota: Aquí usarías tu EmailService
-                    if (_configuration["PaginaIndex"] == null) return StatusCode(500, "La URL de la página de inicio no está configurada.");
-                    string enlace = $"{_configuration["PaginaIndex"]}reset-password.html?token={token}";
+                    if (string.IsNullOrEmpty(paginaIndex)) return StatusCode(500, "La URL de la página de inicio no está configurada.");
+                    string enlace = $"{paginaIndex}reset-password.html?token={token}";
                     string cuerpo = $"<h1>Recuperación de contraseña</h1><p>Hola {usuario.Nombre}, haz clic aquí: <a href='{enlace}'>Restablecer</a></p>";
-                    await _emailService.EnviarEmailAsync(usuario.Email, "Recupera tu contraseña", cuerpo);
+                    salida = await _emailService.EnviarEmailAsync(usuario.Email, "Recupera tu contraseña", cuerpo);
                 }
                 else
                 {
-                    return Ok(new { codigo = 1, mensaje = "Si los datos existen, recibirás el enlace." });
+                    return Ok( salida );
                 }
             }
 
             return Ok(new { codigo = 1, mensaje = "Enlace enviado con éxito." });
         }
 
-        return Ok(new { codigo = -1, mensaje = "Error al procesar la solicitud." });
+        return Ok( salida );
     }
     [HttpPost("restablecer-final")]
     [AllowAnonymous]
