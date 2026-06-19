@@ -231,6 +231,7 @@ public class UsuariosController : ControllerBase
         return Ok(new { codigo = -1, mensaje = "Error al procesar la solicitud." });
     }
     [HttpPost("restablecer-final")]
+    [AllowAnonymous]
     public async Task<IActionResult> RestablecerFinal([FromBody] RestablecerRequest request)
     {
         // 1. Validaciones de entrada
