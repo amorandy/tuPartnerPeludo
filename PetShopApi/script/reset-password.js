@@ -27,7 +27,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     try {
         const res = await fetch(`${CONFIG.API_BASE_URL}/usuarios/validar-token?token=${encodeURIComponent(tokenActual)}`);
-        const data = await res.json();
+        const response = await res.json();
+        const data = response.salida;
         
         if (data.codigo !== 1) {
             manejarTokenInvalido(data.mensaje); // "Este enlace ha caducado..."
