@@ -10,7 +10,6 @@ function ProcesarRespuesta(data) {
     }
 }
 
-
 function EnviarMensaje(codigo, mensaje) {
     toastr.options = { "closeButton": true, "progressBar": true, "positionClass": 'toast-bottom-right' };
     if (codigo <= -1) toastr.error(mensaje);

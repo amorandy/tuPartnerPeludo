@@ -1,97 +1,77 @@
-const urlParams = new URLSearchParams(window.location.search);
-const tokenActual = urlParams.get('token');
-
-if (typeof urlParams === 'undefined') {
+document.addEventListener("DOMContentLoaded", async () => {
+    const formRestablecer = document.getElementById('formRestablecer');
+    const container = document.querySelector('.card');
     const urlParams = new URLSearchParams(window.location.search);
     const tokenActual = urlParams.get('token');
-}
-// Solo ejecutamos lógica si estamos en la página correcta
-if (window.location.pathname.includes('reset-password.html')) {
-    
+
+    if (!window.location.pathname.includes('reset-password.html')) return;
+
+    // 1. Validación Inicial del Token
+    if (!tokenActual) {
+        EnviarMensaje(-1, "Token no encontrado. Solicita un nuevo enlace.");
+        if (formRestablecer) formRestablecer.style.display = 'none';
+        return;
+    }
+
+    try {
+        const res = await fetch(`${CONFIG.API_BASE_URL}/usuarios/validar-token?token=${encodeURIComponent(tokenActual)}`);
+        
+        if (!res.ok) {
+            // Token inválido o expirado (código -1 para error rojo)
+            EnviarMensaje(-1, "Este enlace ha caducado o no es válido.");
+            if (formRestablecer) formRestablecer.style.display = 'none';
+            return;
+        }
+        
+        // Si todo está bien, mostramos un aviso informativo (código 0 para azul)
+        EnviarMensaje(0, "Token validado. Por favor, ingresa tu nueva contraseña.");
+
+    } catch (e) {
+        EnviarMensaje(-1, "Error de conexión al validar el token.");
+        if (formRestablecer) formRestablecer.style.display = 'none';
+        return;
+    }
+
+    // --- LÓGICA DEL FORMULARIO (Si el token es válido) ---
     const pass1 = document.getElementById('pass1');
     const pass2 = document.getElementById('pass2');
     const btn = document.getElementById('btnGuardar');
-    const formRestablecer = document.getElementById('formRestablecer');
 
-    const validarPassword = () => {
-        const val = pass1.value;
-        const reglas = {
-            mayus: /[A-Z]/.test(val),
-            minus: /[a-z]/.test(val),
-            numero: /\d/.test(val),
-            largo: val.length >= 8
-        };
+    // ... (aquí mantienes tu lógica de validarPassword y los event listeners) ...
 
-        actualizarCheck("check-mayus", reglas.mayus);
-        actualizarCheck("check-minus", reglas.minus);
-        actualizarCheck("check-numero", reglas.numero);
-        actualizarCheck("check-largo", reglas.largo);
+    formRestablecer.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        btn.disabled = true;
+        btn.innerText = "Guardando...";
 
-        const coinciden = val === pass2.value && val !== "";
-        const mensajeCoincide = document.getElementById('check-coincide');
-        if(mensajeCoincide) {
-            mensajeCoincide.classList.toggle('d-none', coinciden || pass2.value === "");
-        }
-        
-        btn.disabled = !(reglas.mayus && reglas.minus && reglas.numero && reglas.largo && coinciden);
-    };
+        try {
+            const response = await fetch(`${CONFIG.API_BASE_URL}/usuarios/restablecer-final`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ Token: tokenActual, NuevaPassword: pass1.value })
+            });
 
-    if (pass1 && pass2) {
-        pass1.addEventListener('input', validarPassword);
-        pass2.addEventListener('input', validarPassword);
-    }
-
-    if (formRestablecer) {
-        formRestablecer.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            if (!tokenActual) {
-                EnviarMensaje(-1, "Token no encontrado. Solicita un nuevo enlace.");
-                return;
-            }
-
-            btn.disabled = true;
-            btn.innerText = "Guardando...";
-
-            try {
-                const urlFinal = `${CONFIG.API_BASE_URL}/usuarios/restablecer-final`;
-                const response = await fetch(urlFinal, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        Token: tokenActual, 
-                        NuevaPassword: pass1.value 
-                    })
-                });
-
-                const data = await response.json();
-                
-                if (data.codigo === 1) {
-                    EnviarMensaje(1, "¡Contraseña actualizada correctamente!");
-                    setTimeout(() => { window.location.href = "index.html"; }, 2000);
-                } else {
-                    EnviarMensaje(0, data.mensaje);
-                    btn.disabled = false;
-                    btn.innerText = "Guardar Cambios";
-                }
-            } catch (error) {
-                EnviarMensaje(-1, "No se pudo conectar con el servidor.");
+            const data = await response.json();
+            
+            if (data.codigo === 1) {
+                EnviarMensaje(1, "¡Contraseña actualizada correctamente!");
+                setTimeout(() => window.location.href = "index.html", 2000);
+            } else {
+                EnviarMensaje(0, data.mensaje); // Azul informativo
                 btn.disabled = false;
                 btn.innerText = "Guardar Cambios";
             }
-        });
-    }
-}
+        } catch (error) {
+            EnviarMensaje(-1, "Error al conectar con el servidor.");
+            btn.disabled = false;
+            btn.innerText = "Guardar Cambios";
+        }
+    });
+});
 
 function actualizarCheck(id, cumple) {
     const el = document.getElementById(id);
     if (!el) return;
-    
-    if (cumple) {
-        el.classList.replace('text-danger', 'text-success');
-        el.innerHTML = "✓ " + el.innerText.substring(2);
-    } else {
-        el.classList.replace('text-success', 'text-danger');
-        el.innerHTML = "✕ " + el.innerText.substring(2);
-    }
+    el.classList.replace(cumple ? 'text-danger' : 'text-success', cumple ? 'text-success' : 'text-danger');
+    el.innerHTML = (cumple ? "✓ " : "✕ ") + el.innerText.substring(2);
 }
