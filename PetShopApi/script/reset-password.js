@@ -5,21 +5,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     const tokenActual = urlParams.get('token');
     const tituloReset = document.getElementById('tituloReset');
 
+    const pass1 = document.getElementById('pass1');
+    const pass2 = document.getElementById('pass2');
+    const btn = document.getElementById('btnGuardar');
+
     if (!window.location.pathname.includes('reset-password.html')) return;
 
-    // Función auxiliar para manejar el error de token
     const manejarTokenInvalido = (mensaje) => {
-        // 1. Cambiamos el título en pantalla
         if (tituloReset) tituloReset.innerText = "Enlace no válido";
         
-        // 2. Usamos tu función centralizada
         EnviarMensaje(-1, mensaje);
         
-        // 3. Ocultamos el formulario
         if (formRestablecer) formRestablecer.style.display = 'none';
     };
 
-    // 1. Validación Inicial del Token
     if (!tokenActual) {
         EnviarMensaje(-1, "Token no encontrado. Por favor, solicita uno nuevo.");
         return;
@@ -31,22 +30,19 @@ document.addEventListener("DOMContentLoaded", async () => {
         const data = response.salida;
         
         if (data.codigo !== 1) {
-            manejarTokenInvalido(data.mensaje); // "Este enlace ha caducado..."
+            manejarTokenInvalido(data.mensaje);
             return;
         }
         
-        // Si es válido, podemos poner un mensaje informativo
         EnviarMensaje(1, "Token validado correctamente.");
     } catch (e) {
         manejarTokenInvalido("Error de conexión al validar el token.");
+        return;
     }
 
-    // --- LÓGICA DEL FORMULARIO (Si el token es válido) ---
-    const pass1 = document.getElementById('pass1');
-    const pass2 = document.getElementById('pass2');
-    const btn = document.getElementById('btnGuardar');
-
-    // ... (aquí mantienes tu lógica de validarPassword y los event listeners) ...
+    pass1.addEventListener('input', validarPassword);
+    pass2.addEventListener('input', validarPassword);
+    validarPassword();
 
     formRestablecer.addEventListener('submit', async (e) => {
         e.preventDefault();
