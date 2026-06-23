@@ -105,13 +105,13 @@ function alternarCamposRecuperacion() {
     const campoWs = document.getElementById("campo-whatsapp");
     const campoEmail = document.getElementById("campo-email");
 
-    /*if (metodo === "WHATSAPP") {
+    //if (metodo === "WHATSAPP") {
         campoWs.classList.remove("d-none");
         campoEmail.classList.add("d-none");
-    } else {*/
+    /*} else {
         campoWs.classList.add("d-none");
         campoEmail.classList.remove("d-none");
-    //}
+    }*/
 }
 
 // Nueva versión de la función de solicitud
