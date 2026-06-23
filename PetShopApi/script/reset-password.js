@@ -50,6 +50,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         btn.innerText = "Guardando...";
 
         try {
+            
             const response = await fetch(`${CONFIG.API_BASE_URL}/usuarios/restablecer-final`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -57,12 +58,15 @@ document.addEventListener("DOMContentLoaded", async () => {
             });
 
             const data = await response.json();
-            
-            if (data.codigo === 1) {
-                EnviarMensaje(data.codigo, data.mensaje);
+            const dataRes = response.salida;
+
+            if (dataRes.codigo === 1) {
+                EnviarMensaje(dataRes.codigo, dataRes.mensaje);
+                btn.innerText = "Redirigiendo...";
+                btn.style.opacity = "0.5";
                 setTimeout(() => window.location.href = "index.html", 2000);
             } else {
-                EnviarMensaje(data.codigo, data.mensaje); // Azul informativo
+                EnviarMensaje(dataRes.codigo, dataRes.mensaje);
                 btn.disabled = false;
                 btn.innerText = "Guardar Cambios";
             }
@@ -79,19 +83,16 @@ function validarPassword() {
     const pass2 = document.getElementById('pass2').value;
     const btn = document.getElementById('btnGuardar');
     
-    // Reglas de validación
     const tieneMayus = /[A-Z]/.test(pass1);
     const tieneMinus = /[a-z]/.test(pass1);
     const tieneNumero = /[0-9]/.test(pass1);
     const tieneLargo = pass1.length >= 8;
     
-    // Actualizar checks visuales
     actualizarCheck('check-mayus', tieneMayus);
     actualizarCheck('check-minus', tieneMinus);
     actualizarCheck('check-numero', tieneNumero);
     actualizarCheck('check-largo', tieneLargo);
     
-    // Validación de coincidencia
     const coinciden = pass1 === pass2 && pass1 !== "";
     const checkCoincide = document.getElementById('check-coincide');
     
@@ -101,7 +102,6 @@ function validarPassword() {
         checkCoincide.classList.add('d-none');
     }
     
-    // Habilitar botón solo si todo es correcto
     const esValido = tieneMayus && tieneMinus && tieneNumero && tieneLargo && coinciden;
     btn.disabled = !esValido;
 }
