@@ -19,6 +19,12 @@ function mostrarLogin() {
     document.getElementById('seccion-verificacion').style.display = 'none';
 }
 
+function mostrarVerificacion() {
+    document.getElementById('register-section').classList.add('d-none');
+    document.getElementById('seccion-verificacion').style.display = 'block';
+    document.getElementById('recuperar-section').classList.remove('d-none');
+}
+
 document.getElementById("formLogin").addEventListener("submit", function(event) {
     event.preventDefault();
     iniciarSesion();
@@ -75,10 +81,10 @@ async function registrarUsuario(datosUsuario) {
         });
         const data = await response.json();
         const dataRes = data.salida;
-
+        console.log(dataRes);
         if (dataRes.codigo === 1) {
             EnviarMensaje(dataRes.codigo, dataRes.mensaje);
-            mostrarVerificacion();
+            mostrarLogin();
         } else {
             EnviarMensaje(dataRes.codigo || 0, dataRes.mensaje || "Error al registrar.");
         }
@@ -150,6 +156,10 @@ async function solicitarRecuperacionAdaptada() {
         
         if (data.codigo === 1) {
             setTimeout(() => mostrarLogin(), 3000);
+        }
+        else
+        {
+            EnviarMensaje(0, data.mensaje);
         }
     } catch (error) {
         EnviarMensaje(-1, "Error al conectar con el servidor.");
@@ -240,10 +250,7 @@ function mostrarSeccionPerfil() {
     }
 }
 
-function mostrarVerificacion() {
-    document.getElementById('register-section').classList.add('d-none');
-    document.getElementById('seccion-verificacion').style.display = 'block';
-}
+
 
 async function confirmarCodigo() {
     const codigo = document.getElementById('codigo-verificacion').value;
