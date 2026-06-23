@@ -64,6 +64,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 EnviarMensaje(dataRes.codigo, dataRes.mensaje);
                 btn.innerText = "Redirigiendo...";
                 btn.style.opacity = "0.5";
+                console.log("redireccionando")
                 setTimeout(() => window.location.href = "index.html", 2000);
             } else {
                 EnviarMensaje(dataRes.codigo, dataRes.mensaje);
