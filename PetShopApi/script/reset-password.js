@@ -58,8 +58,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             });
 
             const data = await response.json();
-            console.log(data);
-            const dataRes = response.salida;
+            const dataRes = data.salida;
 
             if (dataRes.codigo === 1) {
                 EnviarMensaje(dataRes.codigo, dataRes.mensaje);
