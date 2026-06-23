@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
 
     if (!tokenActual) {
-        EnviarMensaje(-1, "Token no encontrado. Por favor, solicita uno nuevo.");
+        EnviarMensaje(-1, "Data no encontrada. Por favor, solicita uno nuevo.");
         return;
     }
 
@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             return;
         }
         
-        EnviarMensaje(1, "Token validado correctamente.");
+        //EnviarMensaje(1, "Token validado correctamente.");
     } catch (e) {
         manejarTokenInvalido("Error de conexión al validar el token.");
         return;
@@ -50,6 +50,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         btn.innerText = "Guardando...";
 
         try {
+            
             const response = await fetch(`${CONFIG.API_BASE_URL}/usuarios/restablecer-final`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -57,12 +58,16 @@ document.addEventListener("DOMContentLoaded", async () => {
             });
 
             const data = await response.json();
-            
-            if (data.codigo === 1) {
-                EnviarMensaje(data.codigo, data.mensaje);
+            const dataRes = data.salida;
+
+            if (dataRes.codigo === 1) {
+                EnviarMensaje(dataRes.codigo, dataRes.mensaje);
+                btn.innerText = "Redirigiendo...";
+                btn.style.opacity = "0.5";
+                console.log("redireccionando")
                 setTimeout(() => window.location.href = "index.html", 2000);
             } else {
-                EnviarMensaje(data.codigo, data.mensaje); // Azul informativo
+                EnviarMensaje(dataRes.codigo, dataRes.mensaje);
                 btn.disabled = false;
                 btn.innerText = "Guardar Cambios";
             }
@@ -73,6 +78,34 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     });
 });
+
+function validarPassword() {
+    const pass1 = document.getElementById('pass1').value;
+    const pass2 = document.getElementById('pass2').value;
+    const btn = document.getElementById('btnGuardar');
+    
+    const tieneMayus = /[A-Z]/.test(pass1);
+    const tieneMinus = /[a-z]/.test(pass1);
+    const tieneNumero = /[0-9]/.test(pass1);
+    const tieneLargo = pass1.length >= 8;
+    
+    actualizarCheck('check-mayus', tieneMayus);
+    actualizarCheck('check-minus', tieneMinus);
+    actualizarCheck('check-numero', tieneNumero);
+    actualizarCheck('check-largo', tieneLargo);
+    
+    const coinciden = pass1 === pass2 && pass1 !== "";
+    const checkCoincide = document.getElementById('check-coincide');
+    
+    if (pass2 !== "" && !coinciden) {
+        checkCoincide.classList.remove('d-none');
+    } else {
+        checkCoincide.classList.add('d-none');
+    }
+    
+    const esValido = tieneMayus && tieneMinus && tieneNumero && tieneLargo && coinciden;
+    btn.disabled = !esValido;
+}
 
 function actualizarCheck(id, cumple) {
     const el = document.getElementById(id);

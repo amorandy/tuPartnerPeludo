@@ -19,6 +19,12 @@ function mostrarLogin() {
     document.getElementById('seccion-verificacion').style.display = 'none';
 }
 
+function mostrarVerificacion() {
+    document.getElementById('register-section').classList.add('d-none');
+    document.getElementById('seccion-verificacion').style.display = 'block';
+    document.getElementById('recuperar-section').classList.remove('d-none');
+}
+
 document.getElementById("formLogin").addEventListener("submit", function(event) {
     event.preventDefault();
     iniciarSesion();
@@ -74,14 +80,15 @@ async function registrarUsuario(datosUsuario) {
             body: JSON.stringify(datosUsuario)
         });
         const data = await response.json();
-        const codigoRespuesta = data.regCodigo;
-        const mensajeRespuesta = data.regMensaje;
+        const codigo = data.codigo;
+        const mensaje = data.mensaje;
 
-        if (codigoRespuesta === 1) {
-            EnviarMensaje(codigoRespuesta, mensajeRespuesta);
-            mostrarVerificacion();
+        if (codigo === 1) {
+            EnviarMensaje(codigo, mensaje);
+            mostrarLogin();
         } else {
-            EnviarMensaje(codigoRespuesta || 0, mensajeRespuesta || "Error al registrar.");
+            // Si codigo es undefined, usamos 0 como respaldo
+            EnviarMensaje(codigo || 0, mensaje || "Error al registrar.");
         }
     } catch (error) {
         console.error("Error completo:", error);
@@ -92,26 +99,79 @@ async function registrarUsuario(datosUsuario) {
     }
 }
 
+async function cargarMetodosRecuperacion() {
+    try {
+        const res = await fetch(`${CONFIG.API_BASE_URL}/usuarios/metodos-recuperacion`);
+        const json = await res.json();
+        
+        // Accedemos a la lista que devuelve tu API
+        const metodos = json.salida.metodos; 
+        const select = document.getElementById('metodo-recuperacion');
+        
+        select.innerHTML = ""; // Limpiamos opciones anteriores
+
+        metodos.forEach(metodo => {
+            const option = document.createElement('option');
+            option.value = metodo.id;
+            option.textContent = metodo.etiqueta;
+            // Guardamos el placeholder para usarlo después
+            option.dataset.placeholder = metodo.placeholder; 
+            select.appendChild(option);
+        });
+
+        // Llamamos a la lógica para ajustar los inputs según el primer método
+        alternarCamposRecuperacion();
+    } catch (e) {
+        console.error("Error al cargar métodos:", e);
+    }
+}
+
 // Función para mostrar/ocultar campos según la selección
 function alternarCamposRecuperacion() {
-    const metodo = document.getElementById("metodo-recuperacion").value;
-    const campoWs = document.getElementById("campo-whatsapp");
-    const campoEmail = document.getElementById("campo-email");
-
-    if (metodo === "WHATSAPP") {
-        campoWs.classList.remove("d-none");
-        campoEmail.classList.add("d-none");
-    } else {
-        campoWs.classList.add("d-none");
-        campoEmail.classList.remove("d-none");
+    const select = document.getElementById("metodo-recuperacion");
+    const metodo = select.value;
+    
+    // Obtenemos todos los contenedores de campos posibles
+    // Tip: Ponles una clase común como 'campo-recuperacion' en tu HTML
+    const todosLosCampos = document.querySelectorAll(".campo-recuperacion");
+    
+    // Ocultamos todos primero
+    todosLosCampos.forEach(c => c.classList.add("d-none"));
+    
+    // Mostramos solo el que coincide con el ID del método
+    const campoSeleccionado = document.getElementById("campo-" + metodo.toLowerCase());
+    if (campoSeleccionado) {
+        campoSeleccionado.classList.remove("d-none");
     }
+
+    // Opcional: Actualizar el placeholder del input activo dinámicamente
+    const placeholder = select.options[select.selectedIndex].dataset.placeholder;
+    const inputActivo = campoSeleccionado.querySelector("input");
+    if(inputActivo) inputActivo.placeholder = placeholder;
 }
 
 // Nueva versión de la función de solicitud
 async function solicitarRecuperacionAdaptada() {
     const metodo = document.getElementById("metodo-recuperacion").value;
     const btn = document.getElementById("btnEnviarRecuperar");
-    
+    const campoTelefono = document.getElementById('rec-telefono');
+    const campoEmail = document.getElementById('rec-email');
+
+    let esValido = false;
+    let valorAEnviar = "";
+    if (metodo === "WHATSAPP") {
+        // Validar que tenga al menos 8-12 dígitos (ajusta según tu país)
+        const telefonoRegex = /^\d{8,12}$/;
+        esValido = telefonoRegex.test(campoTelefono.value);
+        valorAEnviar = campoTelefono.value;
+        if (!esValido) EnviarMensaje(-1, "Por favor, ingresa un número de teléfono válido.");
+    } else {
+        // Validar formato de email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        esValido = emailRegex.test(campoEmail.value);
+        valorAEnviar = campoEmail.value;
+        if (!esValido) EnviarMensaje(-1, "Por favor, ingresa un correo electrónico válido.");
+    }
     // Obtener valores según el método
     const payload = {
         Metodo: metodo,
@@ -134,6 +194,10 @@ async function solicitarRecuperacionAdaptada() {
         
         if (data.codigo === 1) {
             setTimeout(() => mostrarLogin(), 3000);
+        }
+        else
+        {
+            EnviarMensaje(0, data.mensaje);
         }
     } catch (error) {
         EnviarMensaje(-1, "Error al conectar con el servidor.");
@@ -224,10 +288,7 @@ function mostrarSeccionPerfil() {
     }
 }
 
-function mostrarVerificacion() {
-    document.getElementById('register-section').classList.add('d-none');
-    document.getElementById('seccion-verificacion').style.display = 'block';
-}
+
 
 async function confirmarCodigo() {
     const codigo = document.getElementById('codigo-verificacion').value;
