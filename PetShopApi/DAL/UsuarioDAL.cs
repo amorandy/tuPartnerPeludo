@@ -110,7 +110,7 @@ namespace PetShopApi.DAL
                         }
                     }
 
-                    var cmdUser = new MySqlCommand("SELECT UsuarioID, Nombre, Email, PasswordHash, IntentosFallidos FROM Usuarios WHERE Email = @Email", conexion);
+                    var cmdUser = new MySqlCommand("SELECT UsuarioID, Nombre, Email, PasswordHash, IntentosFallidos, Rol FROM Usuarios WHERE Email = @Email", conexion);
                     cmdUser.Parameters.AddWithValue("@Email", email);
 
                     using (var reader = await cmdUser.ExecuteReaderAsync())
@@ -121,6 +121,7 @@ namespace PetShopApi.DAL
                             {
                                 UsuarioID = (int)reader["UsuarioID"],
                                 Nombre = reader["Nombre"].ToString(),
+                                Rol = reader["Rol"].ToString(),
                                 IntentosFallidos = reader["IntentosFallidos"] != DBNull.Value ? (int)reader["IntentosFallidos"] : 0
                             };
                             string hash = reader["PasswordHash"]?.ToString() ?? string.Empty;

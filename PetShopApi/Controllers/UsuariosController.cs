@@ -143,6 +143,7 @@ public class UsuariosController : ControllerBase
                 codigo = salida.Codigo,
                 mensaje = salida.Mensaje,
                 user = usuario?.Nombre,
+                rol = usuario?.Rol,
                 token = tokenn
             });
         }

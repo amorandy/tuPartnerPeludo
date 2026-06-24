@@ -42,5 +42,29 @@ namespace PetShopApi.DAL
                 return (new SalidaMod { Codigo = -1, Mensaje = ex.Message }, new List<ProductosMod>());
             }
         }
+        public (SalidaMod, ProductosMod) GuardarProducto(ProductosMod producto) 
+        {
+            try
+            {
+                using (var db = _conexionFll.ObtenerConexion())
+                {
+                    db.Open();
+                    using (var cmd = new MySqlCommand("INSERT INTO Productos (Nombre, Descripcion, Precio, Stock, UrlImagen) VALUES (@Nombre, @Descripcion, @Precio, @Stock, @UrlImagen)", db))
+                    {
+                        cmd.Parameters.AddWithValue("@Nombre", producto.Nombre);
+                        cmd.Parameters.AddWithValue("@Descripcion", producto.Descripcion);
+                        cmd.Parameters.AddWithValue("@Precio", producto.Precio);
+                        cmd.Parameters.AddWithValue("@Stock", producto.Stock);
+                        cmd.Parameters.AddWithValue("@UrlImagen", producto.UrlImagen);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                return (new SalidaMod { Codigo = 1, Mensaje = "Producto guardado correctamente" }, producto);
+            }
+            catch (Exception ex)
+            {
+                return (new SalidaMod { Codigo = -1, Mensaje = ex.Message }, producto);
+            }
+        }
     }
 }
