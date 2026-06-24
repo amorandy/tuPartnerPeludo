@@ -36,7 +36,8 @@ namespace PetShopApi.DAL
                                 {
                                     Metodo = reader["Id"]?.ToString(),
                                     Etiqueta = reader["Etiqueta"]?.ToString(),
-                                    Placeholder = reader["Placeholder"]?.ToString()
+                                    Placeholder = reader["Placeholder"]?.ToString(),
+                                    Activo = reader["Activo"] != DBNull.Value ? reader.GetBoolean(reader.GetOrdinal("Activo")) : (bool?)null
                                 });
                             }
                         }
