@@ -20,49 +20,43 @@
 </head>
 <body class="bg-light">
 
-    <nav class="navbar navbar-expand-lg navbar-light bg-white navbar-custom p-3">
-        <div class="container">
-            
+    <nav class="navbar navbar-expand-lg navbar-light bg-white p-3 border-bottom">
+        <div class="container-fluid">
             <a class="navbar-brand d-flex align-items-center fw-bold" href="#">
-            <img src="images/logo.png" alt="Logo" width="45" height="45" class="me-2 rounded-circle border border-dark">
-            Tu Partner Peludo
-        </a>
-            
-            <div class="d-flex align-items-center">
-                <span id="user-name" class="me-3 fw-bold small"></span>
-                <img id="user-img" src="" class="rounded-circle user-avatar">
-                <button onclick="logout()" class="btn btn-sm ms-3"><i class="fas fa-sign-out-alt"></i></button>
-            </div>
-        </div>
-        <div class="d-flex align-items-center">
-            <a href="#" class="text-dark me-4 position-relative" onclick="abrirCarrito()">
-                <i class="fas fa-shopping-cart fa-lg"></i>
-                <span id="contador-carrito" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
+                <img src="images/logo.png" alt="Logo" width="45" height="45" class="me-2 rounded-circle border border-dark">
+                Tu Partner Peludo
             </a>
             
-            <span id="user-name" class="me-3 fw-bold small"></span>
-            <img id="user-img" src="" class="rounded-circle user-avatar">
-            <button onclick="logout()" class="btn btn-sm ms-3"><i class="fas fa-sign-out-alt"></i></button>
+            <div class="d-flex align-items-center">
+                <a href="#" class="text-dark me-4 position-relative" onclick="abrirCarrito()">
+                    <i class="fas fa-shopping-cart fa-lg"></i>
+                    <span id="contador-carrito" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
+                </a>
+                
+                <span id="user-name" class="me-2 fw-bold small text-uppercase"></span>
+                <img id="user-img" src="" class="rounded-circle user-avatar" width="40" height="40">
+                <button onclick="logout()" class="btn btn-sm ms-3 btn-outline-danger"><i class="fas fa-sign-out-alt"></i></button>
+            </div>
         </div>
     </nav>
     <div class="container-fluid">
-    <div class="row">
-        <aside class="col-md-2 bg-white p-3 border-end" style="min-height: 80vh;">
-            <h5 class="fw-bold mb-4">Categorías</h5>
-            <ul class="nav flex-column">
-                <li class="nav-item mb-2"><a href="#" class="nav-link text-dark active" onclick="filtrarProductos('todos')">Todos</a></li>
-                <li class="nav-item mb-2"><a href="#" class="nav-link text-dark" onclick="filtrarProductos('placas')">Placas</a></li>
-                <li class="nav-item mb-2"><a href="#" class="nav-link text-dark" onclick="filtrarProductos('accesorios')">Accesorios</a></li>
-            </ul>
-        </aside>
+        <div class="row">
+            <aside class="col-md-2 bg-white p-3 border-end" style="min-height: 80vh;">
+                <h5 class="fw-bold mb-4">Categorías</h5>
+                <ul class="nav flex-column">
+                    <li class="nav-item mb-2"><a href="#" class="nav-link text-dark active" onclick="filtrarProductos('todos')">Todos</a></li>
+                    <li class="nav-item mb-2"><a href="#" class="nav-link text-dark" onclick="filtrarProductos('placas')">Placas</a></li>
+                    <li class="nav-item mb-2"><a href="#" class="nav-link text-dark" onclick="filtrarProductos('accesorios')">Accesorios</a></li>
+                </ul>
+            </aside>
 
-        <main class="col-md-10 p-4">
-            <h2 class="mb-4">Productos Destacados</h2>
-            <div class="row" id="contenedor-productos">
-                </div>
-        </main>
+            <main class="col-md-10 p-4">
+                <h2 class="mb-4">Productos Destacados</h2>
+                <div class="row" id="contenedor-productos">
+                    </div>
+            </main>
+        </div>
     </div>
-</div>
 
 
     <script>
