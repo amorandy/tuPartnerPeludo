@@ -278,24 +278,18 @@ async function confirmarCodigo() {
         btnConfirmar.innerText = "Verificar Cuenta";
     }
 }
-
 window.onload = function() {
-    // 1. Lógica de sesión (La que faltaba)
-    const session = localStorage.getItem('user_session');
-    if (session && window.location.pathname.includes("index.html")) {
-        mostrarSeccionPerfil();
+    const sessionData = localStorage.getItem('user_session');
+
+    // SOLO si estamos en index.html y YA tenemos sesión:
+    if (sessionData && window.location.pathname.includes("index.html")) {
+        const session = JSON.parse(sessionData);
+        // Redirigimos según el rol, pero verificamos dónde estamos
+        window.location.replace(session.rol === 'admin' ? "admin-productos.html" : "main.html");
+        return; // ¡IMPORTANTE! Detiene el script aquí
     }
 
-    // 2. Lógica de Google (La que estaba pisando a las demás)
-    if (typeof google !== 'undefined') {
-        google.accounts.id.initialize({
-            client_id: "85108018661-r3dis4gm7h25kg9or2fnnpckhme87raj.apps.googleusercontent.com",
-            callback: window.handleCredentialResponse
-        });
-    }
-
-    // 3. Cualquier otra lógica que necesites al cargar
-    console.log("Sistema inicializado correctamente");
+    // ... inicialización de Google ...
 };
 
 function decodeJwtResponse(token) {
