@@ -18,6 +18,7 @@
     <script src="PetShopApi/script/admin-productos.js" defer></script>
     <script src="PetShopApi/script/master.js" defer></script>
     <script src="PetShopApi/script/carrito.js" defer></script>
+    <script src="PetShopApi/script/auth-utils.js" defer></script>
 </head>
 <body class="bg-light">
 
@@ -27,19 +28,46 @@
                 <img src="images/logo.png" alt="Logo" width="45" height="45" class="me-2 rounded-circle border border-dark">
                 Tu Partner Peludo
             </a>
-            
             <div class="d-flex align-items-center">
-                <a href="#" class="text-dark me-4 position-relative" onclick="abrirCarrito()">
-                    <i class="fas fa-shopping-cart fa-lg"></i>
-                    <span id="contador-carrito" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
-                </a>
-                
-                <span id="user-name" class="me-2 fw-bold small text-uppercase"></span>
-                <img id="user-img" src="" class="rounded-circle user-avatar" width="40" height="40">
                 <button onclick="logout()" class="btn btn-sm ms-3 btn-outline-danger"><i class="fas fa-sign-out-alt"></i></button>
             </div>
         </div>
     </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-2 sidebar-admin p-3 border-end min-vh-100 bg-white">
+                <h5 class="text-secondary small fw-bold mb-3">PANEL DE CONTROL</h5>
+                <ul class="nav flex-column">
+                    <li class="nav-item mb-2">
+                        <a href="admin-productos.html" class="nav-link text-dark active bg-light rounded">
+                            <i class="fas fa-box-open me-2"></i> Gestionar Productos
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a href="admin-usuarios.html" class="nav-link text-dark">
+                            <i class="fas fa-users me-2"></i> Ver Usuarios
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a href="admin-pedidos.html" class="nav-link text-dark">
+                            <i class="fas fa-clipboard-list me-2"></i> Ver Pedidos
+                        </a>
+                    </li>
+                    <hr>
+                    <li class="nav-item">
+                        <a href="main.html" class="nav-link text-primary">
+                            <i class="fas fa-arrow-left me-2"></i> Volver a la Tienda
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <main class="col-md-10 p-4">
+
+            </main>
+        </div>
+    </div>
     <div class="container mt-5">
         <div class="card shadow-sm p-4">
             <h3 class="mb-4">Administrar Productos</h3>
@@ -74,43 +102,14 @@
         </div>
     </div>
     <script>
-        // Función para decodificar el token
-        function parseJwt (token) {
-            var base64Url = token.split('.')[1];
-            var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            return JSON.parse(window.atob(base64));
-        };
-    
         window.onload = function() {
-            // Intentamos obtener cualquiera de las dos formas de sesión
-            const googleToken = localStorage.getItem('google_token');
-            const userSession = localStorage.getItem('user_session');
-    
-            if (!googleToken && !userSession) {
-                // Si no hay absolutamente nada, fuera
-                window.location.replace("index.html");
-            } else {
-                // Prioridad a los datos de la sesión unificada
-                if (userSession) {
-                    const data = JSON.parse(userSession);
-                    document.getElementById('user-name').innerText = data.nombre.toUpperCase();
-                    document.getElementById('user-img').src = data.foto || "images/default-user.png";
-                } 
-                // Si solo hay token de Google (como respaldo)
-                else if (googleToken) {
-                    const userData = parseJwt(googleToken);
-                    document.getElementById('user-name').innerText = userData.name.toUpperCase();
-                    document.getElementById('user-img').src = userData.picture;
-                }
-            }
-        }
-    
-        function logout() {
-            // Limpiamos todo para que no queden rastros
-            localStorage.removeItem('google_token');
-            localStorage.removeItem('user_session');
-            localStorage.removeItem('session_token');
-            window.location.replace("index.html");
+            initAuth((data) => {
+                const nombre = data.nombre || data.name;
+                const foto = data.foto || data.picture;
+                
+                document.getElementById('user-name').innerText = nombre.toUpperCase();
+                document.getElementById('user-img').src = foto || "images/default-user.png";
+            });
         }
     </script>
 </body>

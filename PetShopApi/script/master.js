@@ -16,3 +16,17 @@ function EnviarMensaje(codigo, mensaje) {
     else if (codigo === 0) toastr.info(mensaje);
     else toastr.success(mensaje);
 }
+
+// En tu master.js, al recibir la respuesta exitosa del login
+const response = await fetch('https://tupartnerpeludo.onrender.com/api/Usuarios/login', { /* ... */ });
+const data = await response.json();
+
+if (data.codigo === 1) {
+    // Guardamos el objeto completo, incluyendo el rol
+    const userSession = {
+        nombre: data.user, // Según tu API es el nombre
+        rol: data.rol      // El nuevo campo que agregaste
+    };
+    localStorage.setItem('user_session', JSON.stringify(userSession));
+    window.location.href = "main.html";
+}
