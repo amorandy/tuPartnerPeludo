@@ -7,7 +7,7 @@ document.getElementById('form-producto').addEventListener('submit', async (e) =>
         urlImagen: document.getElementById('urlImagen').value
     };
 
-    const response = await fetch('https://tupartnerpeludo.onrender.com/api/Productos', {
+    const response = await fetch(`${CONFIG.API_BASE_URL}/Productos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(producto)

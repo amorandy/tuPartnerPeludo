@@ -27,47 +27,13 @@ function mostrarVerificacion() {
 
 document.getElementById("formLogin").addEventListener("submit", function(event) {
     event.preventDefault();
-    iniciarSesion();
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    
+    // Llamamos a la función centralizada
+    realizarLogin(email, password);
 });
 
-async function iniciarSesion(event) {
-    if (event) event.preventDefault();
-    const btnIniciar = document.querySelector("#formLogin button[type='submit']");
-    btnIniciar.disabled = true;
-    btnIniciar.innerText = "Iniciando Sesión...";
-
-    const Email = document.getElementById("loginEmail").value;
-    const Password = document.getElementById("loginPass").value;
-
-    try {
-        const response = await fetch(`${CONFIG.API_BASE_URL}/usuarios/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: Email, password: Password })
-        });
-
-        const data = await response.json();
-
-        ProcesarRespuesta(data);
-
-        if (data.codigo === 1) {
-            
-            localStorage.setItem('session_token', data.token); 
-            localStorage.setItem('user_session', JSON.stringify(data.usuario));
-
-            setTimeout(() => {
-                window.location.href = "main.html";
-            }, 1000);
-        }
-            
-    } catch (error) {
-        console.error("Error Login:", error);
-        EnviarMensaje(-1, "Error de conexión con el servidor.");
-    } finally {
-        btnIniciar.disabled = false;
-        btnIniciar.innerText = "ENTRAR";
-    }
-}
 async function registrarUsuario(datosUsuario) {
     const btnRegistrar = document.querySelector("#formRegistro button[type='submit']");
     btnRegistrar.disabled = true;

@@ -17,7 +17,6 @@ function EnviarMensaje(codigo, mensaje) {
     else toastr.success(mensaje);
 }
 
-// En tu master.js, al recibir la respuesta exitosa del login
 const response = await fetch(`${CONFIG.API_BASE_URL}/usuarios/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -26,11 +25,35 @@ const response = await fetch(`${CONFIG.API_BASE_URL}/usuarios/login`, {
 const data = await response.json();
 
 if (data.codigo === 1) {
-    // Guardamos el objeto completo, incluyendo el rol
     const userSession = {
-        nombre: data.user, // Según tu API es el nombre
-        rol: data.rol      // El nuevo campo que agregaste
+        nombre: data.user, 
+        rol: data.rol
     };
     localStorage.setItem('user_session', JSON.stringify(userSession));
     window.location.href = "main.html";
+}
+
+async function realizarLogin(email, password) {
+    try {
+        const response = await fetch(`${CONFIG.API_BASE_URL}/usuarios/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email, password: password })
+        });
+        
+        const data = await response.json();
+
+        if (data.codigo === 1) {
+            const userSession = {
+                nombre: data.user,
+                rol: data.rol
+            };
+            localStorage.setItem('user_session', JSON.stringify(userSession));
+            window.location.href = "main.html";
+        } else {
+            ProcesarRespuesta(data);
+        }
+    } catch (error) {
+        EnviarMensaje(-1, "Error de conexión con el servidor");
+    }
 }
