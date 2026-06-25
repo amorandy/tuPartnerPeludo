@@ -17,15 +17,6 @@ function EnviarMensaje(codigo, mensaje) {
     else toastr.success(mensaje);
 }
 
-if (data.codigo === 1) {
-    const userSession = {
-        nombre: data.user, 
-        rol: data.rol
-    };
-    localStorage.setItem('user_session', JSON.stringify(userSession));
-    window.location.href = "main.html";
-}
-
 async function realizarLogin(email, password) {
     try {
         const response = await fetch(`${CONFIG.API_BASE_URL}/usuarios/login`, {
