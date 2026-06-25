@@ -27,8 +27,8 @@ function mostrarVerificacion() {
 
 document.getElementById("formLogin").addEventListener("submit", function(event) {
     event.preventDefault();
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPass').value;
     
     // Llamamos a la función centralizada
     realizarLogin(email, password);
