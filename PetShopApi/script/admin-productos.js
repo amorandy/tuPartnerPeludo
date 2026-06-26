@@ -22,7 +22,7 @@ document.getElementById('form-producto').addEventListener('submit', async (e) =>
 function verificarAdmin() {
     const session = JSON.parse(localStorage.getItem('user_session'));
     if (!session || session.rol !== 'admin') {
-        toastr.error("Acceso denegado: Área exclusiva para administradores");
+        EnviarMensaje(-1, "Acceso denegado: Área exclusiva para administradores");
         window.location.href = "main.html";
     }
 }
