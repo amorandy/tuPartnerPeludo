@@ -23,9 +23,9 @@ public class ProductosController : ControllerBase
         _productosDAL = productosDAL;
         _env = env;
         _configuration = configuration;
-        _cloudName = _configuration["CLOUDINARY_CLOUD_NAME"] ?? "";
-        _apiKey = _configuration["CLOUDINARY_API_KEY"] ?? "";
-        _apiSecret = _configuration["CLOUDINARY_API_SECRET"] ?? "";
+        _cloudName = _configuration["Cloudinary:CLOUD_NAME"] ?? "";
+        _apiKey = _configuration["Cloudinary:API_KEY"] ?? "";
+        _apiSecret = _configuration["Cloudinary:API_SECRET"] ?? "";
 
         Account account = new Account(_cloudName, _apiKey, _apiSecret);
         _cloudinary = new Cloudinary(account);
