@@ -36,19 +36,7 @@ public class ProductosController : ControllerBase
         var (salida, productos) = _productosDAL.ObtenerProductos();
         return Ok(new { salida, productos });
     }
-    [HttpGet("listar")]
-    public IActionResult ListarProductos()
-    {
-        var (salida, lista) = _productosDAL.ObtenerProductos();
-        return Ok(new { salida, productos = lista });
-    }
     [HttpPost]
-    public IActionResult Post([FromBody] ProductosMod producto)
-    {
-        var (salida, productoGuardado) = _productosDAL.GuardarProducto(producto);
-        return Ok(new { salida, producto = productoGuardado });
-    }
-    [HttpPost("guardar")]
     public async Task<IActionResult> GuardarProducto([FromForm] ProductosMod producto)
     {
         try
