@@ -103,3 +103,62 @@ async function cargarProductos() {
         });
     }
 }
+
+async function renderizarTablaProductos() {
+    const contenedor = document.getElementById('lista-productos');
+    
+    try {
+        const response = await fetch('https://tupartnerpeludo.onrender.com/api/Productos/listar');
+        const data = await response.json();
+
+        if (data.codigo === 1) {
+            contenedor.innerHTML = ''; // Limpiamos la tabla
+            
+            data.productos.forEach(p => {
+                // p.urlImagen es la ruta que guardamos en la BD
+                const urlCompleta = `https://tupartnerpeludo.onrender.com${p.urlImagen}`;
+                
+                contenedor.innerHTML += `
+                    <tr>
+                        <td><img src="${urlCompleta}" class="img-thumbnail-custom" alt="Producto"></td>
+                        <td>${p.nombre}</td>
+                        <td>$${p.precio}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-danger">Eliminar</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+    } catch (error) {
+        console.error("Error al listar:", error);
+    }
+}
+
+document.getElementById('form-producto').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(e.target); // Captura todos los campos del form automáticamente
+
+    const response = await fetch('https://tupartnerpeludo.onrender.com/api/Productos/guardar', {
+        method: 'POST',
+        body: formData
+    });
+
+    const data = await response.json();
+
+    if (data.codigo === 1) {
+        toastr.success("Producto guardado");
+        e.target.reset(); // Limpia el formulario
+        
+        // ¡Magia! Recargamos la tabla sin refrescar la página
+        renderizarTablaProductos(); 
+    } else {
+        toastr.error(data.mensaje);
+    }
+});
+
+// Al final de tu script, inicializamos la tabla
+document.addEventListener('DOMContentLoaded', () => {
+    renderizarTablaProductos();
+});
