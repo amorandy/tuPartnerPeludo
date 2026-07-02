@@ -108,14 +108,13 @@ async function renderizarTablaProductos() {
     const contenedor = document.getElementById('lista-productos');
     
     try {
-        const response = await fetch('https://tupartnerpeludo.onrender.com/api/Productos/listar');
+        const response = await fetch(`${CONFIG.API_BASE_URL}/Productos/listar`);
         const data = await response.json();
 
         if (data.codigo === 1) {
-            contenedor.innerHTML = ''; // Limpiamos la tabla
+            contenedor.innerHTML = '';
             
             data.productos.forEach(p => {
-                // p.urlImagen es la ruta que guardamos en la BD
                 const urlCompleta = `https://tupartnerpeludo.onrender.com${p.urlImagen}`;
                 
                 contenedor.innerHTML += `
@@ -138,9 +137,9 @@ async function renderizarTablaProductos() {
 document.getElementById('form-producto').addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const formData = new FormData(e.target); // Captura todos los campos del form automáticamente
+    const formData = new FormData(e.target); 
 
-    const response = await fetch('https://tupartnerpeludo.onrender.com/api/Productos/guardar', {
+    const response = await fetch(`${CONFIG.API_BASE_URL}/Productos/guardar`, {
         method: 'POST',
         body: formData
     });
@@ -148,17 +147,13 @@ document.getElementById('form-producto').addEventListener('submit', async (e) =>
     const data = await response.json();
 
     if (data.codigo === 1) {
-        toastr.success("Producto guardado");
-        e.target.reset(); // Limpia el formulario
-        
-        // ¡Magia! Recargamos la tabla sin refrescar la página
+        e.target.reset();
         renderizarTablaProductos(); 
     } else {
-        toastr.error(data.mensaje);
     }
+    ProcesarRespuesta(data);
 });
 
-// Al final de tu script, inicializamos la tabla
 document.addEventListener('DOMContentLoaded', () => {
     renderizarTablaProductos();
 });
