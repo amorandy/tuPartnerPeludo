@@ -1,40 +1,32 @@
 document.getElementById('form-producto').addEventListener('submit', async (e) => {
     e.preventDefault();
-
     const formData = new FormData();
     formData.append("Nombre", document.getElementById('nombre').value);
     formData.append("Descripcion", document.getElementById('descripcion').value);
     formData.append("Precio", document.getElementById('precio').value);
-    
+    formData.append("Stock", document.getElementById('stock').value);
     const fileInput = document.getElementById('imagenProducto');
     formData.append("file", fileInput.files[0]); 
-
     const response = await fetch(`${CONFIG.API_BASE_URL}/Productos`, {
         method: 'POST',
         body: formData 
     });
-
     const data = await response.json();
-
     if(data.codigo === 1) {
-        toastr.success("Producto guardado correctamente");
         document.getElementById('form-producto').reset();
         renderizarTablaProductos(); 
-    } else {
-        toastr.error("Error al guardar: " + (data.mensaje || "Error desconocido"));
     }
+    ProcesarRespuesta(data);
 });
 
 window.onload = function() {
     initAuth((data) => {
         const nombre = data.nombre || data.name;
         const foto = data.foto || data.picture;
-
         const nombreElement = document.getElementById('user-name');
         if (nombreElement) {
             nombreElement.innerText = nombre.toUpperCase();
         }
-
         const imgElement = document.getElementById('user-img');
         if (imgElement) {
             imgElement.src = foto || "images/default-user.png";
@@ -51,51 +43,14 @@ function verificarAdmin() {
 }
 verificarAdmin();
 
-document.getElementById('form-producto').addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const formData = new FormData();
-    formData.append("Nombre", document.getElementById('nombre').value);
-    formData.append("Precio", document.getElementById('precio').value);
-    formData.append("Descripcion", document.getElementById('descripcion').value);
-    const fileInput = document.getElementById('imagenProducto');
-    formData.append("file", fileInput.files[0]);
-
-    try {
-        const response = await fetch(`${CONFIG.API_BASE_URL}/Productos/guardar`, {
-            method: 'POST',
-            // IMPORTANTE: No definas 'Content-Type' aquí. 
-            // El navegador lo asigna automáticamente al usar FormData.
-            body: formData
-        });
-
-        const data = await response.json();
-        
-        if (data.codigo === 1) {
-            toastr.success("Producto guardado correctamente");
-            document.getElementById('form-producto').reset();
-        } else {
-            toastr.error(data.mensaje || "Error al guardar");
-        }
-    } catch (error) {
-        toastr.error("Error de conexión con el servidor");
-    }
-});
-
 async function cargarProductos() {
     const response = await fetch(`${CONFIG.API_BASE_URL}/Productos/listar`);
     const data = await response.json();
-
     if (data.codigo === 1) {
         const contenedor = document.getElementById('contenedorProductos');
-        contenedor.innerHTML = ''; // Limpiar antes de llenar
-
+        contenedor.innerHTML = '';
         data.productos.forEach(p => {
-            // CONSTRUCCIÓN DE LA URL: 
-            // Como guardamos la ruta relativa (ej: /images/productos/...),
-            // concatenamos con la URL base de tu servidor.
             const urlCompleta = `https://tupartnerpeludo.onrender.com${p.urlImagen}`;
-
             contenedor.innerHTML += `
                 <div class="col-md-4">
                     <div class="card">
@@ -113,25 +68,24 @@ async function cargarProductos() {
 
 async function renderizarTablaProductos() {
     const contenedor = document.getElementById('lista-productos');
-    
     try {
-        // La URL debe coincidir con el endpoint que devuelve el JSON de la captura
         const response = await fetch(`${CONFIG.API_BASE_URL}/Productos`);
         const data = await response.json();
-        
-        // ¡Aquí está la clave! Accedemos a data.productos
         if (data.productos && Array.isArray(data.productos)) {
             contenedor.innerHTML = ''; 
-            
             data.productos.forEach(p => {
-                // p.urlImagen ahora contiene la URL que Cloudinary te devuelve
                 contenedor.innerHTML += `
                     <tr>
-                        <td><img src="${p.urlImagen}" class="img-thumbnail" style="width: 60px; height: 60px; object-fit: cover;"></td>
+                        <td><img src="${p.urlImagen}" class="img-thumbnail" style="width: 50px;"></td>
                         <td>${p.nombre}</td>
                         <td>$${p.precio.toLocaleString()}</td>
                         <td>
-                            <button class="btn btn-sm btn-outline-danger">Eliminar</button>
+                            <button class="btn btn-sm btn-outline-primary me-2" onclick='prepararEdicion(${JSON.stringify(p)})'>
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="eliminarProducto(${p.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
                         </td>
                     </tr>
                 `;
@@ -146,22 +100,23 @@ async function renderizarTablaProductos() {
 
 document.getElementById('form-producto').addEventListener('submit', async (e) => {
     e.preventDefault();
-
-    const formData = new FormData(e.target); 
-
-    const response = await fetch(`${CONFIG.API_BASE_URL}/Productos/guardar`, {
-        method: 'POST',
-        body: formData
+    const id = document.getElementById('productoId').value;
+    const formData = new FormData(e.target);
+    const url = id 
+        ? `${CONFIG.API_BASE_URL}/Productos/actualizar/${id}` 
+        : `${CONFIG.API_BASE_URL}/Productos/guardar`; // Aquí usamos la ruta que ya tienes funcionando
+    const method = id ? 'PUT' : 'POST';
+    const response = await fetch(url, { 
+        method: method, 
+        body: formData 
     });
-
     const data = await response.json();
-
-    if (data.codigo === 1) {
-        e.target.reset();
-        renderizarTablaProductos(); 
-    } else {
+    if(data.codigo === 1) {
+        toastr.success(id ? "Producto actualizado" : "Producto guardado");
+        document.getElementById('form-producto').reset();
+        document.getElementById('productoId').value = ''; // Limpiamos el ID
+        renderizarTablaProductos();
     }
-    ProcesarRespuesta(data);
 });
 
 document.addEventListener('DOMContentLoaded', () => {
