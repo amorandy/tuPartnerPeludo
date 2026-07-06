@@ -113,34 +113,29 @@ async function cargarProductos() {
 
 async function renderizarTablaProductos() {
     const contenedor = document.getElementById('lista-productos');
-    
     try {
-        // La URL debe coincidir con el endpoint que devuelve el JSON de la captura
         const response = await fetch(`${CONFIG.API_BASE_URL}/Productos`);
         const data = await response.json();
-        
-        // ¡Aquí está la clave! Accedemos a data.productos
+
         if (data.productos && Array.isArray(data.productos)) {
-            contenedor.innerHTML = ''; 
-            
+            contenedor.innerHTML = '';
             data.productos.forEach(p => {
-                // p.urlImagen ahora contiene la URL que Cloudinary te devuelve
                 contenedor.innerHTML += `
                     <tr>
                         <td><img src="${p.urlImagen}" class="img-thumbnail" style="width: 60px; height: 60px; object-fit: cover;"></td>
                         <td>${p.nombre}</td>
                         <td>$${p.precio.toLocaleString()}</td>
+                        <td>${p.stock}</td>
                         <td>
+                            <button class="btn btn-sm btn-outline-primary" onclick='prepararEdicion(${JSON.stringify(p)})'>Editar</button>
                             <button class="btn btn-sm btn-outline-danger">Eliminar</button>
                         </td>
                     </tr>
                 `;
             });
-        } else {
-            console.warn("La API no devolvió una lista en 'productos'", data);
         }
     } catch (error) {
-        console.error("Error al cargar la tabla mensaje:", error);
+        console.error("Error al cargar la tabla:", error);
     }
 }
 
@@ -167,3 +162,16 @@ document.getElementById('form-producto').addEventListener('submit', async (e) =>
 document.addEventListener('DOMContentLoaded', () => {
     renderizarTablaProductos();
 });
+
+function prepararEdicion(producto) {
+    document.getElementById('productoId').value = producto.id;
+    document.getElementById('nombre').value = producto.nombre;
+    document.getElementById('precio').value = producto.precio;
+    document.getElementById('descripcion').value = producto.descripcion;
+    document.getElementById('stock').value = producto.stock;
+
+    const btnSubmit = document.querySelector('#form-producto button[type="submit"]');
+    btnSubmit.innerText = "Actualizar Producto";
+
+    document.getElementById('imagenProducto').removeAttribute('required');
+}
