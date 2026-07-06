@@ -185,13 +185,12 @@ function prepararEdicion(producto) {
 
 async function eliminarProducto(id) {
     if (!confirm("¿Estás seguro de que deseas eliminar este producto?")) return;
+    const formData = new FormData();
+    formData.append("id", id);
     try {
         const response = await fetch(`${CONFIG.API_BASE_URL}/Productos/eliminar`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ id }) 
+            body: formData
         });
         const data = await response.json();
         if (data.codigo === 1) {
