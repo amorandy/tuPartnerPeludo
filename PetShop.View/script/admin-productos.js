@@ -141,22 +141,29 @@ async function renderizarTablaProductos() {
 
 document.getElementById('form-producto').addEventListener('submit', async (e) => {
     e.preventDefault();
-
-    const formData = new FormData(e.target); 
-
-    const response = await fetch(`${CONFIG.API_BASE_URL}/Productos/guardar`, {
-        method: 'POST',
-        body: formData
-    });
-
+    const id = document.getElementById('productoId').value;
+    const formData = new FormData(e.target);
+    const esEdicion = id && id !== "";
+    const url = esEdicion
+        ? `${CONFIG.API_BASE_URL}/Productos/actualizar/${id}`
+        : `${CONFIG.API_BASE_URL}/Productos/guardar`;
+    const metodo = esEdicion ? 'PUT' : 'POST';
+    try {
+        const response = await fetch(url, {
+            method: metodo,
+            body: formData
+        });
     const data = await response.json();
 
-    if (data.codigo === 1) {
-        e.target.reset();
-        renderizarTablaProductos(); 
-    } else {
+        if (data.codigo === 1) {
+            e.target.reset();
+            document.getElementById('productoId').value = "";
+            renderizarTablaProductos();
+        }
+        ProcesarRespuesta(data);
+    } catch (error) {
+        EnviarMensaje(-1,"Error de conexión");
     }
-    ProcesarRespuesta(data);
 });
 
 document.addEventListener('DOMContentLoaded', () => {
