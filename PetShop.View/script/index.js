@@ -30,7 +30,6 @@ document.getElementById("formLogin").addEventListener("submit", function(event) 
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPass').value;
     
-    // Llamamos a la función centralizada
     realizarLogin(email, password);
 });
 
@@ -284,11 +283,8 @@ window.onload = function() {
     if (sessionData && window.location.pathname.includes("index.html")) {
         const session = JSON.parse(sessionData);
         window.location.replace(session.rol === 'admin' ? "admin-productos.html" : "main.html");
-        alert('bucle');
         return;
     }
-
-    // ... inicialización de Google ...
 };
 
 function decodeJwtResponse(token) {
@@ -300,9 +296,7 @@ function decodeJwtResponse(token) {
     return JSON.parse(jsonPayload);
 }
 
-// Asegúrate de ejecutar esto cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', () => {
-    // Si estás en la página de recuperación, carga los métodos:
     if (document.getElementById('metodo-recuperacion')) {
         cargarMetodosRecuperacion();
     }
