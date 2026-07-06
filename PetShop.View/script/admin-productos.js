@@ -128,7 +128,7 @@ async function renderizarTablaProductos() {
                         <td>${p.stock}</td>
                         <td>
                             <button class="btn btn-sm btn-outline-primary" onclick='prepararEdicion(${JSON.stringify(p)})'>Editar</button>
-                            <button class="btn btn-sm btn-outline-danger">Eliminar</button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="eliminarProducto(${p.id})">Eliminar</button>
                         </td>
                     </tr>
                 `;
@@ -181,4 +181,24 @@ function prepararEdicion(producto) {
     btnSubmit.innerText = "Actualizar Producto";
 
     document.getElementById('imagenProducto').removeAttribute('required');
+}
+
+async function eliminarProducto(id) {
+    if (!confirm("¿Estás seguro de que deseas eliminar este producto?")) return;
+    try {
+        const response = await fetch(`${CONFIG.API_BASE_URL}/Productos/eliminar`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ id }) 
+        });
+        const data = await response.json();
+        if (data.codigo === 1) {
+            renderizarTablaProductos(); 
+        }
+        ProcesarRespuesta(data);
+    } catch (error) {
+        EnviarMensaje(-1,"Error de conexión");
+    }
 }
