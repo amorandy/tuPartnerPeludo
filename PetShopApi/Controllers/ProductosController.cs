@@ -116,4 +116,17 @@ public class ProductosController : ControllerBase
             return Ok(new { codigo = -1, mensaje = ex.Message });
         }
     }
+    [HttpPost("eliminar")]
+    public async Task<IActionResult> EliminarProducto([FromForm] int id)
+    {
+        try
+        {
+            var respuesta = await Task.Run(() => _productosDAL.EliminarProducto(id));
+            return Ok(respuesta);
+        }
+        catch (Exception ex)
+        {
+            return Ok(new { codigo = -1, mensaje = ex.Message });
+        }
+    }
 }
