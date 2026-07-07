@@ -164,13 +164,16 @@ function prepararEdicion(producto) {
 }
 
 async function eliminarProducto(producto) {
+    if (!producto) {
+        console.error("El objeto producto es nulo o indefinido");
+        return;
+    }
     const datosParaConfirmar = new Map();
-    datosParaConfirmar.set("Nombre", producto.nombre);
-    datosParaConfirmar.set("Descripción", producto.descripcion);
-    datosParaConfirmar.set("Precio", `$${producto.precio.toLocaleString()}`);
-    datosParaConfirmar.set("Stock", producto.stock);
+    datosParaConfirmar.set("Nombre", producto.nombre || "N/A");
+    datosParaConfirmar.set("Descripción", producto.descripcion || "N/A");
+    datosParaConfirmar.set("Precio", producto.precio || "N/A");
+    datosParaConfirmar.set("Stock", producto.stock || "N/A");
     const aceptado = await ConfirmarTabla("¿Estás seguro de eliminar este producto?", datosParaConfirmar);
-
     if (aceptado) {
         const formData = new FormData();
         formData.append("id", producto.id);
