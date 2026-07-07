@@ -1,20 +1,25 @@
 document.getElementById('form-producto').addEventListener('submit', async (e) => {
     e.preventDefault();
+
     const nombre = document.getElementById('nombre').value;
     const precio = document.getElementById('precio').value;
     const stock = document.getElementById('stock').value;
     const descripcion = document.getElementById('descripcion').value;
     const fileInput = document.getElementById('imagenProducto');
+
     if (!fileInput.files[0]) {
         EnviarMensaje(0, "Debes seleccionar una imagen");
         return;
     }
+
     const datosParaConfirmar = new Map();
     datosParaConfirmar.set("Nombre", nombre || "No especificado");
     datosParaConfirmar.set("Descripción", descripcion || "No especificada");
     datosParaConfirmar.set("Precio", precio || "No especificado");
     datosParaConfirmar.set("Stock", stock || "No especificado");
+
     const aceptado = await ConfirmarTabla("¿Confirmas que deseas guardar este producto?", datosParaConfirmar);
+
     if (aceptado) {
         const formData = new FormData();
         formData.append("Nombre", nombre);
@@ -22,21 +27,24 @@ document.getElementById('form-producto').addEventListener('submit', async (e) =>
         formData.append("Stock", stock);
         formData.append("Descripcion", descripcion);
         formData.append("file", fileInput.files[0]);
+
         try {
             const response = await fetch(`${CONFIG.API_BASE_URL}/Productos`, {
                 method: 'POST',
                 body: formData
             });
             const data = await response.json();
+
             if (data.codigo === 1) {
                 document.getElementById('form-producto').reset();
                 renderizarTablaProductos();
             }
             ProcesarRespuesta(data);
         } catch (error) {
-            EnviarMensaje(-1,"Error de conexión con el servidor");
-        }
-});
+            EnviarMensaje(-1, "Error de conexión con el servidor");
+        } 
+    } 
+}); 
 
 window.onload = function() {
     initAuth((data) => {
