@@ -110,6 +110,7 @@ async function renderizarTablaProductos() {
                                     onclick="activarEdicionInline(${p.id}, '${p.nombre}', '${p.descripcion}', ${p.precio}, ${p.stock})">
                                 Editar
                             </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="eliminarProducto(${p.id})">Eliminar</button>
                         </td>
                     </tr>
                 `;
@@ -162,22 +163,30 @@ function prepararEdicion(producto) {
     document.getElementById('imagenProducto').removeAttribute('required');
 }
 
-async function eliminarProducto(id) {
-    if (!confirm("¿Estás seguro de que deseas eliminar este producto?")) return;
-    const formData = new FormData();
-    formData.append("id", id);
-    try {
-        const response = await fetch(`${CONFIG.API_BASE_URL}/Productos/eliminar`, {
-            method: 'POST',
-            body: formData
-        });
-        const data = await response.json();
-        if (data.codigo === 1) {
-            renderizarTablaProductos(); 
+async function eliminarProducto(producto) {
+    const datosParaConfirmar = new Map();
+    datosParaConfirmar.set("Nombre", producto.nombre);
+    datosParaConfirmar.set("Descripción", producto.descripcion);
+    datosParaConfirmar.set("Precio", `$${producto.precio.toLocaleString()}`);
+    datosParaConfirmar.set("Stock", producto.stock);
+    const aceptado = await ConfirmarTabla("¿Estás seguro de eliminar este producto?", datosParaConfirmar);
+
+    if (aceptado) {
+        const formData = new FormData();
+        formData.append("id", producto.id);
+        try {
+            const response = await fetch(`${CONFIG.API_BASE_URL}/Productos/eliminar`, {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            if (data.codigo === 1) {
+                renderizarTablaProductos();
+            }
+            ProcesarRespuesta(data);
+        } catch (error) {
+            EnviarMensaje(-1, "Error de conexión");
         }
-        ProcesarRespuesta(data);
-    } catch (error) {
-        EnviarMensaje(-1,"Error de conexión");
     }
 }
 let formularioAbierto = null;
@@ -215,38 +224,50 @@ function cancelarEdicion() {
     formularioAbierto = null;
 }
 async function guardarEdicion() {
-    const btn = document.getElementById('btn-guardar-inline');
-    const spinner = document.getElementById('spinner-guardar');
-    btn.disabled = true;
-    spinner.classList.remove('d-none');
     const id = document.getElementById('edit-id').value;
     const nombre = document.getElementById('edit-nombre').value;
+    const descripcion = document.getElementById('edit-descripcion').value;
     const precio = document.getElementById('edit-precio').value;
     const stock = document.getElementById('edit-stock').value;
-    const descripcion = document.getElementById('edit-descripcion').value;
     const fileInput = document.getElementById('edit-imagenProducto');
-    const formData = new FormData();
-    formData.append("Nombre", nombre);
-    formData.append("Precio", precio);
-    formData.append("Stock", stock);
-    formData.append("Descripcion", descripcion);
-    const imagen = fileInput.files[0];
-    if (imagen) {
-        formData.append("Imagen", imagen);
-    }
-    try {
-        const response = await fetch(`${CONFIG.API_BASE_URL}/Productos/actualizar/${id}`, {
-            method: 'PUT',
-            body: formData
-        });
-        const data = await response.json();
-        if (data.codigo === 1) {
-            cancelarEdicion();
-            renderizarTablaProductos();
-        } 
-        ProcesarRespuesta(data);
-    } catch (error) {
-        EnviarMensaje(-1, "Error de conexión al servidor");
-        console.error(error);
+    const dataParaConfirmar = new Map();
+    dataParaConfirmar.set("Nombre", nombre);
+    dataParaConfirmar.set("Precio", `$${parseFloat(precio).toLocaleString()}`);
+    dataParaConfirmar.set("Stock", stock);
+    dataParaConfirmar.set("Descripción", descripcion);
+    const aceptado = await ConfirmarTabla("¿Confirmas que deseas aplicar estos cambios?", dataParaConfirmar);
+    if (aceptado) {
+        const btn = document.getElementById('btn-guardar-inline');
+        const spinner = document.getElementById('spinner-guardar');
+        btn.disabled = true;
+        spinner.classList.remove('d-none');
+        const formData = new FormData();
+        formData.append("Nombre", nombre);
+        formData.append("Precio", precio);
+        formData.append("Stock", stock);
+        formData.append("Descripcion", descripcion);
+        const imagen = fileInput.files[0];
+        if (imagen) {
+            formData.append("Imagen", imagen);
+        }
+        try {
+            const response = await fetch(`${CONFIG.API_BASE_URL}/Productos/actualizar/${id}`, {
+                method: 'PUT',
+                body: formData
+            });
+            const data = await response.json();
+            if (data.codigo === 1) {
+                cancelarEdicion();
+                renderizarTablaProductos();
+            }
+            ProcesarRespuesta(data);
+        } catch (error) {
+            EnviarMensaje(-1, "Error de conexión al servidor");
+            console.error(error);
+        }
+        finally {
+            btn.disabled = false;
+            spinner.classList.add('d-none');
+        }
     }
 }

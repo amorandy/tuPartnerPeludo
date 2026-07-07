@@ -9,14 +9,47 @@ function ProcesarRespuesta(data) {
         console.warn("La respuesta no contiene mensajes:", data);
     }
 }
-
 function EnviarMensaje(codigo, mensaje) {
     toastr.options = { "closeButton": true, "progressBar": true, "positionClass": 'toast-bottom-right' };
     if (codigo <= -1) toastr.error(mensaje);
     else if (codigo === 0) toastr.info(mensaje);
     else toastr.success(mensaje);
 }
-
+function Confirmar(mensaje, target = 'body') {
+    return Swal.fire({
+        icon: 'question',
+        title: 'Pregunta',
+        text: mensaje,
+        showConfirmButton: true,
+        confirmButtonText: 'Si, Estoy Seguro',
+        showDenyButton: true,
+        denyButtonText: 'No, Ya me Arrepentí',
+        allowOutsideClick: false,
+        target: "#" + target,
+    }).then(response => {
+        return response.value;
+    });
+}
+function ConfirmarTabla(mensaje, datos, target = 'body') {
+    var html = '<div><table class="table text-start"> <tbody>';
+    datos.forEach((value, key) => {
+        html += '<tr> <th scope="row" class="text-nowrap">' + key + '</th> <td>' + value + '</td> </tr>';
+    });
+    html += '</tbody> </table></div>'
+    return Swal.fire({
+        icon: 'question',
+        title: mensaje,
+        html: html,
+        showConfirmButton: true,
+        confirmButtonText: 'Si, Estoy Seguro',
+        showDenyButton: true,
+        denyButtonText: 'No, Ya me Arrepentí',
+        allowOutsideClick: false,
+        target: "#" + target,
+    }).then(response => {
+        return response.value;
+    });
+}
 async function realizarLogin(email, password) {
     const btnIniciar = document.querySelector("#formLogin button[type='submit']");
     btnIniciar.disabled = true;
