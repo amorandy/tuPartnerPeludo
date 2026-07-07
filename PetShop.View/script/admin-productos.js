@@ -136,7 +136,7 @@ async function renderizarTablaProductos() {
             });
         }
     } catch (error) {
-        console.error("Error al cargar la tabla:", error);
+        EnviarMensaje(-1,"Error al cargar la tabla: " + error);
     }
 }
 
