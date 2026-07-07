@@ -279,3 +279,8 @@ async function guardarEdicion() {
         }
     }
 }
+
+function toggleFormulario() {
+    const contenedor = document.getElementById('contenedor-formulario');
+    const collapse = new bootstrap.Collapse(contenedor, { toggle: true });
+}
