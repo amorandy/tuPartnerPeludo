@@ -5,6 +5,10 @@ document.getElementById('form-producto').addEventListener('submit', async (e) =>
     const stock = document.getElementById('stock').value;
     const descripcion = document.getElementById('descripcion').value;
     const fileInput = document.getElementById('imagenProducto');
+    if (!fileInput.files[0]) {
+        EnviarMensaje(0, "Debes seleccionar una imagen");
+        return;
+    }
     const datosParaConfirmar = new Map();
     datosParaConfirmar.set("Nombre", nombre || "No especificado");
     datosParaConfirmar.set("Descripción", descripcion || "No especificada");
