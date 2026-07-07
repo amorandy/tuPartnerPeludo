@@ -168,11 +168,16 @@ async function eliminarProducto(producto) {
         console.error("El objeto producto es nulo o indefinido");
         return;
     }
+    const fila = document.querySelector(`tr[data-id="${producto.id}"]`);
+    const nombre = fila.cells[1].innerText || "N/A";
+    const descripcion = fila.cells[2].innerText || "N/A";
+    const precio = fila.cells[3].innerText || "N/A";
+    const stock = fila.cells[4].innerText || "N/A";
     const datosParaConfirmar = new Map();
-    datosParaConfirmar.set("Nombre", producto.nombre || "N/A");
-    datosParaConfirmar.set("Descripción", producto.descripcion || "N/A");
-    datosParaConfirmar.set("Precio", producto.precio || "N/A");
-    datosParaConfirmar.set("Stock", producto.stock || "N/A");
+    datosParaConfirmar.set("Nombre", nombre);
+    datosParaConfirmar.set("Descripción", descripcion);
+    datosParaConfirmar.set("Precio", precio);
+    datosParaConfirmar.set("Stock", stock);
     const aceptado = await ConfirmarTabla("¿Estás seguro de eliminar este producto?", datosParaConfirmar);
     if (aceptado) {
         const formData = new FormData();
