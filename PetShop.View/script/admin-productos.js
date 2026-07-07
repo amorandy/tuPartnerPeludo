@@ -163,12 +163,12 @@ function prepararEdicion(producto) {
     document.getElementById('imagenProducto').removeAttribute('required');
 }
 
-async function eliminarProducto(producto) {
-    if (!producto) {
-        console.error("El objeto producto es nulo o indefinido");
+async function eliminarProducto(id) {
+    if (!id) {
+        console.error("El ID del producto es nulo o indefinido", id);
         return;
     }
-    const fila = document.querySelector(`tr[data-id="${producto.id}"]`);
+    const fila = document.querySelector(`tr[data-id="${id}"]`);
     const nombre = fila.cells[1].innerText || "N/A";
     const descripcion = fila.cells[2].innerText || "N/A";
     const precio = fila.cells[3].innerText || "N/A";
@@ -181,7 +181,7 @@ async function eliminarProducto(producto) {
     const aceptado = await ConfirmarTabla("¿Estás seguro de eliminar este producto?", datosParaConfirmar);
     if (aceptado) {
         const formData = new FormData();
-        formData.append("id", producto.id);
+        formData.append("id", id);
         try {
             const response = await fetch(`${CONFIG.API_BASE_URL}/Productos/eliminar`, {
                 method: 'POST',
