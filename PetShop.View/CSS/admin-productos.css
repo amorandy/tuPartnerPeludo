@@ -44,3 +44,11 @@ body {
 .table td, .table th {
     vertical-align: middle;
 }
+
+/* En tu archivo CSS */
+.img-tabla-producto {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 4px;
+}

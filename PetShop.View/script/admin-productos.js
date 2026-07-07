@@ -27,7 +27,6 @@ window.onload = function() {
         if (nombreElement) {
             nombreElement.innerText = nombre.toUpperCase();
         }
-
         const imgElement = document.getElementById('user-img');
         if (imgElement) {
             imgElement.src = foto || "images/default-user.png";
@@ -42,8 +41,8 @@ function verificarAdmin() {
         window.location.href = "main.html";
     }
 }
-verificarAdmin();
 
+verificarAdmin();
 document.getElementById('form-producto').addEventListener('submit', async (e) => {
     e.preventDefault();
     const formData = new FormData();
@@ -57,9 +56,7 @@ document.getElementById('form-producto').addEventListener('submit', async (e) =>
             method: 'POST',
             body: formData
         });
-
         const data = await response.json();
-        
         if (data.codigo === 1) {
             document.getElementById('form-producto').reset();
         } 
@@ -84,6 +81,7 @@ async function cargarProductos() {
                         <div class="card-body">
                             <h5>${p.nombre}</h5>
                             <p>Precio: $${p.precio}</p>
+                            <p>Descripción: ${p.descripcion}</p>
                         </div>
                     </div>
                 </div>
@@ -102,13 +100,14 @@ async function renderizarTablaProductos() {
             data.productos.forEach(p => {
                 contenedor.innerHTML += `
                     <tr data-id="${p.id}"> 
-                        <td><img src="${p.urlImagen}" ...></td>
+                        <td><img src="${p.urlImagen}" class="img-tabla-producto"></td>
                         <td>${p.nombre}</td>
+                        <td>${p.descripcion}</td>
                         <td>${p.precio}</td>
                         <td>${p.stock}</td>
                         <td>
                             <button class="btn btn-sm btn-outline-primary" 
-                                    onclick="activarEdicionInline(${p.id}, '${p.nombre}', ${p.precio}, ${p.stock}, '${p.descripcion}')">
+                                    onclick="activarEdicionInline(${p.id}, '${p.nombre}', '${p.descripcion}', ${p.precio}, ${p.stock})">
                                 Editar
                             </button>
                         </td>
@@ -162,6 +161,7 @@ function prepararEdicion(producto) {
     btnSubmit.innerText = "Actualizar Producto";
     document.getElementById('imagenProducto').removeAttribute('required');
 }
+
 async function eliminarProducto(id) {
     if (!confirm("¿Estás seguro de que deseas eliminar este producto?")) return;
     const formData = new FormData();
@@ -181,7 +181,7 @@ async function eliminarProducto(id) {
     }
 }
 let formularioAbierto = null;
-function activarEdicionInline(id, nombre, precio, stock, descripcion) {
+function activarEdicionInline(id, nombre, descripcion, precio, stock) {
     if (formularioAbierto) formularioAbierto.remove();
     const filaProducto = document.querySelector(`tr[data-id="${id}"]`);
     const filaFormulario = document.createElement('tr');
