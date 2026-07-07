@@ -33,8 +33,9 @@ document.getElementById('form-producto').addEventListener('submit', async (e) =>
                 renderizarTablaProductos();
             }
             ProcesarRespuesta(data);
+        } catch (error) {
+            EnviarMensaje(-1,"Error de conexión con el servidor");
         }
-    }
 });
 
 window.onload = function() {
