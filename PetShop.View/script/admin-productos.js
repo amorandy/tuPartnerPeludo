@@ -1,28 +1,21 @@
 document.getElementById('form-producto').addEventListener('submit', async (e) => {
     e.preventDefault();
-
     const formData = new FormData();
     formData.append("Nombre", document.getElementById('nombre').value);
     formData.append("Descripcion", document.getElementById('descripcion').value);
     formData.append("Precio", document.getElementById('precio').value);
-    
     const fileInput = document.getElementById('imagenProducto');
     formData.append("file", fileInput.files[0]); 
-
     const response = await fetch(`${CONFIG.API_BASE_URL}/Productos`, {
         method: 'POST',
         body: formData 
     });
-
     const data = await response.json();
-
     if(data.codigo === 1) {
-        toastr.success("Producto guardado correctamente");
         document.getElementById('form-producto').reset();
         renderizarTablaProductos(); 
-    } else {
-        toastr.error("Error al guardar: " + (data.mensaje || "Error desconocido"));
-    }
+    } 
+    ProcesarRespuesta(data);
 });
 
 window.onload = function() {
@@ -53,49 +46,37 @@ verificarAdmin();
 
 document.getElementById('form-producto').addEventListener('submit', async (e) => {
     e.preventDefault();
-
     const formData = new FormData();
     formData.append("Nombre", document.getElementById('nombre').value);
     formData.append("Precio", document.getElementById('precio').value);
     formData.append("Descripcion", document.getElementById('descripcion').value);
     const fileInput = document.getElementById('imagenProducto');
     formData.append("file", fileInput.files[0]);
-
     try {
         const response = await fetch(`${CONFIG.API_BASE_URL}/Productos/guardar`, {
             method: 'POST',
-            // IMPORTANTE: No definas 'Content-Type' aquí. 
-            // El navegador lo asigna automáticamente al usar FormData.
             body: formData
         });
 
         const data = await response.json();
         
         if (data.codigo === 1) {
-            toastr.success("Producto guardado correctamente");
             document.getElementById('form-producto').reset();
-        } else {
-            toastr.error(data.mensaje || "Error al guardar");
-        }
+        } 
+        ProcesarRespuesta(data);
     } catch (error) {
-        toastr.error("Error de conexión con el servidor");
+        EnviarMensaje(-1,"Error de conexión con el servidor");
     }
 });
 
 async function cargarProductos() {
     const response = await fetch(`${CONFIG.API_BASE_URL}/Productos/listar`);
     const data = await response.json();
-
     if (data.codigo === 1) {
         const contenedor = document.getElementById('contenedorProductos');
-        contenedor.innerHTML = ''; // Limpiar antes de llenar
-
+        contenedor.innerHTML = ''; 
         data.productos.forEach(p => {
-            // CONSTRUCCIÓN DE LA URL: 
-            // Como guardamos la ruta relativa (ej: /images/productos/...),
-            // concatenamos con la URL base de tu servidor.
             const urlCompleta = `https://tupartnerpeludo.onrender.com${p.urlImagen}`;
-
             contenedor.innerHTML += `
                 <div class="col-md-4">
                     <div class="card">
@@ -116,19 +97,20 @@ async function renderizarTablaProductos() {
     try {
         const response = await fetch(`${CONFIG.API_BASE_URL}/Productos`);
         const data = await response.json();
-
         if (data.productos && Array.isArray(data.productos)) {
             contenedor.innerHTML = '';
             data.productos.forEach(p => {
                 contenedor.innerHTML += `
-                    <tr>
-                        <td><img src="${p.urlImagen}" class="img-thumbnail" style="width: 60px; height: 60px; object-fit: cover;"></td>
+                    <tr data-id="${p.id}"> 
+                        <td><img src="${p.urlImagen}" ...></td>
                         <td>${p.nombre}</td>
-                        <td>$${p.precio.toLocaleString()}</td>
+                        <td>${p.precio}</td>
                         <td>${p.stock}</td>
                         <td>
-                            <button class="btn btn-sm btn-outline-primary" onclick='prepararEdicion(${JSON.stringify(p)})'>Editar</button>
-                            <button class="btn btn-sm btn-outline-danger" onclick="eliminarProducto(${p.id})">Eliminar</button>
+                            <button class="btn btn-sm btn-outline-primary" 
+                                    onclick="activarEdicionInline(${p.id}, '${p.nombre}', ${p.precio}, ${p.stock}, '${p.descripcion}')">
+                                Editar
+                            </button>
                         </td>
                     </tr>
                 `;
@@ -176,13 +158,10 @@ function prepararEdicion(producto) {
     document.getElementById('precio').value = producto.precio;
     document.getElementById('descripcion').value = producto.descripcion;
     document.getElementById('stock').value = producto.stock;
-
     const btnSubmit = document.querySelector('#form-producto button[type="submit"]');
     btnSubmit.innerText = "Actualizar Producto";
-
     document.getElementById('imagenProducto').removeAttribute('required');
 }
-
 async function eliminarProducto(id) {
     if (!confirm("¿Estás seguro de que deseas eliminar este producto?")) return;
     const formData = new FormData();
@@ -199,5 +178,75 @@ async function eliminarProducto(id) {
         ProcesarRespuesta(data);
     } catch (error) {
         EnviarMensaje(-1,"Error de conexión");
+    }
+}
+let formularioAbierto = null;
+function activarEdicionInline(id, nombre, precio, stock, descripcion) {
+    if (formularioAbierto) formularioAbierto.remove();
+    const filaProducto = document.querySelector(`tr[data-id="${id}"]`);
+    const filaFormulario = document.createElement('tr');
+    filaFormulario.innerHTML = `
+        <td colspan="5" class="p-3 bg-light">
+            <div class="card card-body shadow-sm">
+                <h5>Editando: ${nombre}</h5>
+                <form id="form-edit-inline" class="row g-3">
+                    <input type="hidden" value="${id}" id="edit-id">
+                    <div class="col-md-3"><input type="text" id="edit-nombre" class="form-control" value="${nombre}"></div>
+                    <div class="col-md-2"><input type="text" id="edit-descripcion" class="form-control" value="${descripcion}"></div>
+                    <div class="col-md-2"><input type="number" id="edit-precio" class="form-control" value="${precio}"></div>
+                    <div class="col-md-2"><input type="number" id="edit-stock" class="form-control" value="${stock}"></div>
+                    <div class="col-md-3"><input type="file" id="edit-imagenProducto" class="form-control"></div>
+                    <div class="col-md-5">
+                        <button type="button" class="btn btn-success" id="btn-guardar-inline" onclick="guardarEdicion()">
+                            <span class="spinner-border spinner-border-sm d-none" id="spinner-guardar" role="status" aria-hidden="true"></span>
+                            Guardar
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="cancelarEdicion()">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </td>
+    `;
+    filaProducto.after(filaFormulario);
+    formularioAbierto = filaFormulario;
+}
+function cancelarEdicion() {
+    if (formularioAbierto) formularioAbierto.remove();
+    formularioAbierto = null;
+}
+async function guardarEdicion() {
+    const btn = document.getElementById('btn-guardar-inline');
+    const spinner = document.getElementById('spinner-guardar');
+    btn.disabled = true;
+    spinner.classList.remove('d-none');
+    const id = document.getElementById('edit-id').value;
+    const nombre = document.getElementById('edit-nombre').value;
+    const precio = document.getElementById('edit-precio').value;
+    const stock = document.getElementById('edit-stock').value;
+    const descripcion = document.getElementById('edit-descripcion').value;
+    const fileInput = document.getElementById('edit-imagenProducto');
+    const formData = new FormData();
+    formData.append("Nombre", nombre);
+    formData.append("Precio", precio);
+    formData.append("Stock", stock);
+    formData.append("Descripcion", descripcion);
+    const imagen = fileInput.files[0];
+    if (imagen) {
+        formData.append("Imagen", imagen);
+    }
+    try {
+        const response = await fetch(`${CONFIG.API_BASE_URL}/Productos/actualizar/${id}`, {
+            method: 'PUT',
+            body: formData
+        });
+        const data = await response.json();
+        if (data.codigo === 1) {
+            cancelarEdicion();
+            renderizarTablaProductos();
+        } 
+        ProcesarRespuesta(data);
+    } catch (error) {
+        EnviarMensaje(-1, "Error de conexión al servidor");
+        console.error(error);
     }
 }
