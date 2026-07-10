@@ -13,6 +13,7 @@ async function alternarBloqueo(id, actualmenteBloqueado) {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
+            console.log(response);
             if (response.ok) {
                 EnviarMensaje(1, `Usuario ${accion}do correctamente`);
                 renderizarTablaUsuarios();
@@ -81,7 +82,8 @@ function mostrarTabla(lista) {
     const contenedor = document.getElementById('lista-usuarios');
     contenedor.innerHTML = '';
     lista.forEach(u => {
-        const esBloqueado = u.fechaBloqueo !== null;
+        const esBloqueado = u.isBloqueado;
+        console.log(esBloqueado);
         const badgeEstado = esBloqueado
             ? '<span class="badge bg-danger">Bloqueado</span>'
             : '<span class="badge bg-success">Activo</span>';
