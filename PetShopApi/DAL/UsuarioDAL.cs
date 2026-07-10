@@ -426,7 +426,10 @@ namespace PetShopApi.DAL
                                     Nombre = reader["Nombre"].ToString(),
                                     Apellido = reader["Apellido"].ToString(),
                                     Email = reader["Email"].ToString(),
-                                    Telefono = reader["Telefono"].ToString()
+                                    Telefono = reader["Telefono"].ToString(),
+                                    FechaBloqueo = (reader["fechaBloqueo"] == DBNull.Value)
+                                       ? (DateTime?)null
+                                       : Convert.ToDateTime(reader["fechaBloqueo"])
                                 };
                                 return (salida, usuario);
                             }

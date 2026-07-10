@@ -305,17 +305,17 @@ public class UsuariosController : ControllerBase
         {
             return BadRequest(new { mensaje = "UsuarioID es requerido." });
         }
-        bool estaBloqueado = usuario.FechaBloqueo != null && usuario.FechaBloqueo > DateTime.Now;
+        bool estaBloqueado = usuario.FechaBloqueo != null;
         DateTime? nuevaFecha = estaBloqueado ? null : DateTime.Now;
-        if (usuario == null)
-        {
-            return NotFound(new { mensaje = "Usuario no encontrado." });
-        }
         usuario.FechaBloqueo = nuevaFecha;
         var (salidaBloqueo, exito) = await Task.Run(() => _usuarioDAL.ActualizarFechaBloqueo(usuario));
         if (exito)
         {
-            return Ok(new { salidaBloqueo });
+            return Ok(new
+            {
+                mensaje = salidaBloqueo,
+                isBloqueado = usuario.FechaBloqueo.HasValue
+            });
         }
         else
         {
