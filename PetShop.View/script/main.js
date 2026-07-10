@@ -1,6 +1,9 @@
 window.onload = function() {
     const session = JSON.parse(localStorage.getItem('user_session'));
-    
+    const nombre = session.nombre || session.name;
+    const foto = session.foto || session.picture;
+    document.getElementById('user-name').innerText = nombre.toUpperCase();
+    document.getElementById('user-img').src = foto || "images/default-user.png";
     if (session && session.rol === 'admin') {
         document.getElementById('btn-admin').classList.remove('d-none');
     }
@@ -8,14 +11,10 @@ window.onload = function() {
 
 async function cargarProductos() {
     try {
-        // Ajusta la URL a tu base de datos de producción o local
         const response = await fetch('https://tupartnerpeludo.onrender.com/api/Productos');
         const data = await response.json();
-        
         const contenedor = document.getElementById('contenedor-productos');
-        contenedor.innerHTML = ""; // Limpiamos el contenedor
-
-        // data.productos es el array que viene en tu JSON (según la imagen)
+        contenedor.innerHTML = "";
         data.productos.forEach(prod => {
             const card = document.createElement('div');
             card.className = 'col-md-4 mb-4';
@@ -38,6 +37,4 @@ async function cargarProductos() {
         console.error("Error al cargar productos:", error);
     }
 }
-
-// Ejecutar al cargar la página
 document.addEventListener('DOMContentLoaded', cargarProductos);

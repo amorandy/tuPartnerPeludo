@@ -68,7 +68,6 @@ async function cargarMetodosRecuperacion() {
     try {
         const res = await fetch(`${CONFIG.API_BASE_URL}/usuarios/metodos-recuperacion`);
         const json = await res.json();
-        console.log(json);
         const metodos = json.salida.metodos; 
         const select = document.getElementById('metodo-recuperacion');
         

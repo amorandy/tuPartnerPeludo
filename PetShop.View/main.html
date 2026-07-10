@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <link rel="icon" type="image/png" href="images/logo.png">
-    <link  rel="stylesheet" href="CSS/main.css">
+    <link rel="stylesheet" href="CSS/main.css">
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
@@ -23,16 +23,16 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-white p-3 border-bottom">
         <div class="container-fluid">
             <a class="navbar-brand d-flex align-items-center fw-bold" href="#">
-                <img src="PetShop.View/images/logo.png" alt="Logo" width="45" height="45" class="me-2 rounded-circle border border-dark">
+                <img src="images/logo.png" alt="Logo" width="45" height="45" class="me-2 rounded-circle border border-dark">
                 Tu Partner Peludo
             </a>
-            
+
             <div class="d-flex align-items-center">
                 <a href="#" class="text-dark me-4 position-relative" onclick="abrirCarrito()">
                     <i class="fas fa-shopping-cart fa-lg"></i>
                     <span id="contador-carrito" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
                 </a>
-                
+
                 <span id="user-name" class="me-2 fw-bold small text-uppercase"></span>
                 <img id="user-img" src="" class="rounded-circle user-avatar" width="40" height="40">
                 <button onclick="logout()" class="btn btn-sm ms-3 btn-outline-danger"><i class="fas fa-sign-out-alt"></i></button>
@@ -53,23 +53,12 @@
             <main class="col-md-10 p-4">
                 <h2 class="mb-4">Productos Destacados</h2>
                 <div class="row" id="contenedor-productos">
-                    </div>
+                </div>
             </main>
             <a href="admin-productos.html" id="btn-admin" class="nav-link text-danger d-none">
                 <i class="fas fa-lock"></i> Panel Admin
             </a>
         </div>
     </div>
-    <script>
-        window.onload = function() {
-            initAuth((data) => {
-                const nombre = data.nombre || data.name;
-                const foto = data.foto || data.picture;
-                
-                document.getElementById('user-name').innerText = nombre.toUpperCase();
-                document.getElementById('user-img').src = foto || "images/default-user.png";
-            });
-        }
-    </script>
 </body>
 </html>

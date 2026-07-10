@@ -15,6 +15,7 @@ namespace PetShopApi.Mmodels
         public DateTime? FechaExpiracionToken { get; set; }
         public int? IntentosFallidos { get; set; }
         public DateTime? FechaBloqueo { get; set; }
-        public string? Rol { get; set; } // "Cliente" o "Admin"
+        public string? Rol { get; set; } // "
+                                         // e" o "Admin"
     }
 }
