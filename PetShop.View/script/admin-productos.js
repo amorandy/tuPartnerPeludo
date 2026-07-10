@@ -38,8 +38,9 @@ document.getElementById('form-producto').addEventListener('submit', async (e) =>
             if (data.codigo === 1) {
                 document.getElementById('form-producto').reset();
                 renderizarTablaProductos();
+            } else {
+                ProcesarRespuesta(data);
             }
-            ProcesarRespuesta(data);
         } catch (error) {
             EnviarMensaje(-1, "Error de conexión con el servidor");
         } 
@@ -87,8 +88,9 @@ document.getElementById('form-producto').addEventListener('submit', async (e) =>
         const data = await response.json();
         if (data.codigo === 1) {
             document.getElementById('form-producto').reset();
-        } 
-        ProcesarRespuesta(data);
+        } else {
+            ProcesarRespuesta(data);
+        }
     } catch (error) {
         EnviarMensaje(-1,"Error de conexión con el servidor");
     }
@@ -117,7 +119,6 @@ async function cargarProductos() {
         });
     }
 }
-
 async function renderizarTablaProductos() {
     const contenedor = document.getElementById('lista-productos');
     try {
@@ -143,9 +144,12 @@ async function renderizarTablaProductos() {
                     </tr>
                 `;
             });
+            if (data.salida.codigo != 1) {
+                ProcesarRespuesta(data.salida);
+            }
         }
     } catch (error) {
-        EnviarMensaje(-1,"Error al cargar la tabla: " + error);
+        EnviarMensaje(-1,"Error al cargar la tabla: ");
     }
 }
 
@@ -176,9 +180,9 @@ document.getElementById('form-producto').addEventListener('submit', async (e) =>
     }
 });
 
-document.addEventListener('DOMContentLoaded', () => {
-    renderizarTablaProductos();
-});
+//document.addEventListener('DOMContentLoaded', () => {
+//    renderizarTablaProductos();
+//});
 
 function prepararEdicion(producto) {
     document.getElementById('productoId').value = producto.id;
@@ -193,7 +197,6 @@ function prepararEdicion(producto) {
 
 async function eliminarProducto(id) {
     if (!id) {
-        console.error("El ID del producto es nulo o indefinido", id);
         return;
     }
     const fila = document.querySelector(`tr[data-id="${id}"]`);
@@ -268,7 +271,7 @@ async function guardarEdicion() {
     const fileInput = document.getElementById('edit-imagenProducto');
     const dataParaConfirmar = new Map();
     dataParaConfirmar.set("Nombre", nombre);
-    dataParaConfirmar.set("Precio", `$${parseFloat(precio).toLocaleString()}`);
+    dataParaConfirmar.set("Precio", precio);
     dataParaConfirmar.set("Stock", stock);
     dataParaConfirmar.set("Descripción", descripcion);
     const aceptado = await ConfirmarTabla("¿Confirmas que deseas aplicar estos cambios?", dataParaConfirmar);

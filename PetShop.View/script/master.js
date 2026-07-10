@@ -6,7 +6,7 @@ function ProcesarRespuesta(data) {
         EnviarMensaje(data.codigo || 0, data.mensaje);
     }
     else {
-        console.warn("La respuesta no contiene mensajes:", data);
+        EnviarMensaje(-1,"La respuesta no contiene mensajes:");
     }
 }
 function EnviarMensaje(codigo, mensaje) {
@@ -64,6 +64,7 @@ async function realizarLogin(email, password) {
         const data = await response.json();
 
         if (data.codigo === 1) {
+            localStorage.setItem('token', data.token);
             const userSession = {
                 nombre: data.user,
                 rol: data.rol
@@ -79,7 +80,7 @@ async function realizarLogin(email, password) {
             ProcesarRespuesta(data);
         }
     } catch (error) {
-        EnviarMensaje(-1, "Error de conexión con el servidor");
+        EnviarMensaje(-1, "Error de conexión con el servidor" + error);
     }
     finally
     {
@@ -87,3 +88,33 @@ async function realizarLogin(email, password) {
         btnIniciar.innerText = "ENTRAR";
     }
 }
+//async function cargarLayout() {
+//    // Es vital retornar los resultados de los fetch
+//    const p1 = fetch('components/navbar.html').then(r => r.text()).then(html => {
+//        document.body.insertAdjacentHTML('afterbegin', html);
+//    });
+
+//    const p2 = fetch('components/sidebar.html').then(r => r.text()).then(html => {
+//        document.getElementById('sidebar-container').innerHTML = html;
+//    });
+//    console.warn('HTML' + p2);
+//    // Esta línea es la clave: la función espera a que ambos archivos terminen de cargar
+//    return Promise.all([p1, p2]);
+//}
+//async function cargarLayout() {
+//    const navRes = await fetch('components/navbar.html');
+//    const navHtml = await navRes.text();
+//    document.body.insertAdjacentHTML('afterbegin', `<header class="w-100">${navHtml}</header>`);
+
+//    const sideRes = await fetch('components/sidebar.html');
+//    const sideHtml = await sideRes.text();
+
+//    const mainContent = document.getElementById('main-content').innerHTML;
+//    document.getElementById('main-content').innerHTML = `
+//        <div class="row">
+//            ${sideHtml}
+//            <main class="col-md-10 p-4">${mainContent}</main>
+//        </div>
+//    `;
+//    return Promise.all();
+//}

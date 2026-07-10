@@ -291,4 +291,54 @@ public class UsuariosController : ControllerBase
             return StatusCode(500, new { codigo = -1, mensaje = "Error al obtener métodos de recuperación: " + ex.Message });
         }
     }
+    [HttpGet]
+    public IActionResult ObtenerUsuarios()
+    {
+        var (salida, usuarios) = _usuarioDAL.ObtenerUsuarios();
+        return Ok(new { salida, usuarios });
+    }
+    [HttpPost("bloquear-usuario/{id}")]
+    public async Task<IActionResult> BloquearUsuario(int id)
+    {
+        var (salida, usuario) = await Task.Run(() => _usuarioDAL.ObtenerUsuarioPorId(id));
+        if (usuario.UsuarioID == null)
+        {
+            return BadRequest(new { mensaje = "UsuarioID es requerido." });
+        }
+        bool estaBloqueado = usuario.FechaBloqueo != null && usuario.FechaBloqueo > DateTime.Now;
+        DateTime? nuevaFecha = estaBloqueado ? null : DateTime.Now;
+        if (usuario == null)
+        {
+            return NotFound(new { mensaje = "Usuario no encontrado." });
+        }
+        usuario.FechaBloqueo = nuevaFecha;
+        var (salidaBloqueo, exito) = await Task.Run(() => _usuarioDAL.ActualizarFechaBloqueo(usuario));
+        if (exito)
+        {
+            return Ok(new { salidaBloqueo });
+        }
+        else
+        {
+            return BadRequest(new { codigo = 0, mensaje = "No se pudo bloquear al usuario." });
+        }
+    }
+    [HttpPost("cambiar-rol/{id}")]
+    public async Task<IActionResult> CambiarRol(int id, [FromBody] string nuevoRol)
+    {
+        var (salidaUsuario, usuario) = await Task.Run(() => _usuarioDAL.ObtenerUsuarioPorId(id));
+        if (usuario == null) return NotFound(new { mensaje = "Usuario no encontrado" });
+
+        usuario.Rol = nuevoRol;
+
+        var (salida, exito) = await Task.Run(() => _usuarioDAL.ActualizarRol(usuario));
+
+        if (exito)
+        {
+            return Ok(new { salida });
+        }
+        else
+        {
+            return BadRequest(new { salida });
+        }
+    }
 }

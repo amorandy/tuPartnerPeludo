@@ -33,8 +33,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             manejarTokenInvalido(data.mensaje);
             return;
         }
-        
-        //EnviarMensaje(1, "Token validado correctamente.");
     } catch (e) {
         manejarTokenInvalido("Error de conexión al validar el token.");
         return;
@@ -64,7 +62,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 EnviarMensaje(dataRes.codigo, dataRes.mensaje);
                 btn.innerText = "Redirigiendo...";
                 btn.style.opacity = "0.5";
-                console.log("redireccionando")
                 setTimeout(() => window.location.href = "index.html", 2000);
             } else {
                 EnviarMensaje(dataRes.codigo, dataRes.mensaje);

@@ -4,38 +4,25 @@ VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PetShopApi", "PetShopApi\PetShopApi.csproj", "{57CCD51C-6A2E-2EC2-3701-5943C0EDA36F}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PetShop.View", "PetShop.View", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
-	ProjectSection(SolutionItems) = preProject
-		PetShop.View\admin-productos.html = PetShop.View\admin-productos.html
-		PetShop.View\index.html = PetShop.View\index.html
-		PetShop.View\main.html = PetShop.View\main.html
-		PetShop.View\reset-password.html = PetShop.View\reset-password.html
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "images", "images", "{2E30E084-5B97-4D37-A7B8-32D5736F73F8}"
-	ProjectSection(SolutionItems) = preProject
-		PetShop.View\images\default-user.png = PetShop.View\images\default-user.png
-		PetShop.View\images\logo.png = PetShop.View\images\logo.png
-		PetShop.View\images\mosaico-perritos.png = PetShop.View\images\mosaico-perritos.png
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CSS", "CSS", "{F2582DB8-B02A-4EA9-91E7-89A2237BDEBC}"
-	ProjectSection(SolutionItems) = preProject
-		PetShop.View\CSS\admin-productos.css = PetShop.View\CSS\admin-productos.css
-		PetShop.View\CSS\index.css = PetShop.View\CSS\index.css
-		PetShop.View\CSS\main.css = PetShop.View\CSS\main.css
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "script", "script", "{D14BCF56-9AF6-4D5D-B8F1-456D2D542259}"
-	ProjectSection(SolutionItems) = preProject
-		PetShop.View\script\admin-productos.js = PetShop.View\script\admin-productos.js
-		PetShop.View\script\auth-utils.js = PetShop.View\script\auth-utils.js
-		PetShop.View\script\carrito.js = PetShop.View\script\carrito.js
-		PetShop.View\script\config.js = PetShop.View\script\config.js
-		PetShop.View\script\index.js = PetShop.View\script\index.js
-		PetShop.View\script\main.js = PetShop.View\script\main.js
-		PetShop.View\script\master.js = PetShop.View\script\master.js
-		PetShop.View\script\reset-password.js = PetShop.View\script\reset-password.js
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "PetShop.View", "PetShop.View\", "{F8972F1D-F95A-A686-9C3A-6822FAB6E460}"
+	ProjectSection(WebsiteProperties) = preProject
+		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.8.1"
+		Debug.AspNetCompiler.VirtualPath = "/localhost_55924"
+		Debug.AspNetCompiler.PhysicalPath = "PetShop.View\"
+		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_55924\"
+		Debug.AspNetCompiler.Updateable = "true"
+		Debug.AspNetCompiler.ForceOverwrite = "true"
+		Debug.AspNetCompiler.FixedNames = "false"
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.VirtualPath = "/localhost_55924"
+		Release.AspNetCompiler.PhysicalPath = "PetShop.View\"
+		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_55924\"
+		Release.AspNetCompiler.Updateable = "true"
+		Release.AspNetCompiler.ForceOverwrite = "true"
+		Release.AspNetCompiler.FixedNames = "false"
+		Release.AspNetCompiler.Debug = "False"
+		VWDPort = "55924"
+		SlnRelativePath = "PetShop.View\"
 	EndProjectSection
 EndProject
 Global
@@ -48,14 +35,13 @@ Global
 		{57CCD51C-6A2E-2EC2-3701-5943C0EDA36F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{57CCD51C-6A2E-2EC2-3701-5943C0EDA36F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{57CCD51C-6A2E-2EC2-3701-5943C0EDA36F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F8972F1D-F95A-A686-9C3A-6822FAB6E460}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F8972F1D-F95A-A686-9C3A-6822FAB6E460}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F8972F1D-F95A-A686-9C3A-6822FAB6E460}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{F8972F1D-F95A-A686-9C3A-6822FAB6E460}.Release|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{2E30E084-5B97-4D37-A7B8-32D5736F73F8} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
-		{F2582DB8-B02A-4EA9-91E7-89A2237BDEBC} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
-		{D14BCF56-9AF6-4D5D-B8F1-456D2D542259} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8BB910E3-A42F-4918-9915-9DB5FA3A31ED}

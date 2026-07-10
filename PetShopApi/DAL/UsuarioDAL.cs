@@ -129,6 +129,7 @@ namespace PetShopApi.DAL
 
                             if (BCrypt.Net.BCrypt.Verify(password, hash))
                             {
+                                await GuardarSesion(usuario.UsuarioID!.Value, token, conexion);
                                 await EjecutarQuery("UPDATE Usuarios SET IntentosFallidos = 0, FechaBloqueo = NULL WHERE Email = @Email", email, conexion);
                                 salida.Codigo = 1; salida.Mensaje = "¡Bienvenido!";
                                 return (usuario, salida, token);
@@ -343,22 +344,22 @@ namespace PetShopApi.DAL
             bool esValido = false;
             try
             {
-                using (var conexion = _conexionFll.ObtenerConexion())
+                using var conexion = _conexionFll.ObtenerConexion();
+                await conexion.OpenAsync();
+
+                string deleteQuery = "DELETE FROM SesionesActivas WHERE FechaExpiracion < NOW()";
+                using (var cmdDel = new MySqlCommand(deleteQuery, conexion))
                 {
-                    string deleteQuery = "DELETE FROM SesionesActivas WHERE FechaExpiracion < GETDATE()";
+                    await cmdDel.ExecuteNonQueryAsync();
+                }
 
-                    using (var cmdDel = new MySqlCommand(deleteQuery, conexion))
-                    {
-                        cmdDel.ExecuteNonQuery();
-                    }
-                    string sql = "SELECT COUNT(*) FROM SesionesActivas WHERE Token = @Token AND FechaExpiracion > GETDATE()";
-
-                    using (var cmd = new MySqlCommand(sql, conexion))
-                    {
-                        cmd.Parameters.AddWithValue("@Token", token);
-                        int count = Convert.ToInt32(await cmd.ExecuteScalarAsync());
-                        esValido = (count > 0);
-                    }
+                string sql = "SELECT COUNT(*) FROM SesionesActivas WHERE Token = @Token AND FechaExpiracion > NOW()";
+                using (var cmd = new MySqlCommand(sql, conexion))
+                {
+                    cmd.Parameters.AddWithValue("@Token", token);
+                    var result = await cmd.ExecuteScalarAsync();
+                    int count = Convert.ToInt32(result ?? 0);
+                    esValido = (count > 0);
                 }
             }
             catch (Exception ex)
@@ -398,6 +399,170 @@ namespace PetShopApi.DAL
                 Codigo = 0,
                 Mensaje = "Token inválido o expirado"
             };
+        }
+        public (SalidaMod, Usuario) ObtenerUsuarioPorId(int usuarioId)
+        {
+            try
+            {
+                using (var db = _conexionFll.ObtenerConexion())
+                {
+                    db.Open();
+                    using (var cmd = new MySqlCommand("sp_ObtenerUsuarioPorId", db))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@p_UsuarioID", usuarioId);
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                var salida = new SalidaMod
+                                {
+                                    Codigo = 1,
+                                    Mensaje = "Usuario encontrado",
+                                };
+                                var usuario = new Usuario
+                                {
+                                    UsuarioID = Convert.ToInt32(reader["UsuarioID"]),
+                                    Nombre = reader["Nombre"].ToString(),
+                                    Apellido = reader["Apellido"].ToString(),
+                                    Email = reader["Email"].ToString(),
+                                    Telefono = reader["Telefono"].ToString()
+                                };
+                                return (salida, usuario);
+                            }
+                        }
+                    }
+                    return (new SalidaMod { Codigo = 0, Mensaje = "Usuario no encontrado." }, new Usuario());
+                }
+            }
+            catch (Exception ex)
+            {
+                return (new SalidaMod { Codigo = -1, Mensaje = ex.Message }, new Usuario());
+            }
+        }
+        public async Task<bool> GuardarCambios(Usuario usuario)
+        {
+            try
+            {
+                using (var conexion = _conexionFll.ObtenerConexion())
+                {
+                    await conexion.OpenAsync();
+                    using (var cmd = new MySqlCommand("sp_ActualizarUsuario", conexion))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@p_UsuarioID", usuario.UsuarioID);
+                        cmd.Parameters.AddWithValue("@p_Nombre", usuario.Nombre);
+                        cmd.Parameters.AddWithValue("@p_Apellido", usuario.Apellido);
+                        cmd.Parameters.AddWithValue("@p_Email", usuario.Email);
+                        cmd.Parameters.AddWithValue("@p_Telefono", usuario.Telefono);
+                        int filasAfectadas = await cmd.ExecuteNonQueryAsync();
+                        return filasAfectadas > 0;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error al guardar cambios: " + ex.Message);
+                return false;
+            }
+        }
+        public async Task GuardarSesion(int usuarioId, string token, MySqlConnection conexion)
+        {
+            string sql = @"INSERT INTO SesionesActivas (UsuarioID, Token, FechaExpiracion, Dispositivo) 
+                   VALUES (@UsuarioID, @Token, DATE_ADD(NOW(), INTERVAL 1 HOUR), 'Web Browser')";
+            using (var cmd = new MySqlCommand(sql, conexion))
+            {
+                cmd.Parameters.AddWithValue("@UsuarioID", usuarioId);
+                cmd.Parameters.AddWithValue("@Token", token);
+                await cmd.ExecuteNonQueryAsync();
+            }
+        }
+        public (SalidaMod salida, List<Usuario> usuarios) ObtenerUsuarios()
+        {
+            try
+            {
+                List<Usuario> listaUsuarios = new List<Usuario>();
+                using (var conexion = _conexionFll.ObtenerConexion())
+                {
+                    conexion.Open();
+                    string query = "SELECT UsuarioID, Nombre, Apellido, Email, Telefono, Rol, FechaBloqueo FROM Usuarios";
+
+                    using (var cmd = new MySqlCommand(query, conexion))
+                    {
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                listaUsuarios.Add(new Usuario
+                                {
+                                    UsuarioID = Convert.ToInt32(reader["UsuarioID"]),
+                                    Nombre = reader["Nombre"].ToString(),
+                                    Apellido = reader["Apellido"].ToString(),
+                                    Email = reader["Email"].ToString(),
+                                    Telefono = reader["Telefono"].ToString(),
+                                    Rol = reader["Rol"].ToString(),
+                                    FechaBloqueo = reader["FechaBloqueo"] != DBNull.Value ? (DateTime?)Convert.ToDateTime(reader["FechaBloqueo"]) : null
+                                });
+                            }
+                        }
+                    }
+                }
+                return (new SalidaMod { Codigo = 1, Mensaje = "Usuarios obtenidos correctamente." }, listaUsuarios);
+            }
+            catch (Exception ex)
+            {
+                return (new SalidaMod { Codigo = -1, Mensaje = ex.Message }, new List<Usuario>());
+            }
+        }
+        public (SalidaMod salida, bool exito) ActualizarFechaBloqueo(Usuario usuario)
+        {
+            try
+            {
+                using (var conexion = _conexionFll.ObtenerConexion())
+                {
+                    conexion.Open();
+                    string query = "UPDATE Usuarios SET FechaBloqueo = @FechaBloqueo WHERE UsuarioID = @UsuarioID";
+                    using (var cmd = new MySqlCommand(query, conexion))
+                    {
+                        cmd.Parameters.AddWithValue("@FechaBloqueo", usuario.FechaBloqueo.HasValue ? (object)usuario.FechaBloqueo.Value : DBNull.Value);
+                        cmd.Parameters.AddWithValue("@UsuarioID", usuario.UsuarioID);
+                        int filasAfectadas = cmd.ExecuteNonQuery();
+                        if (filasAfectadas > 0)
+                            return (new SalidaMod { Codigo = 1, Mensaje = $"Usuario {(usuario.FechaBloqueo.HasValue ? "bloqueado" : "desbloqueado")} correctamente." }, true);
+                        else
+                            return (new SalidaMod { Codigo = 0, Mensaje = "No se encontró el usuario para actualizar." }, false);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return (new SalidaMod { Codigo = -1, Mensaje = ex.Message }, false);
+            }
+        }
+        public (SalidaMod salida, bool exito) ActualizarRol(Usuario usuario)
+        {
+            try
+            {
+                using (var conexion = _conexionFll.ObtenerConexion())
+                {
+                    conexion.Open();
+                    string query = "UPDATE Usuarios SET Rol = @Rol WHERE UsuarioID = @UsuarioID";
+                    using (var cmd = new MySqlCommand(query, conexion))
+                    {
+                        cmd.Parameters.AddWithValue("@Rol", usuario.Rol);
+                        cmd.Parameters.AddWithValue("@UsuarioID", usuario.UsuarioID);
+                        int filasAfectadas = cmd.ExecuteNonQuery();
+                        if (filasAfectadas > 0)
+                            return (new SalidaMod { Codigo = 1, Mensaje = "Rol actualizado correctamente." }, true);
+                        else
+                            return (new SalidaMod { Codigo = 0, Mensaje = "No se encontró el usuario para actualizar el rol." }, false);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return (new SalidaMod { Codigo = -1, Mensaje = ex.Message }, false);
+            }
         }
     }
 }
