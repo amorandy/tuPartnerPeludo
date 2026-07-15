@@ -4,26 +4,7 @@ VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PetShopApi", "PetShopApi\PetShopApi.csproj", "{57CCD51C-6A2E-2EC2-3701-5943C0EDA36F}"
 EndProject
-Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "PetShop.View", "PetShop.View\", "{F8972F1D-F95A-A686-9C3A-6822FAB6E460}"
-	ProjectSection(WebsiteProperties) = preProject
-		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.8.1"
-		Debug.AspNetCompiler.VirtualPath = "/localhost_55924"
-		Debug.AspNetCompiler.PhysicalPath = "PetShop.View\"
-		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_55924\"
-		Debug.AspNetCompiler.Updateable = "true"
-		Debug.AspNetCompiler.ForceOverwrite = "true"
-		Debug.AspNetCompiler.FixedNames = "false"
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.VirtualPath = "/localhost_55924"
-		Release.AspNetCompiler.PhysicalPath = "PetShop.View\"
-		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_55924\"
-		Release.AspNetCompiler.Updateable = "true"
-		Release.AspNetCompiler.ForceOverwrite = "true"
-		Release.AspNetCompiler.FixedNames = "false"
-		Release.AspNetCompiler.Debug = "False"
-		VWDPort = "55924"
-		SlnRelativePath = "PetShop.View\"
-	EndProjectSection
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PetShop.View", "PetShop.View\PetShop.View.csproj", "{F59CD158-CB19-003F-F643-CECB558AF5C2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,10 +16,10 @@ Global
 		{57CCD51C-6A2E-2EC2-3701-5943C0EDA36F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{57CCD51C-6A2E-2EC2-3701-5943C0EDA36F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{57CCD51C-6A2E-2EC2-3701-5943C0EDA36F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F8972F1D-F95A-A686-9C3A-6822FAB6E460}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F8972F1D-F95A-A686-9C3A-6822FAB6E460}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F8972F1D-F95A-A686-9C3A-6822FAB6E460}.Release|Any CPU.ActiveCfg = Debug|Any CPU
-		{F8972F1D-F95A-A686-9C3A-6822FAB6E460}.Release|Any CPU.Build.0 = Debug|Any CPU
+		{F59CD158-CB19-003F-F643-CECB558AF5C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F59CD158-CB19-003F-F643-CECB558AF5C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F59CD158-CB19-003F-F643-CECB558AF5C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F59CD158-CB19-003F-F643-CECB558AF5C2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
