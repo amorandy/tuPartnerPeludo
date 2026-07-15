@@ -14,3 +14,6 @@
 /packages
 /PetShop.View/.vscode
 .vscode/
+/PetShop.View/obj
+/PetShop.View/bin/Debug/net9.0
+*.user
