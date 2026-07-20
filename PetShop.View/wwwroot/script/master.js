@@ -67,7 +67,8 @@ async function realizarLogin(email, password) {
             localStorage.setItem('token', data.token);
             const userSession = {
                 nombre: data.user,
-                rol: data.rol
+                rol: data.rol,
+                email: data.email
             };
             localStorage.setItem('user_session', JSON.stringify(userSession));
             if (data.rol === 'admin') {

@@ -28,7 +28,9 @@ builder.Services.AddScoped<ConexionFll>();
 builder.Services.AddScoped<UsuarioDAL>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<MetodosRecuperacionDal>();
+builder.Services.AddScoped<PedidoDAL>();
 builder.Services.AddScoped<ProductosDal>();
+builder.Services.AddScoped<ValidarSesionAttribute>();
 // Asegúrate de que esta línea esté en tu Program.cs
 builder.Services.Configure<WhatsappSettings>(builder.Configuration.GetSection("WhatsappSettings"));
 builder.Services.AddScoped<IWhatsappService, WhatsappService>();

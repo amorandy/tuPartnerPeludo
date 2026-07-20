@@ -2,16 +2,44 @@ window.onload = function() {
     const session = JSON.parse(localStorage.getItem('user_session'));
     const nombre = session.nombre || session.name;
     const foto = session.foto || session.picture;
+    const email = session.email;
     document.getElementById('user-name').innerText = nombre.toUpperCase();
     document.getElementById('user-img').src = foto || "images/default-user.png";
     if (session && session.rol === 'admin') {
         document.getElementById('btn-admin').classList.remove('d-none');
     }
+    const emailElement = document.getElementById('user-email');
+    if (emailElement) emailElement.innerText = email;
 };
+
+async function agregarAlCarrito(productoID, precio) {
+    const response = await fetch(`${CONFIG.API_BASE_URL}/Pedidos/agregar`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ productoID, cantidad: 1, precio })
+    });
+    console.log(response);
+    const result = await response.json();
+    if (result.codigo === 1) toastr.success("Producto agregado!");
+}
 
 async function cargarProductos() {
     try {
-        const response = await fetch('https://tupartnerpeludo.onrender.com/api/Productos');
+        const token = localStorage.getItem('token') || localStorage.getItem('user_session');
+        console.log(token);
+        const response = await fetch(`${CONFIG.API_BASE_URL}/Productos`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` 
+            }
+        });
+        if (!response.ok) {
+            throw new Error("No autorizado o error al obtener productos.");
+        }
         const data = await response.json();
         const contenedor = document.getElementById('contenedor-productos');
         contenedor.innerHTML = "";
@@ -25,8 +53,9 @@ async function cargarProductos() {
                         <h5>${prod.nombre}</h5>
                         <p class="small text-muted">${prod.descripcion}</p>
                         <p class="fw-bold">$${prod.precio.toLocaleString()}</p>
-                        <button class="btn btn-dark w-100" onclick='agregarAlCarrito(${JSON.stringify(prod)})'>
-                            <i class="fas fa-shopping-cart"></i> Añadir
+                        <!-- En tu bucle de productos -->
+                        <button class="btn btn-primary" onclick="agregarAlCarrito(123, 25.50)">
+                            <i class="fa fa-cart-plus"></i>
                         </button>
                     </div>
                 </div>

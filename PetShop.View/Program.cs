@@ -15,6 +15,9 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseDefaultFiles(); // Esto busca automáticamente archivos como index.html
+app.UseStaticFiles();  // Esto permite servir archivos estáticos
+
 app.UseRouting();
 
 app.UseAuthorization();

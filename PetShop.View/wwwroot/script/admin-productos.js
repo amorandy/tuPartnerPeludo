@@ -315,3 +315,25 @@ function toggleFormulario() {
     const contenedor = document.getElementById('contenedor-formulario');
     const collapse = new bootstrap.Collapse(contenedor, { toggle: true });
 }
+
+async function protegerRutaAdmin() {
+    if (window.location.pathname.includes('index.html')) return;
+
+    const token = localStorage.getItem('token');
+
+    try {
+        const response = await fetch('/api/Usuarios/verificar-admin', { 
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        if (response.status === 403 || response.status === 401) {
+            window.location.href = '/index.html';
+            return;
+        }
+
+    } catch (error) {
+        window.location.href = '/index.html';
+    }
+}
+
+protegerRutaAdmin();

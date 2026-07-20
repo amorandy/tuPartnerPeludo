@@ -1,12 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using PetShopApi.DAL;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using System.Linq;
 
 public class ValidarSesionAttribute : ActionFilterAttribute
 {
+    public string? RolRequerido { get; set; } = null;
+
     private readonly UsuarioDAL _usuarioDAL;
     public ValidarSesionAttribute(UsuarioDAL usuarioDAL)
     {
@@ -14,18 +14,14 @@ public class ValidarSesionAttribute : ActionFilterAttribute
     }
     public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
-        // 1. IGNORAR Peticiones OPTIONS (CORS preflight)
-        // Esto permite que el navegador pregunte si la petición está permitida
         if (context.HttpContext.Request.Method == "OPTIONS")
         {
             await next();
             return;
         }
 
-        // 2. Obtener la ruta
         var path = context.HttpContext.Request.Path.Value?.ToLower() ?? string.Empty;
 
-        // 3. Comprobar rutas públicas
         bool esRutaPublica = path.Contains("/login") ||
                              path.Contains("/registrar") ||
                              path.Contains("/verificar-codigo") ||
@@ -39,7 +35,6 @@ public class ValidarSesionAttribute : ActionFilterAttribute
             return;
         }
 
-        // 4. Validar encabezado Authorization
         var authHeader = context.HttpContext.Request.Headers["Authorization"].ToString();
 
         if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
@@ -50,14 +45,24 @@ public class ValidarSesionAttribute : ActionFilterAttribute
 
         string token = authHeader.Substring(7);
 
-        // 5. Validar contra la base de datos
-        bool esValido = await _usuarioDAL.ValidarTokenEnBD(token);
+        var usuario = await _usuarioDAL.ObtenerUsuarioPorToken(token);
 
-        if (!esValido)
+        if (usuario == null)
         {
             context.Result = new UnauthorizedResult();
             return;
         }
+
+        if (!string.IsNullOrEmpty(RolRequerido))
+        {
+            if (usuario.Rol != RolRequerido)
+            {
+                context.Result = new ForbidResult();
+                return;
+            }
+        }
+
+        context.HttpContext.Items["Usuario"] = usuario;
 
         await next();
     }
