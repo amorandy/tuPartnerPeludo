@@ -33,6 +33,21 @@ document.getElementById("formLogin").addEventListener("submit", function(event) 
     realizarLogin(email, password);
 });
 
+document.getElementById('togglePassword').addEventListener('click', function () {
+    const passwordInput = document.getElementById('loginPass');
+    const iconEye = document.getElementById('iconEye');
+
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        iconEye.classList.remove('fa-eye');
+        iconEye.classList.add('fa-eye-slash'); 
+    } else {
+        passwordInput.type = 'password';
+        iconEye.classList.remove('fa-eye-slash');
+        iconEye.classList.add('fa-eye'); 
+    }
+});
+
 async function registrarUsuario(datosUsuario) {
     const btnRegistrar = document.querySelector("#formRegistro button[type='submit']");
     btnRegistrar.disabled = true;
@@ -52,7 +67,6 @@ async function registrarUsuario(datosUsuario) {
             EnviarMensaje(codigo, mensaje);
             mostrarLogin();
         } else {
-            // Si codigo es undefined, usamos 0 como respaldo
             EnviarMensaje(codigo || 0, mensaje || "Error al registrar.");
         }
     } catch (error) {
