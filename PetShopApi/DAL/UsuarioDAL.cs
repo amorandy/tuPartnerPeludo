@@ -572,16 +572,12 @@ namespace PetShopApi.DAL
             {
                 using (var conexion = _conexionFll.ObtenerConexion())
                 {
-                    string deleteQuery = "DELETE FROM SesionesActivas WHERE FechaExpiracion < NOW()";
-                    await conexion.ExecuteAsync(deleteQuery);
-
-                    string sql = @"
-                    SELECT u.Id, u.Nombre, u.Rol 
-                    FROM Usuario u 
-                    INNER JOIN SesionesActivas s ON u.Id = s.UsuarioId 
-                    WHERE s.Token = @Token AND s.FechaExpiracion > NOW()";
-
-                    var usuario = await conexion.QueryFirstOrDefaultAsync<Usuario>(sql, new { Token = token });
+                    var parametros = new { p_Token = token };
+                    var usuario = await conexion.QueryFirstOrDefaultAsync<Usuario>(
+                        "sp_ObtenerUsuarioPorToken",
+                        parametros,
+                        commandType: CommandType.StoredProcedure
+                    );
                     return usuario;
                 }
             }

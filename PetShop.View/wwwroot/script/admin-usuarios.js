@@ -70,6 +70,7 @@ async function renderizarTablaUsuarios() {
             method: 'GET',
             headers: { 'Authorization': `Bearer ${token}` }
         });
+        console.log(response);
         const data = await response.json();
         listaUsuariosGlobal = data.usuarios || [];
         mostrarTabla(listaUsuariosGlobal);

@@ -8,9 +8,11 @@ public class ValidarSesionAttribute : ActionFilterAttribute
     public string? RolRequerido { get; set; } = null;
 
     private readonly UsuarioDAL _usuarioDAL;
-    public ValidarSesionAttribute(UsuarioDAL usuarioDAL)
+
+    public ValidarSesionAttribute(UsuarioDAL usuarioDAL, string? rolRequerido = null)
     {
         _usuarioDAL = usuarioDAL;
+        RolRequerido = rolRequerido;
     }
     public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
@@ -55,7 +57,7 @@ public class ValidarSesionAttribute : ActionFilterAttribute
 
         if (!string.IsNullOrEmpty(RolRequerido))
         {
-            if (usuario.Rol != RolRequerido)
+            if (usuario.Rol == null || !usuario.Rol.Trim().Equals(RolRequerido.Trim(), StringComparison.OrdinalIgnoreCase))
             {
                 context.Result = new ForbidResult();
                 return;

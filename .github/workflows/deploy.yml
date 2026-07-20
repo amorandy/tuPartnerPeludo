@@ -1,0 +1,42 @@
+name: Deploy static content to Pages
+
+on:
+  push:
+    branches: ["main"] # Cambia "main" por "master" si tu rama principal se llama así
+
+  # Permite ejecutar este workflow manualmente desde la pestaña Actions
+  workflow_dispatch:
+
+# Permisos necesarios para que GitHub Actions despliegue en Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Permitir solo un despliegue concurrent
+concurrency:
+  group: "pages"
+  cancel-in-running: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # AQUÍ INDICAMOS EXACTAMENTE DÓNDE ESTÁ TU CARPETA WWWROOT
+          path: './PetShop.View/wwwroot'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
