@@ -1,17 +1,24 @@
-﻿namespace PetShopApi.Models
+namespace PetShopApi.Models
 {
-    public class Pedido
+    public class AgregarCarritoRequest
     {
-        public int UsuarioId { get; set; }
-        public string? ClienteEmail { get; set; } // O ID del usuario
+        public int UsuarioID { get; set; }
+        public int ProductoID { get; set; }
+        public int Cantidad { get; set; }
+    }
+    // En tu carpeta Models
+    public class PedidosMod
+    {
+        public int PedidoID { get; set; }
         public decimal Total { get; set; }
-        public DateTime Fecha { get; set; } = DateTime.Now;
-        public List<DetallePedidoModel>? Items { get; set; }
+        public List<DetallePedidosMod> Detalles { get; set; } = new List<DetallePedidosMod>();
     }
 
-    public class DetallePedidoModel
+    public class DetallePedidosMod
     {
-        public int ProductoId { get; set; }
+        public int DetalleID { get; set; }
+        public int ProductoID { get; set; }
+        public string NombreProducto { get; set; } = string.Empty;
         public int Cantidad { get; set; }
         public decimal PrecioUnitario { get; set; }
     }
