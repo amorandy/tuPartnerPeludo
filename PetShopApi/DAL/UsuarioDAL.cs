@@ -1,9 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+﻿using Dapper;
 using MySqlConnector;
 using PetShopApi.Mmodels;
 using PetShopApi.Models;
 using System.Data;
-using System.Diagnostics.Eventing.Reader;
 
 namespace PetShopApi.DAL
 {
@@ -122,6 +121,7 @@ namespace PetShopApi.DAL
                                 UsuarioID = (int)reader["UsuarioID"],
                                 Nombre = reader["Nombre"].ToString(),
                                 Rol = reader["Rol"].ToString(),
+                                Email = reader["Email"].ToString(),
                                 IntentosFallidos = reader["IntentosFallidos"] != DBNull.Value ? (int)reader["IntentosFallidos"] : 0
                             };
                             string hash = reader["PasswordHash"]?.ToString() ?? string.Empty;
@@ -268,7 +268,6 @@ namespace PetShopApi.DAL
             }
             return (usuario, salida);
         }
-
         public async Task<SalidaMod> ActualizarTokenRecuperacion(int idUsuario, string token)
         {
             SalidaMod salida = new SalidaMod();
@@ -565,6 +564,27 @@ namespace PetShopApi.DAL
             catch (Exception ex)
             {
                 return (new SalidaMod { Codigo = -1, Mensaje = ex.Message }, false);
+            }
+        }
+        public async Task<Usuario?> ObtenerUsuarioPorToken(string token)
+        {
+            try
+            {
+                using (var conexion = _conexionFll.ObtenerConexion())
+                {
+                    var parametros = new { p_Token = token };
+                    var usuario = await conexion.QueryFirstOrDefaultAsync<Usuario>(
+                        "sp_ObtenerUsuarioPorToken",
+                        parametros,
+                        commandType: CommandType.StoredProcedure
+                    );
+                    return usuario;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error obteniendo usuario por token: " + ex.Message);
+                return null;
             }
         }
     }

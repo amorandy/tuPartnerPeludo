@@ -1,5 +1,7 @@
-﻿using MySqlConnector;
+﻿using Dapper;
+using MySqlConnector;
 using PetShopApi.Models;
+using System.Data;
 
 namespace PetShopApi.DAL
 {

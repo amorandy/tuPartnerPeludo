@@ -144,6 +144,7 @@ public class UsuariosController : ControllerBase
                 mensaje = salida.Mensaje,
                 user = usuario?.Nombre,
                 rol = usuario?.Rol,
+                email = usuario?.Email,
                 token = tokenn
             });
         }
@@ -292,12 +293,14 @@ public class UsuariosController : ControllerBase
         }
     }
     [HttpGet]
+    [TypeFilter(typeof(ValidarSesionAttribute), Arguments = new object[] { "Admin" })]
     public IActionResult ObtenerUsuarios()
     {
         var (salida, usuarios) = _usuarioDAL.ObtenerUsuarios();
         return Ok(new { salida, usuarios });
     }
     [HttpPost("bloquear-usuario/{id}")]
+    [TypeFilter(typeof(ValidarSesionAttribute), Arguments = new object[] { "Admin" })]
     public async Task<IActionResult> BloquearUsuario(int id)
     {
         var (salida, usuario) = await Task.Run(() => _usuarioDAL.ObtenerUsuarioPorId(id));
@@ -323,6 +326,7 @@ public class UsuariosController : ControllerBase
         }
     }
     [HttpPost("cambiar-rol/{id}")]
+    [TypeFilter(typeof(ValidarSesionAttribute), Arguments = new object[] { "Admin" })]
     public async Task<IActionResult> CambiarRol(int id, [FromBody] string nuevoRol)
     {
         var (salidaUsuario, usuario) = await Task.Run(() => _usuarioDAL.ObtenerUsuarioPorId(id));
@@ -340,5 +344,11 @@ public class UsuariosController : ControllerBase
         {
             return BadRequest(new { salida });
         }
+    }
+    [HttpGet("verificar-admin")]
+    [TypeFilter(typeof(ValidarSesionAttribute), Arguments = new object[] { "Admin" })]
+    public IActionResult VerificarAdmin()
+    {
+        return Ok(); 
     }
 }
