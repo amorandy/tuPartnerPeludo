@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PetShopApi.DAL;
 using PetShopApi.Models;
@@ -130,4 +130,3 @@ public class ProductosController : ControllerBase
         }
     }
 }
-
