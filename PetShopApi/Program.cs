@@ -28,18 +28,20 @@ builder.Services.AddScoped<ConexionFll>();
 builder.Services.AddScoped<UsuarioDAL>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<MetodosRecuperacionDal>();
-builder.Services.AddScoped<PedidoDAL>();
 builder.Services.AddScoped<ProductosDal>();
-builder.Services.AddScoped<ValidarSesionAttribute>();
-// Asegúrate de que esta línea esté en tu Program.cs
+builder.Services.AddScoped<PedidosDAL>();
+builder.Services.AddScoped<ValidarSesionAttribute>(); // <--- Â¡ESTO FALTABA!
+
+// AsegÃºrate de que esta lÃ­nea estÃ© en tu Program.cs
 builder.Services.Configure<WhatsappSettings>(builder.Configuration.GetSection("WhatsappSettings"));
 builder.Services.AddScoped<IWhatsappService, WhatsappService>();
 
 var app = builder.Build();
 
-app.UseCors("PublicPolicy");
-//app.UseAuthorization();
-app.UseRouting();
+// EL ORDEN AQUÃ ES MUY IMPORTANTE:
+app.UseRouting();             // 1. Primero Routing
+app.UseCors("PublicPolicy");  // 2. Luego CORS
+
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
@@ -49,8 +51,9 @@ app.UseSwaggerUI(c =>
 
 if (app.Environment.IsDevelopment())
 {
-    
+
 }
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
