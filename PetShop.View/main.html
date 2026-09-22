@@ -18,6 +18,8 @@
     <script src="script/master.js" defer></script>
     <script src="script/carrito.js" defer></script>
     <script src="script/auth-utils.js" defer></script>
+    <script src="script/config.js" defer></script>
+
 </head>
 <body class="bg-light">
     <nav class="navbar navbar-expand-lg navbar-light bg-white p-3 border-bottom">
@@ -33,7 +35,10 @@
                     <span id="contador-carrito" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
                 </a>
 
-                <span id="user-name" class="me-2 fw-bold small text-uppercase"></span>
+                <div class="d-flex flex-column align-items-end me-2">
+                    <span id="user-name" class="fw-bold small text-uppercase mb-0"></span>
+                    <span id="user-email" class="text-muted" style="font-size: 0.75rem;"></span>
+                </div>
                 <img id="user-img" src="" class="rounded-circle user-avatar" width="40" height="40">
                 <button onclick="logout()" class="btn btn-sm ms-3 btn-outline-danger"><i class="fas fa-sign-out-alt"></i></button>
             </div>
@@ -58,6 +63,42 @@
             <a href="admin-productos.html" id="btn-admin" class="nav-link text-danger d-none">
                 <i class="fas fa-lock"></i> Panel Admin
             </a>
+        </div>
+    </div>
+    <!-- Modal del Carrito de Compras -->
+    <div class="modal fade" id="modalCarrito" tabindex="-1" aria-labelledby="modalCarritoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="modalCarritoLabel"><i class="fa fa-shopping-cart"></i> Mi Carrito</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Precio</th>
+                                    <th>Cantidad</th>
+                                    <th>Subtotal</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="lista-carrito-body">
+                                <!-- Los items del carrito se inyectarán aquí vía JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-end mt-3">
+                        <h4 class="fw-bold">Total: $<span id="total-carrito">0</span></h4>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Seguir Comprando</button>
+                    <button type="button" class="btn btn-dark" style="background: #836f14; border:none;" onclick="procederPago()">Proceder al Pago</button>
+                </div>
+            </div>
         </div>
     </div>
 </body>
