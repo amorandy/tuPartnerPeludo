@@ -25,28 +25,61 @@ function mostrarVerificacion() {
     document.getElementById('recuperar-section').classList.remove('d-none');
 }
 
-document.getElementById("formLogin").addEventListener("submit", function(event) {
+document.getElementById("formLogin").addEventListener("submit", function (event) {
     event.preventDefault();
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPass').value;
-    
+
     realizarLogin(email, password);
 });
 
-document.getElementById('togglePassword').addEventListener('click', function () {
-    const passwordInput = document.getElementById('loginPass');
-    const iconEye = document.getElementById('iconEye');
+// --- FUNCIÓN AGREGADA/CORREGIDA PARA EL LOGIN NORMAL ---
+async function realizarLogin(email, password) {
+    const btnLogin = document.querySelector("#formLogin button[type='submit']");
+    btnLogin.disabled = true;
+    btnLogin.innerText = "Iniciando...";
 
-    if (passwordInput.type === 'password') {
-        passwordInput.type = 'text';
-        iconEye.classList.remove('fa-eye');
-        iconEye.classList.add('fa-eye-slash'); 
-    } else {
-        passwordInput.type = 'password';
-        iconEye.classList.remove('fa-eye-slash');
-        iconEye.classList.add('fa-eye'); 
+    try {
+        const response = await fetch(`${CONFIG.API_BASE_URL}/usuarios/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ Email: email, Password: password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.codigo === 1) {
+            // Guardamos la estructura correcta con ID y Email
+            const sessionData = {
+                id: data.id,             // Fundamental para el carrito
+                email: data.email,       // Fundamental para visualización
+                nombre: data.user,
+                rol: data.rol
+            };
+
+            localStorage.setItem('user_session', JSON.stringify(sessionData));
+            localStorage.setItem('token', data.token);
+
+            console.info(data.mensaje);
+            EnviarMensaje(data.codigo, data.mensaje);
+
+            // Redirigir según el rol
+            setTimeout(() => {
+                window.location.replace(data.rol === 'admin' ? "admin-productos.html" : "main.html");
+            }, 1000);
+
+        } else {
+            EnviarMensaje(0, data.mensaje || "Credenciales incorrectas.");
+        }
+    } catch (error) {
+        console.error("Error al hacer login:", error);
+        EnviarMensaje(-1, "Error al conectar con el servidor.");
+    } finally {
+        btnLogin.disabled = false;
+        btnLogin.innerText = "INGRESAR";
     }
-});
+}
+// --------------------------------------------------------
 
 async function registrarUsuario(datosUsuario) {
     const btnRegistrar = document.querySelector("#formRegistro button[type='submit']");
@@ -71,7 +104,7 @@ async function registrarUsuario(datosUsuario) {
         }
     } catch (error) {
         console.error("Error completo:", error);
-        EnviarMensaje(-1, "Error: Error al Procesar el registro"); 
+        EnviarMensaje(-1, "Error: Error al Procesar el registro");
     } finally {
         btnRegistrar.disabled = false;
         btnRegistrar.innerText = "REGISTRARME";
@@ -82,16 +115,16 @@ async function cargarMetodosRecuperacion() {
     try {
         const res = await fetch(`${CONFIG.API_BASE_URL}/usuarios/metodos-recuperacion`);
         const json = await res.json();
-        const metodos = json.salida.metodos; 
+        const metodos = json.salida.metodos;
         const select = document.getElementById('metodo-recuperacion');
-        
+
         select.innerHTML = "";
 
         metodos.forEach(metodo => {
             const option = document.createElement('option');
             option.value = metodo.metodo;
             option.textContent = metodo.etiqueta;
-            option.dataset.placeholder = metodo.placeholder; 
+            option.dataset.placeholder = metodo.placeholder;
             select.appendChild(option);
         });
 
@@ -104,11 +137,11 @@ async function cargarMetodosRecuperacion() {
 function alternarCamposRecuperacion() {
     const select = document.getElementById("metodo-recuperacion");
     const metodo = select.value;
-    
+
     const todosLosCampos = document.querySelectorAll(".campo-recuperacion");
-    
+
     todosLosCampos.forEach(c => c.classList.add("d-none"));
-    
+
     const campoSeleccionado = document.getElementById("campo-" + metodo.toLowerCase());
     if (campoSeleccionado) {
         campoSeleccionado.classList.remove("d-none");
@@ -116,7 +149,7 @@ function alternarCamposRecuperacion() {
 
     const placeholder = select.options[select.selectedIndex].dataset.placeholder;
     const inputActivo = campoSeleccionado.querySelector("input");
-    if(inputActivo) inputActivo.placeholder = placeholder;
+    if (inputActivo) inputActivo.placeholder = placeholder;
 }
 
 async function solicitarRecuperacionAdaptada() {
@@ -156,12 +189,11 @@ async function solicitarRecuperacionAdaptada() {
 
         const data = await response.json();
         EnviarMensaje(data.codigo, data.mensaje);
-        
+
         if (data.codigo === 1) {
             setTimeout(() => mostrarLogin(), 3000);
         }
-        else
-        {
+        else {
             EnviarMensaje(0, data.mensaje);
         }
     } catch (error) {
@@ -208,8 +240,8 @@ function procesarRegistro(event) {
     registrarUsuario(datos);
 }
 
-function irAlMain() { 
-    window.location.href = "main.html"; 
+function irAlMain() {
+    window.location.href = "main.html";
 }
 
 function cerrarSesion() {
@@ -217,29 +249,26 @@ function cerrarSesion() {
     window.location.href = "index.html";
 }
 
-window.handleCredentialResponse = function(response) {
+// --- FUNCIÓN CORREGIDA PARA GOOGLE SIGN-IN ---
+window.handleCredentialResponse = function (response) {
     const userData = decodeJwtResponse(response.credential);
 
     const sesionGoogle = {
+        id: 0, // Como es Google, el id es 0 hasta que el backend lo rescate (ya hicimos esto en carrito.js)
+        email: userData.email, // <-- Agregado
         nombre: userData.name,
         foto: userData.picture,
-        tipo: "google"
+        tipo: "google",
+        rol: "cliente" // <-- Agregado por defecto
     };
+
     localStorage.setItem('user_session', JSON.stringify(sesionGoogle));
-    localStorage.setItem('session_token', response.credential);
+    localStorage.setItem('token', response.credential); // <-- Cambiado de session_token a token para estandarizar
 
     mostrarSeccionPerfil();
+    setTimeout(() => { window.location.href = "main.html"; }, 1500); // <-- Agregada redirección automática
 }
-
-function decodeJwtResponse(token) {
-    var base64Url = token.split('.')[1];
-    var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    var jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
-
-    return JSON.parse(jsonPayload);
-}
+// ----------------------------------------------
 
 function mostrarSeccionPerfil() {
     const user = JSON.parse(localStorage.getItem('user_session'));
@@ -274,9 +303,9 @@ async function confirmarCodigo() {
         });
 
         const data = await response.json();
-        
+
         EnviarMensaje(data.codigo, data.mensaje);
-        
+
         if (data.codigo === 1) {
             mostrarLogin();
         }
@@ -284,13 +313,13 @@ async function confirmarCodigo() {
         console.error("Error al verificar:", error);
         EnviarMensaje(-1, "Error al conectar con el servidor.");
     }
-    finally
-    {
+    finally {
         btnConfirmar.disabled = false;
         btnConfirmar.innerText = "Verificar Cuenta";
     }
 }
-window.onload = function() {
+
+window.onload = function () {
     const sessionData = localStorage.getItem('user_session');
 
     if (sessionData && window.location.pathname.includes("index.html")) {
@@ -303,7 +332,7 @@ window.onload = function() {
 function decodeJwtResponse(token) {
     let base64Url = token.split('.')[1];
     let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    let jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+    let jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
         return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
     }).join(''));
     return JSON.parse(jsonPayload);
