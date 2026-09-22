@@ -8,8 +8,8 @@ namespace PetShopApi.Controllers
     [Route("api/[controller]")]
     public class PedidosController : ControllerBase
     {
-        private readonly PedidoDAL _pedidoDAL;
-        public PedidosController(PedidoDAL pedidoDAL)
+        private readonly PedidosDAL _pedidoDAL;
+        public PedidosController(PedidosDAL pedidoDAL)
         {
             _pedidoDAL = pedidoDAL;
         }
