@@ -1,9 +1,10 @@
-﻿using CloudinaryDotNet;
-using CloudinaryDotNet.Actions;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PetShopApi.DAL;
 using PetShopApi.Models;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -36,7 +37,6 @@ public class ProductosController : ControllerBase
         return Ok(new { salida, productos });
     }
     [HttpPut("actualizar/{id}")]
-    [TypeFilter(typeof(ValidarSesionAttribute), Arguments = new object[] { "Admin" })]
     public async Task<IActionResult> Actualizar(int id, [FromForm] ProductosMod producto)
     {
         try
@@ -80,7 +80,6 @@ public class ProductosController : ControllerBase
         }
     }
     [HttpPost]
-    [TypeFilter(typeof(ValidarSesionAttribute), Arguments = new object[] { "Admin" })]
     public async Task<IActionResult> GuardarProducto([FromForm] ProductosMod producto)
     {
         try
@@ -118,7 +117,6 @@ public class ProductosController : ControllerBase
         }
     }
     [HttpPost("eliminar")]
-    [TypeFilter(typeof(ValidarSesionAttribute), Arguments = new object[] { "Admin" })]
     public async Task<IActionResult> EliminarProducto([FromForm] int id)
     {
         try
@@ -132,3 +130,4 @@ public class ProductosController : ControllerBase
         }
     }
 }
+
