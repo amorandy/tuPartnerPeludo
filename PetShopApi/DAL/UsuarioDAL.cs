@@ -121,7 +121,7 @@ namespace PetShopApi.DAL
                                 UsuarioID = (int)reader["UsuarioID"],
                                 Nombre = reader["Nombre"].ToString(),
                                 Rol = reader["Rol"].ToString(),
-                                Email = reader["Email"].ToString(),
+                                Email = reader["Email"].ToString(), //agregado
                                 IntentosFallidos = reader["IntentosFallidos"] != DBNull.Value ? (int)reader["IntentosFallidos"] : 0
                             };
                             string hash = reader["PasswordHash"]?.ToString() ?? string.Empty;
