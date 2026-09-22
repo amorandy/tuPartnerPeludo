@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using PetShopApi.DAL;
 using PetShopApi.Models;
 
@@ -6,39 +7,75 @@ namespace PetShopApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [AllowAnonymous] // Puedes cambiarlo a [Authorize] si requieres token
     public class PedidosController : ControllerBase
     {
         private readonly PedidosDAL _pedidoDAL;
+
+        // Inyectamos el DAL a través del constructor tal como en ProductosController
         public PedidosController(PedidosDAL pedidoDAL)
         {
             _pedidoDAL = pedidoDAL;
         }
-        [HttpPost("agregar")]
-        [ServiceFilter(typeof(ValidarSesionAttribute))]
-        public async Task<IActionResult> AgregarPedido([FromBody] Pedido nuevoPedido)
+
+        [HttpGet("carrito/{usuarioId}")]
+        public IActionResult ObtenerCarrito(int usuarioId)
         {
             try
             {
-                // Validar que el carrito no esté vacío
-                if (nuevoPedido.Items == null || nuevoPedido.Items.Count == 0)
+                // 1. Desestructuramos la tupla para obtener salida y pedido por separado
+                var (salida, pedido) = _pedidoDAL.ObtenerCarritoPorUsuario(usuarioId);
+
+                // 2. Evaluamos si hubo un error en la base de datos
+                if (salida.Codigo == -1)
                 {
-                    return BadRequest(new { mensaje = "El carrito está vacío." });
+                    return StatusCode(500, salida);
                 }
 
-                // Llamamos al DAL que ahora devuelve un SalidaMod
-                SalidaMod resultado = await _pedidoDAL.AgregarAlCarrito(nuevoPedido);
-
-                if (resultado.Codigo == 1)
+                // 3. Si no hay carrito pendiente
+                if (pedido == null)
                 {
-                    return Ok(new { codigo = 1, mensaje = resultado.Mensaje });
+                    return Ok(new
+                    {
+                        Items = new List<object>(),
+                        Total = 0,
+                        salida // Enviamos también la salida para que el front sepa qué pasó
+                    });
                 }
 
-                return BadRequest(new { codigo = -1, mensaje = resultado.Mensaje });
+                // 4. Si hay carrito, armamos el objeto exacto que espera tu JavaScript
+                return Ok(new
+                {
+                    salida,
+                    pedido.PedidoID,
+                    pedido.Total,
+                    // Mapeamos 'Detalles' a 'Items' para compatibilidad con tu JS actual
+                    Items = pedido.Detalles
+                });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { mensaje = "Error interno del servidor", error = ex.Message });
+                return StatusCode(500, new { codigo = -1, mensaje = ex.Message });
             }
         }
+
+        [HttpPost("agregar")]
+        public IActionResult AgregarAlCarrito([FromBody] AgregarCarritoRequest request)
+        {
+            try
+            {
+                var salida = _pedidoDAL.AgregarAlCarrito(request);
+
+                if (salida.Codigo == 1)
+                    return Ok(salida);
+                else
+                    return BadRequest(salida);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { codigo = -1, mensaje = ex.Message });
+            }
+        }
+        // Aquí puedes agregar tus otros métodos como AgregarAlCarrito, etc.
     }
 }
