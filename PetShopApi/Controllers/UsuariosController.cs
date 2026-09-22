@@ -143,8 +143,9 @@ public class UsuariosController : ControllerBase
                 codigo = salida.Codigo,
                 mensaje = salida.Mensaje,
                 user = usuario?.Nombre,
+                email = usuario?.Email,         // <-- Agregado para el frontend
+                id = usuario?.UsuarioID,        // <-- Agregado (Asegúrate de que la propiedad se llame así en tu modelo Usuario)
                 rol = usuario?.Rol,
-                email = usuario?.Email,
                 token = tokenn
             });
         }
