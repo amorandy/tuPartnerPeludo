@@ -250,35 +250,44 @@ function cerrarSesion() {
 }
 
 // --- FUNCIÓN CORREGIDA PARA GOOGLE SIGN-IN ---
-window.handleCredentialResponse = function (response) {
+window.handleCredentialResponse = async function (response) {
     const userData = decodeJwtResponse(response.credential);
+    
+    try {
+        // Enviar los datos de Google a nuestra API C#
+        const res = await fetch(`${CONFIG.API_BASE_URL}/Usuarios/google-login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email: userData.email,
+                nombre: userData.name,
+                foto: userData.picture
+            })
+        });
 
-    const sesionGoogle = {
-        id: 0, // Como es Google, el id es 0 hasta que el backend lo rescate (ya hicimos esto en carrito.js)
-        email: userData.email, // <-- Agregado
-        nombre: userData.name,
-        foto: userData.picture,
-        tipo: "google",
-        rol: "cliente" // <-- Agregado por defecto
-    };
+        const data = await res.json();
 
-    localStorage.setItem('user_session', JSON.stringify(sesionGoogle));
-    localStorage.setItem('token', response.credential); // <-- Cambiado de session_token a token para estandarizar
+        if (data.codigo === 1) {
+            // Guardar la sesión REAL que nos devuelve la base de datos
+            const sesionGoogle = {
+                id: data.id,           // ¡Aquí ya vendrá el 116!
+                email: data.email,
+                nombre: data.user,     // Nombre desde la BD
+                foto: userData.picture,
+                tipo: "google",
+                rol: data.rol
+            };
 
-    mostrarSeccionPerfil();
-    setTimeout(() => { window.location.href = "main.html"; }, 1500); // <-- Agregada redirección automática
-}
-// ----------------------------------------------
+            localStorage.setItem('user_session', JSON.stringify(sesionGoogle));
+            localStorage.setItem('token', data.token); // El token de seguridad de tu API
 
-function mostrarSeccionPerfil() {
-    const user = JSON.parse(localStorage.getItem('user_session'));
-    if (user) {
-        document.getElementById('login-section').classList.add('d-none');
-        document.getElementById('user-profile').classList.remove('d-none');
-        document.getElementById('user-name').textContent = user.nombre;
-        if (user.foto) {
-            document.getElementById('user-photo').src = user.foto;
+            mostrarSeccionPerfil();
+            setTimeout(() => { window.location.href = "main.html"; }, 1500);
+        } else {
+            console.error("Error del servidor:", data.mensaje);
         }
+    } catch (error) {
+        console.error("Error en la conexión con la API:", error);
     }
 }
 
