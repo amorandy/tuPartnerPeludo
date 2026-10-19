@@ -1,8 +1,6 @@
 using Dapper;
 using MySqlConnector;
 using PetShopApi.Models;
-using System;
-using System.Collections.Generic;
 using System.Data;
 
 namespace PetShopApi.DAL
@@ -97,7 +95,7 @@ namespace PetShopApi.DAL
 
                     // 2. EJECUTAR TU PROCEDIMIENTO ALMACENADO CON LOS 4 PARÁMETROS
                     var cmd = new MySqlCommand("sp_AgregarAlCarrito", db);
-                    cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                    cmd.CommandType = CommandType.StoredProcedure;
 
                     cmd.Parameters.AddWithValue("p_UsuarioID", request.UsuarioID);
                     cmd.Parameters.AddWithValue("p_ProductoID", request.ProductoID);
@@ -109,6 +107,36 @@ namespace PetShopApi.DAL
                     cmd.ExecuteNonQuery();
 
                     return new SalidaMod { Codigo = 1, Mensaje = "Producto agregado al carrito con éxito" };
+                }
+            }
+            catch (Exception ex)
+            {
+                return new SalidaMod { Codigo = -1, Mensaje = "Error BD: " + ex.Message };
+            }
+        }
+        public SalidaMod EliminarDelCarrito(int detalleId)
+        {
+            try
+            {
+                using (var db = _conexionFll.ObtenerConexion())
+                {
+                    db.Open();
+
+                    var cmd = new MySqlCommand("sp_EliminarDelCarrito", db);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("p_DetalleID", detalleId);
+
+                    int filasAfectadas = cmd.ExecuteNonQuery();
+
+                    if (filasAfectadas > 0)
+                    {
+                        return new SalidaMod { Codigo = 1, Mensaje = "Producto eliminado del carrito con éxito." };
+                    }
+                    else
+                    {
+                        return new SalidaMod { Codigo = 0, Mensaje = "No se encontró el detalle o ya fue eliminado." };
+                    }
                 }
             }
             catch (Exception ex)

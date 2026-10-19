@@ -352,4 +352,40 @@ public class UsuariosController : ControllerBase
     {
         return Ok(); 
     }
+
+    [HttpPost("google-login")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginRequest request)
+    {
+        try
+        {
+            if (request == null || string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Nombre))
+            {
+                return BadRequest(new { codigo = 0, mensaje = "Datos inválidos" });
+            }
+            var (salida, usuario) = await _usuarioDAL.LoginConGoogle(request.Email, request.Nombre);
+
+            if (salida.Codigo == 1 && usuario != null)
+            {
+                var token = Guid.NewGuid().ToString();
+
+                return Ok(new
+                {
+                    codigo = 1,
+                    mensaje = "¡Bienvenido con Google!",
+                    user = usuario.Nombre,
+                    email = usuario.Email,
+                    id = usuario.UsuarioID,
+                    rol = usuario.Rol,
+                    token = token
+                });
+            }
+
+            return BadRequest(new { codigo = 0, mensaje = salida.Mensaje });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { codigo = -1, mensaje = ex.Message });
+        }
+    }
 }

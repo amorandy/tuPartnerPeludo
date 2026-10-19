@@ -141,7 +141,9 @@ function alternarCamposRecuperacion() {
     const todosLosCampos = document.querySelectorAll(".campo-recuperacion");
 
     todosLosCampos.forEach(c => c.classList.add("d-none"));
-
+    if (!select || select.selectedIndex === -1) {
+        return;
+    }
     const campoSeleccionado = document.getElementById("campo-" + metodo.toLowerCase());
     if (campoSeleccionado) {
         campoSeleccionado.classList.remove("d-none");

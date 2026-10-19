@@ -76,6 +76,23 @@ namespace PetShopApi.Controllers
                 return StatusCode(500, new { codigo = -1, mensaje = ex.Message });
             }
         }
+        [HttpDelete("eliminar/{detalleId}")]
+        public IActionResult EliminarDelCarrito(int detalleId)
+        {
+            try
+            {
+                var salida = _pedidoDAL.EliminarDelCarrito(detalleId);
+
+                if (salida.Codigo == 1)
+                    return Ok(salida);
+                else
+                    return BadRequest(salida);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { codigo = -1, mensaje = ex.Message });
+            }
+        }
         // Aquí puedes agregar tus otros métodos como AgregarAlCarrito, etc.
     }
 }
