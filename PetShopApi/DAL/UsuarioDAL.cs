@@ -587,5 +587,38 @@ namespace PetShopApi.DAL
                 return null;
             }
         }
+
+        public async Task<(SalidaMod salida, Usuario? usuario)> LoginConGoogle(string email, string nombre)
+        {
+            try
+            {
+                using (var conexion = _conexionFll.ObtenerConexion())
+                {
+                    var parametros = new DynamicParameters();
+                    parametros.Add("p_Email", email);
+                    parametros.Add("p_Nombre", nombre);
+
+                    var usuario = await conexion.QueryFirstOrDefaultAsync<Usuario>(
+                        "sp_LoginConGoogle",
+                        parametros,
+                        commandType: CommandType.StoredProcedure
+                    );
+
+                    if (usuario != null)
+                    {
+                        return (new SalidaMod { Codigo = 1, Mensaje = "Login exitoso." }, usuario);
+                    }
+                    else
+                    {
+                        return (new SalidaMod { Codigo = 0, Mensaje = "No se pudo procesar el login o crear el usuario." }, null);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error en LoginConGoogle: " + ex.Message);
+                return (new SalidaMod { Codigo = -1, Mensaje = "Error en base de datos: " + ex.Message }, null);
+            }
+        }
     }
 }
