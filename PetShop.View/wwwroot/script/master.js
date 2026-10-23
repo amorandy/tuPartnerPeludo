@@ -50,46 +50,46 @@ function ConfirmarTabla(mensaje, datos, target = 'body') {
         return response.value;
     });
 }
-async function realizarLogin(email, password) {
-    const btnIniciar = document.querySelector("#formLogin button[type='submit']");
-    btnIniciar.disabled = true;
-    btnIniciar.innerText = "Iniciando Sesion...";
-    try {
-        const response = await fetch(`${CONFIG.API_BASE_URL}/usuarios/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: email, password: password })
-        });
+//async function realizarLogin(email, password) {
+//    const btnIniciar = document.querySelector("#formLogin button[type='submit']");
+//    btnIniciar.disabled = true;
+//    btnIniciar.innerText = "Iniciando Sesion...";
+//    try {
+//        const response = await fetch(`${CONFIG.API_BASE_URL}/usuarios/login`, {
+//            method: 'POST',
+//            headers: { 'Content-Type': 'application/json' },
+//            body: JSON.stringify({ email: email, password: password })
+//        });
         
-        const data = await response.json();
+//        const data = await response.json();
 
-        if (data.codigo === 1) {
-            localStorage.setItem('token', data.token);
-            const userSession = {
-                id: data.id,             // <-- Agregamos el ID
-                email: data.email,       // <-- Agregamos el correo
-                nombre: data.user,
-                rol: data.rol
-            };
-            localStorage.setItem('user_session', JSON.stringify(userSession));
-            if (data.rol === 'admin') {
-                window.location.href = "admin-productos.html";
-                btnIniciar.innerText = "ACCESO ADMINISTRADOR";
-            } else {
-                window.location.href = "main.html";
-            }
-        } else {
-            ProcesarRespuesta(data);
-        }
-    } catch (error) {
-        EnviarMensaje(-1, "Error de conexión con el servidor" + error);
-    }
-    finally
-    {
-        btnIniciar.disabled = false;
-        btnIniciar.innerText = "ENTRAR";
-    }
-}
+//        if (data.codigo === 1) {
+//            localStorage.setItem('token', data.token);
+//            const userSession = {
+//                id: data.id,             // <-- Agregamos el ID
+//                email: data.email,       // <-- Agregamos el correo
+//                nombre: data.user,
+//                rol: data.rol
+//            };
+//            localStorage.setItem('user_session', JSON.stringify(userSession));
+//            if (data.rol === 'admin') {
+//                window.location.href = "admin-productos.html";
+//                btnIniciar.innerText = "ACCESO ADMINISTRADOR";
+//            } else {
+//                window.location.href = "main.html";
+//            }
+//        } else {
+//            ProcesarRespuesta(data);
+//        }
+//    } catch (error) {
+//        EnviarMensaje(-1, "Error de conexión con el servidor" + error);
+//    }
+//    finally
+//    {
+//        btnIniciar.disabled = false;
+//        btnIniciar.innerText = "ENTRAR";
+//    }
+//}
 //async function cargarLayout() {
 //    // Es vital retornar los resultados de los fetch
 //    const p1 = fetch('components/navbar.html').then(r => r.text()).then(html => {

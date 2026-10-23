@@ -34,51 +34,51 @@ document.getElementById("formLogin").addEventListener("submit", function (event)
 });
 
 // --- FUNCIÓN AGREGADA/CORREGIDA PARA EL LOGIN NORMAL ---
-async function realizarLogin(email, password) {
-    const btnLogin = document.querySelector("#formLogin button[type='submit']");
-    btnLogin.disabled = true;
-    btnLogin.innerText = "Iniciando...";
+//async function realizarLogin(email, password) {
+//    const btnLogin = document.querySelector("#formLogin button[type='submit']");
+//    btnLogin.disabled = true;
+//    btnLogin.innerText = "Iniciando...";
 
-    try {
-        const response = await fetch(`${CONFIG.API_BASE_URL}/usuarios/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ Email: email, Password: password })
-        });
+//    try {
+//        const response = await fetch(`${CONFIG.API_BASE_URL}/usuarios/login`, {
+//            method: 'POST',
+//            headers: { 'Content-Type': 'application/json' },
+//            body: JSON.stringify({ Email: email, Password: password })
+//        });
 
-        const data = await response.json();
+//        const data = await response.json();
 
-        if (response.ok && data.codigo === 1) {
-            // Guardamos la estructura correcta con ID y Email
-            const sessionData = {
-                id: data.id,             // Fundamental para el carrito
-                email: data.email,       // Fundamental para visualización
-                nombre: data.user,
-                rol: data.rol
-            };
+//        if (response.ok && data.codigo === 1) {
+//            // Guardamos la estructura correcta con ID y Email
+//            const sessionData = {
+//                id: data.id,             // Fundamental para el carrito
+//                email: data.email,       // Fundamental para visualización
+//                nombre: data.user,
+//                rol: data.rol
+//            };
 
-            localStorage.setItem('user_session', JSON.stringify(sessionData));
-            localStorage.setItem('token', data.token);
+//            localStorage.setItem('user_session', JSON.stringify(sessionData));
+//            localStorage.setItem('token', data.token);
 
-            console.info(data.mensaje);
-            EnviarMensaje(data.codigo, data.mensaje);
+//            console.info(data.mensaje);
+//            EnviarMensaje(data.codigo, data.mensaje);
 
-            // Redirigir según el rol
-            setTimeout(() => {
-                window.location.replace(data.rol === 'admin' ? "admin-productos.html" : "main.html");
-            }, 1000);
+//            // Redirigir según el rol
+//            setTimeout(() => {
+//                window.location.replace(data.rol === 'admin' ? "admin-productos.html" : "main.html");
+//            }, 1000);
 
-        } else {
-            EnviarMensaje(0, data.mensaje || "Credenciales incorrectas.");
-        }
-    } catch (error) {
-        console.error("Error al hacer login:", error);
-        EnviarMensaje(-1, "Error al conectar con el servidor.");
-    } finally {
-        btnLogin.disabled = false;
-        btnLogin.innerText = "INGRESAR";
-    }
-}
+//        } else {
+//            EnviarMensaje(0, data.mensaje || "Credenciales incorrectas.");
+//        }
+//    } catch (error) {
+//        console.error("Error al hacer login:", error);
+//        EnviarMensaje(-1, "Error al conectar con el servidor.");
+//    } finally {
+//        btnLogin.disabled = false;
+//        btnLogin.innerText = "INGRESAR";
+//    }
+//}
 // --------------------------------------------------------
 
 async function registrarUsuario(datosUsuario) {
@@ -286,10 +286,44 @@ window.handleCredentialResponse = async function (response) {
             mostrarSeccionPerfil();
             setTimeout(() => { window.location.href = "main.html"; }, 1500);
         } else {
-            console.error("Error del servidor:", data.mensaje);
+            EnviarMensaje(-1, data.mensaje);
+            //console.error("Error del servidor:", data.mensaje);
         }
     } catch (error) {
-        console.error("Error en la conexión con la API:", error);
+        EnviarMensaje(-1, error);
+        //console.error("Error en la conexión con la API:", error);
+    }
+}
+function mostrarSeccionPerfil() {
+    const user = JSON.parse(localStorage.getItem('user_session'));
+    if (user) {
+        // Ocultar sección de login y mostrar perfil
+        const loginSection = document.getElementById('login-section');
+        const userProfile = document.getElementById('user-profile');
+
+        if (loginSection) loginSection.classList.add('d-none');
+        if (userProfile) userProfile.classList.remove('d-none');
+
+        // Llenar los datos del usuario basándonos en los IDs de tu HTML
+        const userName = document.getElementById('user-name');
+        const userImg = document.getElementById('user-img');
+
+        if (userName) userName.textContent = user.nombre;
+        //if (userImg && user.foto) userImg.src = user.foto;
+        const imgPerfil = document.getElementById('icono-usuario'); // Usa el ID exacto de tu HTML
+
+        if (imgPerfil) {
+            if (user.foto) {
+                // Si el usuario tiene foto (Google), úsala directamente
+                imgPerfil.src = user.foto;
+                // Opcional: ajustar estilos para que se vea redonda y encaje bien
+                imgPerfil.style.objectFit = "cover";
+                imgPerfil.style.borderRadius = "50%";
+            } else {
+                // Si es un usuario normal sin foto, asigna un avatar por defecto
+                imgPerfil.src = "images/default-avatar.png";
+            }
+        }
     }
 }
 

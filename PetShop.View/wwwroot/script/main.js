@@ -7,12 +7,20 @@ window.onload = function () {
         const email = session.email || "";
         const foto = session.foto || session.picture || "images/default-user.png";
 
-        document.getElementById('user-name').innerText = nombre.toUpperCase();
-        document.getElementById('user-img').src = foto;
+        // Actualizamos el nombre
+        const userNameNav = document.getElementById('user-name');
+        if (userNameNav) userNameNav.innerText = nombre.toUpperCase();
 
+        // Actualizamos el correo (si existe en tu navbar)
         const emailElement = document.getElementById('user-email');
-        if (emailElement) {
-            emailElement.innerText = email;
+        if (emailElement) emailElement.innerText = email;
+
+        // AQUÍ ESTÁ LA CLAVE PARA LA FOTO EN LA BARRA DE NAVEGACIÓN
+        const imgNav = document.getElementById('icono-usuario');
+        if (imgNav) {
+            imgNav.src = foto;
+            imgNav.style.objectFit = "cover";
+            imgNav.style.borderRadius = "50%";
         }
 
         if (session.rol === 'admin') {
