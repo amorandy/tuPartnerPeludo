@@ -470,13 +470,43 @@ namespace PetShopApi.DAL
         }
         public async Task GuardarSesion(int usuarioId, string token, MySqlConnection conexion)
         {
-            string sql = @"INSERT INTO SesionesActivas (UsuarioID, Token, FechaExpiracion, Dispositivo) 
+            string sqlDelete = "DELETE FROM SesionesActivas WHERE UsuarioID = @UsuarioID";
+            using (var cmdDel = new MySqlCommand(sqlDelete, conexion))
+            {
+                cmdDel.Parameters.AddWithValue("@UsuarioID", usuarioId);
+                await cmdDel.ExecuteNonQueryAsync();
+            }
+
+            string sqlInsert = @"INSERT INTO SesionesActivas (UsuarioID, Token, FechaExpiracion, Dispositivo) 
                    VALUES (@UsuarioID, @Token, DATE_ADD(NOW(), INTERVAL 1 HOUR), 'Web Browser')";
-            using (var cmd = new MySqlCommand(sql, conexion))
+            using (var cmd = new MySqlCommand(sqlInsert, conexion))
             {
                 cmd.Parameters.AddWithValue("@UsuarioID", usuarioId);
                 cmd.Parameters.AddWithValue("@Token", token);
                 await cmd.ExecuteNonQueryAsync();
+            }
+        }
+        public async Task GuardarSesion(int usuarioId, string token)
+        {
+            using (var conexion = _conexionFll.ObtenerConexion())
+            {
+                await conexion.OpenAsync();
+
+                string sqlDelete = "DELETE FROM SesionesActivas WHERE UsuarioID = @UsuarioID";
+                using (var cmdDel = new MySqlCommand(sqlDelete, conexion))
+                {
+                    cmdDel.Parameters.AddWithValue("@UsuarioID", usuarioId);
+                    await cmdDel.ExecuteNonQueryAsync();
+                }
+
+                string sqlInsert = @"INSERT INTO SesionesActivas (UsuarioID, Token, FechaExpiracion, Dispositivo) 
+                       VALUES (@UsuarioID, @Token, DATE_ADD(NOW(), INTERVAL 1 HOUR), 'Web Browser')";
+                using (var cmd = new MySqlCommand(sqlInsert, conexion))
+                {
+                    cmd.Parameters.AddWithValue("@UsuarioID", usuarioId);
+                    cmd.Parameters.AddWithValue("@Token", token);
+                    await cmd.ExecuteNonQueryAsync();
+                }
             }
         }
         public (SalidaMod salida, List<Usuario> usuarios) ObtenerUsuarios()

@@ -369,6 +369,8 @@ public class UsuariosController : ControllerBase
             {
                 var token = Guid.NewGuid().ToString();
 
+                await _usuarioDAL.GuardarSesion(Convert.ToInt32(usuario.UsuarioID), token);
+
                 return Ok(new
                 {
                     codigo = 1,
