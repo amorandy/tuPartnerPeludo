@@ -390,4 +390,72 @@ public class UsuariosController : ControllerBase
             return StatusCode(500, new { codigo = -1, mensaje = ex.Message });
         }
     }
+    [HttpGet("direcciones/{usuarioId}")]
+    public IActionResult ObtenerDirecciones(int usuarioId)
+    {
+        try
+        {
+            var (salida, direcciones) = _usuarioDAL.ObtenerDireccionesPorUsuario(usuarioId);
+
+            if (salida.Codigo == 1)
+            {
+                return Ok(new { codigo = 1, direcciones = direcciones });
+            }
+
+            return BadRequest(new { codigo = salida.Codigo, mensaje = salida.Mensaje });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { codigo = -1, mensaje = ex.Message });
+        }
+    }
+    [HttpPost("direcciones")]
+    public IActionResult CrearDireccion([FromBody] DireccionMod request)
+    {
+        try
+        {
+            request.DireccionID = 0; // Forzamos 0 para garantizar que sea un INSERT
+            var salida = _usuarioDAL.GuardarDireccion(request);
+
+            if (salida.Codigo == 1) return Ok(salida);
+            return BadRequest(salida);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { codigo = -1, mensaje = ex.Message });
+        }
+    }
+
+    [HttpPut("direcciones/{id}")]
+    public IActionResult ActualizarDireccion(int id, [FromBody] DireccionMod request)
+    {
+        try
+        {
+            request.DireccionID = id; // Aseguramos que el ID de la URL mande
+            var salida = _usuarioDAL.GuardarDireccion(request);
+
+            if (salida.Codigo == 1) return Ok(salida);
+            return BadRequest(salida);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { codigo = -1, mensaje = ex.Message });
+        }
+    }
+
+    [HttpDelete("direcciones/{id}")]
+    public IActionResult EliminarDireccion(int id)
+    {
+        try
+        {
+            var salida = _usuarioDAL.EliminarDireccion(id);
+
+            if (salida.Codigo == 1) return Ok(salida);
+            return BadRequest(salida);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { codigo = -1, mensaje = ex.Message });
+        }
+    }
 }

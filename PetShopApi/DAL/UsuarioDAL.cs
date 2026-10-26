@@ -650,5 +650,112 @@ namespace PetShopApi.DAL
                 return (new SalidaMod { Codigo = -1, Mensaje = "Error en base de datos: " + ex.Message }, null);
             }
         }
+        public (SalidaMod salida, List<DireccionMod> direcciones) ObtenerDireccionesPorUsuario(int usuarioId)
+        {
+            var direcciones = new List<DireccionMod>();
+            var salida = new SalidaMod();
+
+            try
+            {
+                using (var conexion = _conexionFll.ObtenerConexion())
+                {
+                    conexion.Open();
+                    using (var cmd = new MySqlConnector.MySqlCommand("sp_ObtenerDireccionesUsuario", (MySqlConnector.MySqlConnection)conexion))
+                    {
+                        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("p_UsuarioID", usuarioId);
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                direcciones.Add(new DireccionMod
+                                {
+                                    DireccionID = Convert.ToInt32(reader["DireccionID"]),
+                                    UsuarioID = Convert.ToInt32(reader["UsuarioID"]),
+                                    Alias = reader["Alias"] != DBNull.Value ? reader["Alias"].ToString() : string.Empty,
+                                    DireccionCompleta = reader["DireccionCompleta"].ToString() ?? string.Empty,
+                                    Referencias = reader["Referencias"] != DBNull.Value ? reader["Referencias"].ToString() : string.Empty,
+                                    EsPrincipal = Convert.ToBoolean(reader["EsPrincipal"])
+                                });
+                            }
+                        }
+                    }
+                    salida = new SalidaMod { Codigo = 1, Mensaje = "Direcciones cargadas." };
+                }
+            }
+            catch (Exception ex)
+            {
+                salida = new SalidaMod { Codigo = -1, Mensaje = ex.Message };
+            }
+
+            return (salida, direcciones);
+        }
+        public SalidaMod GuardarDireccion(DireccionMod direccion)
+        {
+            var salida = new SalidaMod();
+            try
+            {
+                using (var conexion = _conexionFll.ObtenerConexion())
+                {
+                    conexion.Open();
+                    using (var cmd = new MySqlConnector.MySqlCommand("sp_GuardarDireccion", (MySqlConnector.MySqlConnection)conexion))
+                    {
+                        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("p_DireccionID", direccion.DireccionID);
+                        cmd.Parameters.AddWithValue("p_UsuarioID", direccion.UsuarioID);
+                        cmd.Parameters.AddWithValue("p_Alias", string.IsNullOrEmpty(direccion.Alias) ? (object)DBNull.Value : direccion.Alias);
+                        cmd.Parameters.AddWithValue("p_DireccionCompleta", direccion.DireccionCompleta);
+                        cmd.Parameters.AddWithValue("p_Referencias", string.IsNullOrEmpty(direccion.Referencias) ? (object)DBNull.Value : direccion.Referencias);
+                        cmd.Parameters.AddWithValue("p_EsPrincipal", direccion.EsPrincipal ? 1 : 0);
+
+                        cmd.ExecuteNonQuery();
+                        salida.Codigo = 1;
+                        salida.Mensaje = "Dirección guardada con éxito.";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                salida.Codigo = -1;
+                salida.Mensaje = ex.Message;
+            }
+            return salida;
+        }
+
+        public SalidaMod EliminarDireccion(int direccionId)
+        {
+            var salida = new SalidaMod();
+            try
+            {
+                using (var conexion = _conexionFll.ObtenerConexion())
+                {
+                    conexion.Open();
+                    using (var cmd = new MySqlConnector.MySqlCommand("sp_EliminarDireccion", (MySqlConnector.MySqlConnection)conexion))
+                    {
+                        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("p_DireccionID", direccionId);
+
+                        int filas = cmd.ExecuteNonQuery();
+                        if (filas > 0)
+                        {
+                            salida.Codigo = 1;
+                            salida.Mensaje = "Dirección eliminada correctamente.";
+                        }
+                        else
+                        {
+                            salida.Codigo = 0;
+                            salida.Mensaje = "No se encontró la dirección a eliminar.";
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                salida.Codigo = -1;
+                salida.Mensaje = ex.Message;
+            }
+            return salida;
+        }
     }
 }

@@ -7,20 +7,16 @@ window.onload = function () {
         const email = session.email || "";
         const foto = session.foto || session.picture || "images/default-user.png";
 
-        // Actualizamos el nombre
         const userNameNav = document.getElementById('user-name');
         if (userNameNav) userNameNav.innerText = nombre.toUpperCase();
 
-        // Actualizamos el correo (si existe en tu navbar)
         const emailElement = document.getElementById('user-email');
         if (emailElement) emailElement.innerText = email;
 
-        // AQUÍ ESTÁ LA CLAVE PARA LA FOTO EN LA BARRA DE NAVEGACIÓN
-        const imgNav = document.getElementById('icono-usuario');
+        const imgNav = document.getElementById('user-img'); 
         if (imgNav) {
             imgNav.src = foto;
             imgNav.style.objectFit = "cover";
-            imgNav.style.borderRadius = "50%";
         }
 
         if (session.rol === 'admin') {
@@ -32,7 +28,6 @@ window.onload = function () {
 
 async function cargarProductos() {
     try {
-        // Usamos la configuración global para mantener la consistencia (local/producción)
         const response = await fetch(`${CONFIG.API_BASE_URL}/Productos`);
         const data = await response.json();
 
@@ -43,7 +38,6 @@ async function cargarProductos() {
             const card = document.createElement('div');
             card.className = 'col-md-4 mb-4';
 
-            // CORRECCIÓN CRÍTICA: En el onclick ahora pasamos 'prod.id' (solo el número)
             card.innerHTML = `
                 <div class="card p-3 border-2 border-dark shadow-sm">
                     <img src="${prod.urlImagen}" class="card-img-top" alt="${prod.nombre}">
@@ -60,7 +54,7 @@ async function cargarProductos() {
             contenedor.appendChild(card);
         });
     } catch (error) {
-        console.error("Error al cargar productos:", error);
+        EnviarMensaje(-1,"Error al cargar productos: " + error);
     }
 }
 

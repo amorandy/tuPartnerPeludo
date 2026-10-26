@@ -1,0 +1,87 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Direcciones - Tu Partner Peludo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+</head>
+<body class="bg-light">
+
+    <!-- Navegación -->
+    <nav class="navbar navbar-dark bg-dark mb-4">
+        <div class="container">
+            <!-- Reemplaza el enlace por esto: -->
+            <a class="navbar-brand" href="javascript:history.back()">
+                <i class="fas fa-arrow-left me-2"></i> Volver
+            </a>
+            <span class="text-white fw-bold">Mi Perfil</span>
+        </div>
+    </nav>
+
+    <!-- Contenedor Principal -->
+    <div class="container pb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="fw-bold m-0">Libreta de Direcciones</h3>
+            <button class="btn btn-dark fw-bold" onclick="abrirModalDireccion()">
+                <i class="fas fa-plus me-1"></i> Nueva Dirección
+            </button>
+        </div>
+
+        <!-- Lista de Direcciones -->
+        <div class="row g-4" id="contenedor-direcciones">
+            <div class="col-12 text-center text-muted py-5">Cargando tus direcciones...</div>
+        </div>
+    </div>
+
+    <!-- Modal CRUD Dirección -->
+    <div class="modal fade" id="modalDireccion" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title fw-bold" id="tituloModalDireccion">Agregar Dirección</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="form-direccion">
+                        <input type="hidden" id="dir-id" value="0">
+
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-bold">Alias (Ej: Casa, Oficina)</label>
+                            <input type="text" class="form-control" id="dir-alias" placeholder="Casa" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-bold">Dirección Completa</label>
+                            <textarea class="form-control" id="dir-completa" rows="2" placeholder="Calle, Número, Comuna..." required></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-bold">Referencias Adicionales</label>
+                            <input type="text" class="form-control" id="dir-referencias" placeholder="Portón negro, dejar en conserjería...">
+                        </div>
+
+                        <div class="form-check form-switch mt-4">
+                            <input class="form-check-input" type="checkbox" id="dir-principal">
+                            <label class="form-check-label fw-bold" for="dir-principal">Establecer como dirección principal</label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary fw-bold" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-dark fw-bold" onclick="guardarDireccion()">Guardar Dirección</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+    <script src="script/config.js"></script>
+    <script src="script/auth-utils.js"></script>
+    <script src="script/mis-direcciones.js"></script>
+</body>
+</html>

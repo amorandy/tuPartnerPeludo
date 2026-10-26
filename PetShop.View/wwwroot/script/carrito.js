@@ -11,20 +11,17 @@ async function agregarAlCarrito(productoId) {
         const token = localStorage.getItem('token') || sessionStr;
 
         if (usuarioId === 0) {
-            alert("Debes iniciar sesión para agregar productos a tu carrito.");
-            // Opcional: Redirigir al login
-            // window.location.href = "login.html";
+            EnviarMensaje(-1, "Debes iniciar sesión para agregar productos a tu carrito.");
+            //alert("Debes iniciar sesión para agregar productos a tu carrito.");
             return;
         }
 
-        // 2. Preparar los datos a enviar
         const payload = {
             UsuarioID: usuarioId,
             ProductoID: productoId,
-            Cantidad: 1 // Por defecto sumamos 1, si tienes input de cantidad, lee su valor aquí
+            Cantidad: 1
         };
 
-        // 3. Enviar a la API
         const response = await fetch(`${CONFIG.API_BASE_URL}/Pedidos/agregar`, {
             method: 'POST',
             headers: {
@@ -37,29 +34,48 @@ async function agregarAlCarrito(productoId) {
         const data = await response.json();
 
         if (response.ok && data.codigo === 1) {
-            // ¡ÉXITO! La BD guardó el producto
-            // Puedes mostrar un Toast o un Alert
             EnviarMensaje(data.codigo, data.mensaje);
-            // alert("¡Producto agregado a tu carrito con éxito!");
 
-            // AHORA SÍ actualizamos el globo rojo visualmente
+            await refrescarTablaCarrito();
             actualizarGloboCarrito(usuarioId, token);
         } else {
             EnviarMensaje(data.codigo, data.mensaje);
-            //alert("No se pudo agregar: " + (data.mensaje || "Error desconocido"));
         }
     } catch (error) {
         console.error("Error en agregarAlCarrito:", error);
         EnviarMensaje(data.codigo, data.mensaje);
-        //alert("Ocurrió un error al comunicarse con el servidor.");
     }
 }
 
-// Función para eliminar un producto
 function eliminarDelCarrito(productoId) {
     carrito = carrito.filter(item => item.id !== productoId);
     localStorage.setItem('carrito', JSON.stringify(carrito));
     actualizarVistaCarrito();
+}
+
+//async function cambiarCantidad(detalleId, variacion) {
+//    // Aquí harás el fetch a tu API para actualizar la cantidad (ej: PUT /Pedidos/carrito/actualizar)
+//    // Si la API responde OK, llamas de nuevo a la función que renderiza el carrito.
+//    console.log(`Cambiando cantidad del detalle ${detalleId} en ${variacion}`);
+//}
+
+async function eliminarItem(detalleId) {
+    try {
+        const response = await fetch(`${CONFIG.API_BASE_URL}/Pedidos/eliminar/${detalleId}`, { method: 'DELETE' });
+        const data = await response.json();
+        if (data.codigo === 1) {
+            // Recargar carrito
+            cargarCarrito();
+        } else {
+            EnviarMensaje(0, data.mensaje);
+        }
+    } catch (e) {
+        EnviarMensaje(-1, "Error al eliminar");
+    }
+}
+
+function procederPago() {
+    window.location.href = "checkout.html";
 }
 
 // Función para calcular el total (¡Aquí usamos el .reduce que vimos!)
@@ -116,75 +132,40 @@ async function actualizarVistaCarrito() {
 document.addEventListener('DOMContentLoaded', actualizarVistaCarrito);
 
 async function abrirCarrito() {
-    // 1. Mostrar el modal de Bootstrap
     const modalElement = document.getElementById('modalCarrito');
-    const modalInstance = new bootstrap.Modal(modalElement);
+    // Evitar instanciar el modal múltiples veces
+    const modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
     modalInstance.show();
 
-    const tbody = document.getElementById('lista-carrito-body');
-    const spanTotal = document.getElementById('total-carrito');
+    await refrescarTablaCarrito();
+}
+
+async function refrescarTablaCarrito() {
+    const tbody = document.getElementById('lista-carrito-body'); // Asegúrate de usar este ID en tu HTML
+    const spanTotal = document.getElementById('total-carrito'); // Asegúrate de usar este ID en tu HTML
 
     tbody.innerHTML = '<tr><td colspan="5" class="text-center">Cargando tu carrito...</td></tr>';
 
     try {
         const sessionStr = localStorage.getItem('user_session') || '{}';
         const session = JSON.parse(sessionStr);
-        let usuarioId = Number(session.id || session.UsuarioId || session.UsuarioID || session.usuarioId || 0);
-
-        const token = localStorage.getItem('token') || sessionStr;
-
-        // ¡AQUÍ ESTÁ LA CLAVE! 
-        // Si no hay email en el storage, lo sacamos a la fuerza del texto de la pantalla (donde está tu nombre)
-        let email = session.email || "";
-        if (!email) {
-            const emailElement = document.getElementById('user-email');
-            if (emailElement && emailElement.innerText.trim() !== "") {
-                email = emailElement.innerText.trim();
-            }
-        }
-
-        // 2. Rescate del ID si es 0
-        if (usuarioId === 0 && email !== "") {
-            try {
-                // NOTA: Para que esto pase el ValidarSesionAttribute, debes agregar [AllowAnonymous] 
-                // a tu UsuariosController en el método de Get por email
-                const resUser = await fetch(`${CONFIG.API_BASE_URL}/Usuarios/por-email?email=${encodeURIComponent(email)}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (resUser.ok) {
-                    const userData = await resUser.json();
-                    usuarioId = Number(userData.usuarioId || userData.id || 0);
-
-                    if (usuarioId > 0) {
-                        session.id = usuarioId;
-                        localStorage.setItem('user_session', JSON.stringify(session));
-                    }
-                }
-            } catch (error) {
-                console.error("Fallo al rescatar ID:", error);
-            }
-        }
+        const usuarioId = Number(session.id || 0);
+        const token = localStorage.getItem('token');
 
         if (usuarioId === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-warning">No se pudo identificar tu cuenta. Por favor, vuelve a iniciar sesión.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-warning">Inicia sesión para ver tu carrito.</td></tr>';
             spanTotal.innerText = '0';
             return;
         }
 
-        // 3. Buscar el carrito
         const response = await fetch(`${CONFIG.API_BASE_URL}/Pedidos/carrito/${usuarioId}`, {
-            method: 'GET',
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
-        if (!response.ok) {
-            if (response.status === 401) throw new Error("Sesión expirada o token inválido");
-            throw new Error("No se pudo cargar el carrito");
-        }
+        if (!response.ok) throw new Error("No se pudo cargar el carrito");
 
         const data = await response.json();
-        const items = data.items || data.Items || [];
+        const items = data.items || [];
 
         tbody.innerHTML = '';
         let totalCalculado = 0;
@@ -192,23 +173,29 @@ async function abrirCarrito() {
         if (items.length === 0) {
             tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Tu carrito está vacío.</td></tr>';
             spanTotal.innerText = '0';
+            actualizarVistaCarrito(); // Actualiza el globo rojo a 0
             return;
         }
 
-        // 4. Dibujar
         items.forEach(item => {
-            const precio = item.precioUnitario || item.precio || 0;
+            const precio = item.precioUnitario || 0;
             const subtotal = precio * item.cantidad;
             totalCalculado += subtotal;
 
             tbody.innerHTML += `
                 <tr>
-                    <td>${item.nombreProducto || 'Producto'}</td>
-                    <td>$${precio.toLocaleString()}</td>
-                    <td>${item.cantidad}</td>
-                    <td>$${subtotal.toLocaleString()}</td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-danger" onclick="eliminarItem(${item.detalleID || item.productoId})">
+                    <td class="align-middle">${item.productoNombre || item.nombreProducto || 'Producto'}</td>
+                    <td class="align-middle">$${precio.toLocaleString()}</td>
+                    <td class="align-middle">
+                        <div class="input-group input-group-sm mx-auto" style="width: 100px;">
+                            <button class="btn btn-outline-secondary fw-bold" onclick="cambiarCantidad(${item.detalleID}, ${item.cantidad - 1})">-</button>
+                            <input type="text" class="form-control text-center bg-white" value="${item.cantidad}" readonly>
+                            <button class="btn btn-outline-secondary fw-bold" onclick="cambiarCantidad(${item.detalleID}, ${item.cantidad + 1})">+</button>
+                        </div>
+                    </td>
+                    <td class="align-middle fw-bold">$${subtotal.toLocaleString()}</td>
+                    <td class="align-middle">
+                        <button class="btn btn-outline-danger btn-sm" onclick="eliminarItem(${item.detalleID})">
                             <i class="fa fa-trash"></i>
                         </button>
                     </td>
@@ -217,9 +204,54 @@ async function abrirCarrito() {
         });
 
         spanTotal.innerText = totalCalculado.toLocaleString();
+        actualizarVistaCarrito(); // Actualiza el globo rojo con las nuevas cantidades
 
     } catch (error) {
         console.error(error);
         tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger">${error.message}</td></tr>`;
+    }
+}
+
+async function cambiarCantidad(detalleId, nuevaCantidad) {
+    if (nuevaCantidad < 1) {
+        eliminarItem(detalleId);
+        return;
+    }
+
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${CONFIG.API_BASE_URL}/Pedidos/actualizar-cantidad`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ DetalleID: detalleId, Cantidad: nuevaCantidad })
+        });
+
+        const data = await response.json();
+        if (data.codigo === 1) {
+            await refrescarTablaCarrito();
+        } else {
+            EnviarMensaje(0, data.mensaje);
+        }
+    } catch (e) {
+        EnviarMensaje(-1, "Error al actualizar cantidad");
+    }
+}
+
+async function eliminarItem(detalleId) {
+    try {
+        const response = await fetch(`${CONFIG.API_BASE_URL}/Pedidos/eliminar/${detalleId}`, {
+            method: 'DELETE'
+        });
+        const data = await response.json();
+        if (data.codigo === 1) {
+            await refrescarTablaCarrito();
+        } else {
+            EnviarMensaje(0, data.mensaje);
+        }
+    } catch (e) {
+        EnviarMensaje(-1, "Error al eliminar");
     }
 }

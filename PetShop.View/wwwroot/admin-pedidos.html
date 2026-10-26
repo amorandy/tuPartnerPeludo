@@ -1,0 +1,160 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tu Partner Peludo - Gestión de Pedidos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link rel="stylesheet" href="css/admin-productos.css">
+</head>
+<body class="bg-light">
+
+    <div id="layout-navbar"></div>
+
+    <div class="container-fluid">
+        <div class="row">
+            <div id="layout-sidebar" class="col-md-2 p-0"></div>
+
+            <main id="main-content" class="col-md-10 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3>Gestión de Pedidos</h3>
+                </div>
+
+                <!-- Controles de Filtro y Búsqueda -->
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 gap-3">
+                    <div class="btn-group" role="group" id="grupo-filtros">
+                        <button type="button" class="btn btn-dark active" onclick="filtrarPedidos('Todos', this)">Todos</button>
+                        <button type="button" class="btn btn-outline-dark" onclick="filtrarPedidos('Pendiente', this)">Pendientes</button>
+                        <button type="button" class="btn btn-outline-dark" onclick="filtrarPedidos('Enviado', this)">Enviados</button>
+                        <button type="button" class="btn btn-outline-dark" onclick="filtrarPedidos('Entregado', this)">Entregados</button>
+                    </div>
+                    <div class="input-group w-auto" style="max-width: 300px;">
+                        <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+                        <input type="text" id="buscador-pedidos" class="form-control border-start-0 ps-0" placeholder="Buscar cliente o #..." onkeyup="ejecutarBusqueda()">
+                    </div>
+                </div>
+
+                <!-- Tabla Principal -->
+                <div class="card shadow-sm p-4 border-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" id="tabla-pedidos-main">
+                            <thead class="table-light">
+                                <tr>
+                                    <th># Pedido</th>
+                                    <th>Cliente</th>
+                                    <th>Fecha</th>
+                                    <th>Total</th>
+                                    <th>Estado</th>
+                                    <th class="text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-pedidos">
+                                <tr><td colspan="6" class="text-center py-4 text-muted">Cargando pedidos...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal Profesional para Detalle de Pedido -->
+    <div class="modal fade" id="modalDetallePedido" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header text-white" style="background: #1a1d20;">
+                    <h5 class="modal-title fw-bold">
+                        <i class="fas fa-file-invoice me-2" style="color: #836f14;"></i>Pedido #<span id="lbl-pedido-id"></span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body p-4 bg-light">
+                    <!-- Tarjeta de Resumen -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body row align-items-center">
+                            <div class="col-md-7 border-end">
+                                <h6 class="text-uppercase text-muted fw-bold mb-3" style="font-size: 0.8rem;">Datos del Cliente</h6>
+                                <p class="fw-bold fs-5 mb-0 text-dark" id="lbl-cliente-nombre"></p>
+                                <p class="text-muted mb-0"><i class="fas fa-envelope me-2"></i><span id="lbl-cliente-email"></span></p>
+                            </div>
+                            <div class="col-md-5 ps-md-4 mt-3 mt-md-0 text-md-end">
+                                <h6 class="text-uppercase text-muted fw-bold mb-2" style="font-size: 0.8rem;">Estado Actual</h6>
+                                <span class="badge px-3 py-2 fs-6 mb-2" id="lbl-estado" style="background: #836f14;"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabla de Productos -->
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-borderless table-striped align-middle mb-0">
+                                    <thead class="border-bottom">
+                                        <tr class="text-muted small text-uppercase">
+                                            <th class="ps-4 py-3">Producto</th>
+                                            <th class="py-3 text-center">Cant.</th>
+                                            <th class="py-3 text-end">Precio Unit.</th>
+                                            <th class="pe-4 py-3 text-end">Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tabla-detalles" class="border-bottom">
+                                        <!-- JS inyecta filas aquí -->
+                                    </tbody>
+                                    <tfoot>
+                                        <tr class="bg-white">
+                                            <td colspan="3" class="text-end py-3 text-uppercase text-muted fw-bold">Total a Pagar:</td>
+                                            <td class="pe-4 py-3 text-end fs-5 fw-bold text-success" id="lbl-total"></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer bg-white border-top-0 py-3 justify-content-between">
+                    <div class="d-flex align-items-center bg-light p-2 rounded border shadow-sm">
+                        <span class="text-muted small fw-bold me-2 ps-1">Mover a:</span>
+                        <select id="select-estado" class="form-select form-select-sm border-0 bg-transparent fw-bold" style="width: auto; cursor: pointer;">
+                            <option value="Pendiente">Pendiente</option>
+                            <option value="Procesando">Procesando</option>
+                            <option value="Enviado">Enviado</option>
+                            <option value="Entregado">Entregado</option>
+                        </select>
+                        <button class="btn btn-dark btn-sm ms-2 px-3 fw-bold" onclick="actualizarEstadoPedido()">
+                            <i class="fas fa-save me-1"></i> Aplicar
+                        </button>
+                    </div>
+                    <button type="button" class="btn btn-outline-secondary px-4 fw-bold" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+    <script src="script/config.js"></script>
+    <script src="script/master.js" defer></script>
+    <script src="script/auth-utils.js"></script>
+    <script src="script/admin-pedidos.js"></script>
+    <script>
+        async function initApp() {
+            await Promise.all([
+                fetch('components/navbar.html').then(r => r.text()).then(html => document.getElementById('layout-navbar').innerHTML = html),
+                fetch('components/sidebar.html').then(r => r.text()).then(html => document.getElementById('layout-sidebar').innerHTML = html)
+            ]);
+
+            if (typeof cargarTodosLosPedidos === 'function') {
+                cargarTodosLosPedidos();
+            }
+        }
+        initApp();
+    </script>
+</body>
+</html>

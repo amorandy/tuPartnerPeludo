@@ -144,5 +144,170 @@ namespace PetShopApi.DAL
                 return new SalidaMod { Codigo = -1, Mensaje = "Error BD: " + ex.Message };
             }
         }
+        public (SalidaMod salida, List<dynamic> pedidos) ObtenerTodosLosPedidos()
+        {
+            var listaPedidos = new List<dynamic>();
+            var salida = new SalidaMod();
+
+            try
+            {
+                using (var conexion = _conexionFll.ObtenerConexion())
+                {
+                    conexion.Open();
+                    using (var cmd = new MySqlConnector.MySqlCommand("sp_ObtenerTodosLosPedidos", (MySqlConnector.MySqlConnection)conexion))
+                    {
+                        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                listaPedidos.Add(new
+                                {
+                                    pedidoID = Convert.ToInt32(reader["PedidoID"]),
+                                    total = Convert.ToDecimal(reader["Total"]),
+                                    estado = reader["Estado"].ToString(),
+                                    fecha = Convert.ToDateTime(reader["Fecha"]),
+                                    clienteNombre = reader["ClienteNombre"].ToString(),
+                                    clienteEmail = reader["ClienteEmail"].ToString()
+                                });
+                            }
+                        }
+                    }
+                    salida = new SalidaMod { Codigo = 1, Mensaje = "Pedidos obtenidos con éxito." };
+                }
+            }
+            catch (Exception ex)
+            {
+                salida = new SalidaMod { Codigo = -1, Mensaje = ex.Message };
+            }
+
+            return (salida, listaPedidos);
+        }
+        public (SalidaMod salida, PedidosMod? pedido) ObtenerDetallePedidoAdmin(int pedidoId)
+        {
+            var salida = new SalidaMod();
+            PedidosMod? pedido = null;
+
+            try
+            {
+                using (var conexion = _conexionFll.ObtenerConexion())
+                {
+                    conexion.Open();
+                    using (var cmd = new MySqlConnector.MySqlCommand("sp_ObtenerDetallePedidoAdmin", (MySqlConnector.MySqlConnection)conexion))
+                    {
+                        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("p_PedidoID", pedidoId);
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                if (pedido == null)
+                                {
+                                    pedido = new PedidosMod
+                                    {
+                                        PedidoID = Convert.ToInt32(reader["PedidoID"]),
+                                        Total = Convert.ToDecimal(reader["Total"]),
+                                        Estado = reader["Estado"].ToString(),
+                                        Fecha = Convert.ToDateTime(reader["Fecha"]),
+                                        ClienteNombre = reader["ClienteNombre"].ToString(),
+                                        ClienteEmail = reader["ClienteEmail"].ToString(),
+                                        Detalles = new List<DetallePedidosMod>()
+                                    };
+                                }
+
+                                pedido.Detalles.Add(new DetallePedidosMod
+                                {
+                                    ProductoNombre = reader["ProductoNombre"].ToString(),
+                                    Cantidad = Convert.ToInt32(reader["Cantidad"]),
+                                    PrecioUnitario = Convert.ToDecimal(reader["PrecioUnitario"])
+                                });
+                            }
+                        }
+                    }
+
+                    if (pedido != null)
+                        salida = new SalidaMod { Codigo = 1, Mensaje = "Detalle obtenido." };
+                    else
+                        salida = new SalidaMod { Codigo = 0, Mensaje = "Pedido no encontrado." };
+                }
+            }
+            catch (Exception ex)
+            {
+                salida = new SalidaMod { Codigo = -1, Mensaje = ex.Message };
+            }
+
+            return (salida, pedido);
+        }
+        public SalidaMod ActualizarEstadoPedido(int pedidoId, string estado)
+        {
+            var salida = new SalidaMod();
+            try
+            {
+                using (var conexion = _conexionFll.ObtenerConexion())
+                {
+                    conexion.Open();
+                    using (var cmd = new MySqlConnector.MySqlCommand("sp_ActualizarEstadoPedido", (MySqlConnector.MySqlConnection)conexion))
+                    {
+                        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("p_PedidoID", pedidoId);
+                        cmd.Parameters.AddWithValue("p_Estado", estado);
+
+                        int filas = cmd.ExecuteNonQuery();
+                        if (filas > 0)
+                        {
+                            salida.Codigo = 1;
+                            salida.Mensaje = "Estado actualizado correctamente.";
+                        }
+                        else
+                        {
+                            salida.Codigo = 0;
+                            salida.Mensaje = "No se encontró el pedido o no se aplicaron cambios.";
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                salida.Codigo = -1;
+                salida.Mensaje = ex.Message;
+            }
+            return salida;
+        }
+        public SalidaMod ActualizarCantidad(int detalleId, int cantidad)
+        {
+            var salida = new SalidaMod();
+            try
+            {
+                using (var conexion = _conexionFll.ObtenerConexion())
+                {
+                    conexion.Open();
+                    using (var cmd = new MySqlConnector.MySqlCommand("sp_ActualizarCantidadCarrito", (MySqlConnector.MySqlConnection)conexion))
+                    {
+                        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("p_DetalleID", detalleId);
+                        cmd.Parameters.AddWithValue("p_Cantidad", cantidad);
+
+                        int filas = cmd.ExecuteNonQuery();
+                        if (filas > 0)
+                        {
+                            salida.Codigo = 1;
+                            salida.Mensaje = "Cantidad actualizada correctamente.";
+                        }
+                        else
+                        {
+                            salida.Codigo = 0;
+                            salida.Mensaje = "No se encontró el ítem en el carrito.";
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                salida.Codigo = -1;
+                salida.Mensaje = ex.Message;
+            }
+            return salida;
+        }
     }
 }

@@ -7,17 +7,17 @@ function parseJwt(token) {
         var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
         return JSON.parse(window.atob(base64));
     } catch (e) {
+        EnviarMensaje(-1, "Error al decodificar el token: " + e)
         console.error("Error al decodificar el token:", e);
         return null;
     }
 }
 
 function initAuth(onAuthenticatedCallback) {
-    // Ahora solo dependemos de user_session, ya que en index.js unificamos
-    // el guardado (tanto para login normal como para Google) bajo esta clave.
     const userSession = localStorage.getItem('user_session');
 
     if (!userSession) {
+        EnviarMensaje(-1, "No hay sesión activa. Redirigiendo al login...");
         console.warn("No hay sesión activa. Redirigiendo al login...");
         window.location.replace("index.html");
         return;
@@ -28,14 +28,32 @@ function initAuth(onAuthenticatedCallback) {
             const data = JSON.parse(userSession);
             onAuthenticatedCallback(data);
         } catch (e) {
-            console.error("Error al parsear user_session:", e);
-            logout(); // Si la sesión está corrupta, cerramos sesión
+            EnviarMensaje(-1, "Error al parsear user_session: " + e);
+            logout();
         }
     }
 }
 
-function logout() {
-    // Limpiamos todo el almacenamiento local para evitar rastros de la sesión anterior
+const token = localStorage.getItem('token');
+fetch(`${CONFIG.API_BASE_URL}/usuarios/validar-token?token=${token}`)
+    .then(res => res.json())
+    .then(data => {
+        if (data.salida && data.salida.codigo === 0) {
+            logout();
+        }
+    });
+
+async function logout() {
+    const token = localStorage.getItem('token');
+    if (token) {
+        try {
+            await fetch(`${CONFIG.API_BASE_URL}/usuarios/logout`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(token) // Asegúrate de que el endpoint lo reciba correctamente
+            });
+        } catch (e) { console.error(e); }
+    }
     localStorage.clear();
     window.location.replace("index.html");
 }
@@ -50,9 +68,7 @@ function protegerRutaAdmin() {
 
     try {
         const session = JSON.parse(userSession);
-        // Validamos explícitamente el rol
         if (session.rol !== 'admin') {
-            // Si no es admin, lo mandamos al main
             window.location.replace("main.html");
         }
     } catch (e) {
