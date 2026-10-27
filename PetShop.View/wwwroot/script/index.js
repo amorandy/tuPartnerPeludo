@@ -36,7 +36,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 });
-
 // --- FUNCIÓN AGREGADA/CORREGIDA PARA EL LOGIN NORMAL ---
 //async function realizarLogin(email, password) {
 //    const btnLogin = document.querySelector("#formLogin button[type='submit']");
