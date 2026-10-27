@@ -25,12 +25,16 @@ function mostrarVerificacion() {
     document.getElementById('recuperar-section').classList.remove('d-none');
 }
 
-document.getElementById("formLogin").addEventListener("submit", function (event) {
-    event.preventDefault();
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPass').value;
-
-    realizarLogin(email, password);
+document.addEventListener("DOMContentLoaded", function () {
+    const formLogin = document.getElementById("formLogin");
+    if (formLogin) {
+        formLogin.addEventListener("submit", function (event) {
+            event.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPass').value;
+            realizarLogin(email, password);
+        });
+    }
 });
 
 // --- FUNCIÓN AGREGADA/CORREGIDA PARA EL LOGIN NORMAL ---
