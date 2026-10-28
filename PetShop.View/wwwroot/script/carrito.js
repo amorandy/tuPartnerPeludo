@@ -132,8 +132,18 @@ async function actualizarVistaCarrito() {
 document.addEventListener('DOMContentLoaded', actualizarVistaCarrito);
 
 async function abrirCarrito() {
+    // 1. Verificamos el valor actual del contador en el HTML (el badge rojo)
+    const contadorBadge = document.getElementById('contador-carrito');
+    const cantidadItems = contadorBadge ? parseInt(contadorBadge.innerText) || 0 : 0;
+
+    // 2. Si no hay productos, evitamos que se abra el modal y avisamos al usuario
+    if (cantidadItems <= 0) {
+        toastr.info("Tu carrito está vacío. ¡Agrega algunos productos para continuar!");
+        return; // Detiene la ejecución para que el modal no se levante
+    }
+
+    // 3. Si sí hay productos, procedemos a abrir el modal normalmente
     const modalElement = document.getElementById('modalCarrito');
-    // Evitar instanciar el modal múltiples veces
     const modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
     modalInstance.show();
 

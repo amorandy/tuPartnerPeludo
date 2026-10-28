@@ -30,17 +30,15 @@ builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<MetodosRecuperacionDal>();
 builder.Services.AddScoped<ProductosDal>();
 builder.Services.AddScoped<PedidosDAL>();
-builder.Services.AddScoped<ValidarSesionAttribute>(); // <--- ¡ESTO FALTABA!
+builder.Services.AddScoped<ValidarSesionAttribute>();
 
-// Asegúrate de que esta línea esté en tu Program.cs
 builder.Services.Configure<WhatsappSettings>(builder.Configuration.GetSection("WhatsappSettings"));
 builder.Services.AddScoped<IWhatsappService, WhatsappService>();
 
 var app = builder.Build();
 
-// EL ORDEN AQUÍ ES MUY IMPORTANTE:
-app.UseRouting();             // 1. Primero Routing
-app.UseCors("PublicPolicy");  // 2. Luego CORS
+app.UseRouting();             
+app.UseCors("PublicPolicy");  
 
 app.UseSwagger();
 app.UseSwaggerUI(c =>

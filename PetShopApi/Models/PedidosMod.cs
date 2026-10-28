@@ -17,6 +17,10 @@ namespace PetShopApi.Models
         public DateTime Fecha { get; set; }
         public string ClienteNombre { get; set; } = string.Empty;
         public string ClienteEmail { get; set; } = string.Empty;
+        public string MetodoPago { get; set; } = string.Empty;
+        public string Alias { get; set; } = string.Empty;
+        public string DireccionCompleta { get; set; } = string.Empty;
+        public string Referencias { get; set; } = string.Empty;
 
         public List<DetallePedidosMod> Detalles { get; set; } = new List<DetallePedidosMod>();
     }
@@ -41,5 +45,11 @@ namespace PetShopApi.Models
     {
         public int DetalleID { get; set; }
         public int Cantidad { get; set; }
+    }
+    public class CheckoutRequest
+    {
+        public int UsuarioID { get; set; }
+        public int DireccionID { get; set; }
+        public string? MetodoPago { get; set; }
     }
 }

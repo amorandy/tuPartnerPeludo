@@ -1,0 +1,10 @@
+﻿.direccion-card {
+    cursor: pointer;
+    transition: 0.3s;
+    border: 2px solid transparent;
+}
+
+    .direccion-card.selected {
+        border-color: #836f14;
+        background-color: #fcfbf7;
+    }

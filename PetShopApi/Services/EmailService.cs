@@ -1,12 +1,8 @@
-﻿using PetShopApi.Models;
-using System.Buffers.Text;
-using System.Net;
-using System.Net.Mail;
-using System.Net.Http;
-using System.Text;
-using System.Text.Json;
-using MailKit.Net.Smtp;
-using MimeKit;
+﻿using MimeKit;
+using System.Threading.Tasks;
+using PetShopApi.Models;
+using Microsoft.Extensions.Configuration;
+using System;
 
 namespace PetShopApi.Services
 {
@@ -121,6 +117,83 @@ namespace PetShopApi.Services
             catch (Exception ex)
             {
                 return new SalidaMod { Codigo = -1, Mensaje = "Error SMTP: " + ex.Message };
+            }
+        }
+        public async Task EnviarReciboCompra(string emailDestino, PedidosMod pedido)
+        {
+            if (string.IsNullOrWhiteSpace(_smtpHost) || string.IsNullOrWhiteSpace(_smtpUser) || string.IsNullOrWhiteSpace(_smtpPass) || string.IsNullOrWhiteSpace(_emailFrom))
+            {
+                throw new InvalidOperationException("Configuración SMTP incompleta.");
+            }
+
+            string filasProductos = "";
+            foreach (var item in pedido.Detalles)
+            {
+                decimal subtotal = item.Cantidad * item.PrecioUnitario;
+                filasProductos += $@"
+            <tr>
+                <td style='padding: 10px; border-bottom: 1px solid #eee;'>{item.ProductoNombre}</td>
+                <td style='padding: 10px; border-bottom: 1px solid #eee; text-align: center;'>{item.Cantidad}</td>
+                <td style='padding: 10px; border-bottom: 1px solid #eee; text-align: right;'>${item.PrecioUnitario:N0}</td>
+                <td style='padding: 10px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold;'>${subtotal:N0}</td>
+            </tr>";
+            }
+
+            string cuerpoHtml = $@"
+            <div style='font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;'>
+                <div style='background-color: #1a1d20; color: #fff; padding: 20px; text-align: center;'>
+                    <h2 style='margin: 0; color: #f5c21b;'>¡Gracias por tu compra!</h2>
+                    <p style='margin: 5px 0 0 0;'>Tu Pedido #{pedido.PedidoID} ha sido recibido.</p>
+                </div>
+        
+                <div style='padding: 20px;'>
+                    <p>Hola <strong>{pedido.ClienteNombre}</strong>,</p>
+                    <p>Estamos procesando tu pedido. Aquí tienes un resumen de tu compra:</p>
+
+                    <table style='width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px;'>
+                        <thead style='background-color: #f8f9fa; text-transform: uppercase; font-size: 12px; color: #666;'>
+                            <tr>
+                                <th style='padding: 10px; text-align: left;'>Producto</th>
+                                <th style='padding: 10px; text-align: center;'>Cant.</th>
+                                <th style='padding: 10px; text-align: right;'>Precio</th>
+                                <th style='padding: 10px; text-align: right;'>Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filasProductos}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan='3' style='padding: 15px 10px; text-align: right; font-weight: bold;'>Total a Pagar:</td>
+                                <td style='padding: 15px 10px; text-align: right; font-weight: bold; color: #28a745; font-size: 16px;'>${pedido.Total:N0}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <div style='margin-top: 30px; padding: 15px; background-color: #f8f9fa; border-radius: 5px;'>
+                        <h4 style='margin-top: 0; margin-bottom: 10px; font-size: 14px; color: #555;'>Detalles de Envío y Pago</h4>
+                        <p style='margin: 0 0 5px 0; font-size: 13px;'><strong>Método de pago:</strong> {pedido.MetodoPago}</p>
+                        <p style='margin: 0; font-size: 13px;'><strong>Dirección:</strong> {(string.IsNullOrEmpty(pedido.Alias) ? "" : pedido.Alias + " - ")}{pedido.DireccionCompleta}</p>
+                    </div>
+                </div>
+
+                <div style='background-color: #f1f1f1; color: #777; text-align: center; padding: 15px; font-size: 12px;'>
+                    <p style='margin: 0;'>Tu Partner Peludo &copy; {System.DateTime.Now.Year}. Todos los derechos reservados.</p>
+                </div>
+            </div>";
+
+            var message = new MimeMessage();
+            message.From.Add(new MailboxAddress("Tu Partner Peludo", _emailFrom));
+            message.To.Add(new MailboxAddress(pedido.ClienteNombre, emailDestino));
+            message.Subject = $"Confirmación de Pedido #{pedido.PedidoID}";
+            message.Body = new TextPart("html") { Text = cuerpoHtml };
+
+            using (var client = new MailKit.Net.Smtp.SmtpClient())
+            {
+                await client.ConnectAsync(_smtpHost, _smtpPort, MailKit.Security.SecureSocketOptions.StartTls);
+                await client.AuthenticateAsync(_smtpUser, _smtpPass);
+                await client.SendAsync(message);
+                await client.DisconnectAsync(true);
             }
         }
     }

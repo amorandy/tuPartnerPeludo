@@ -321,18 +321,36 @@ async function protegerRutaAdmin() {
 
     const token = localStorage.getItem('token');
 
+    if (!token) {
+        window.location.href = 'index.html';
+        return;
+    }
+
     try {
-        const response = await fetch('/api/Usuarios/verificar-admin', { 
-            headers: { 'Authorization': 'Bearer ' + token }
+        // Usamos CONFIG.API_BASE_URL para que apunte al puerto 5175 de la API
+        const response = await fetch(`${CONFIG.API_BASE_URL}/usuarios/verificar-admin`, {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            }
         });
 
-        if (response.status === 403 || response.status === 401) {
-            window.location.href = '/index.html';
+        if (response.status === 401 || response.status === 403) {
+            toastr.warning("Acceso restringido. No tienes permisos de administrador.");
+            setTimeout(() => {
+                window.location.href = 'main.html';
+            }, 1500);
+            return;
+        }
+
+        if (!response.ok) {
+            console.error("Error al verificar credenciales administrativas.");
             return;
         }
 
     } catch (error) {
-        window.location.href = '/index.html';
+        console.error("Error de conexión con el servidor:", error);
     }
 }
 

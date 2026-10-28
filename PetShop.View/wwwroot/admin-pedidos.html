@@ -43,6 +43,7 @@
                         <table class="table table-hover align-middle mb-0" id="tabla-pedidos-main">
                             <thead class="table-light">
                                 <tr>
+                                    <th style="width: 40px;"></th>
                                     <th># Pedido</th>
                                     <th>Cliente</th>
                                     <th>Fecha</th>
@@ -75,16 +76,35 @@
                 <div class="modal-body p-4 bg-light">
                     <!-- Tarjeta de Resumen -->
                     <div class="card border-0 shadow-sm mb-4">
-                        <div class="card-body row align-items-center">
-                            <div class="col-md-7 border-end">
+                        <div class="card-body row align-items-start">
+
+                            <!-- 1. Datos del Cliente -->
+                            <div class="col-md-4 border-end mb-3 mb-md-0">
                                 <h6 class="text-uppercase text-muted fw-bold mb-3" style="font-size: 0.8rem;">Datos del Cliente</h6>
-                                <p class="fw-bold fs-5 mb-0 text-dark" id="lbl-cliente-nombre"></p>
-                                <p class="text-muted mb-0"><i class="fas fa-envelope me-2"></i><span id="lbl-cliente-email"></span></p>
+                                <p class="fw-bold fs-6 mb-1 text-dark" id="lbl-cliente-nombre"></p>
+                                <p class="text-muted mb-0 small"><i class="fas fa-envelope me-2"></i><span id="lbl-cliente-email"></span></p>
                             </div>
-                            <div class="col-md-5 ps-md-4 mt-3 mt-md-0 text-md-end">
+
+                            <!-- 2. Envío y Pago (NUEVO) -->
+                            <div class="col-md-5 border-end mb-3 mb-md-0 ps-md-4">
+                                <h6 class="text-uppercase text-muted fw-bold mb-3" style="font-size: 0.8rem;">Envío y Pago</h6>
+                                <p class="mb-1 small text-dark">
+                                    <i class="fas fa-credit-card me-2 text-muted"></i><strong>Método:</strong> <span id="lbl-metodo-pago"></span>
+                                </p>
+                                <p class="mb-1 small text-dark">
+                                    <i class="fas fa-map-marker-alt me-2 text-muted"></i><strong>Dir:</strong> <span id="lbl-direccion"></span>
+                                </p>
+                                <p class="mb-0 small text-muted">
+                                    <i class="fas fa-info-circle me-2"></i><strong>Ref:</strong> <span id="lbl-referencias"></span>
+                                </p>
+                            </div>
+
+                            <!-- 3. Estado Actual -->
+                            <div class="col-md-3 ps-md-4 text-md-center">
                                 <h6 class="text-uppercase text-muted fw-bold mb-2" style="font-size: 0.8rem;">Estado Actual</h6>
-                                <span class="badge px-3 py-2 fs-6 mb-2" id="lbl-estado" style="background: #836f14;"></span>
+                                <span class="badge px-3 py-2 fs-6 mb-2 shadow-sm" id="lbl-estado" style="background: #836f14;"></span>
                             </div>
+
                         </div>
                     </div>
 

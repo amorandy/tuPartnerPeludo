@@ -1,4 +1,5 @@
 using Dapper;
+using Microsoft.AspNetCore.Mvc;
 using MySqlConnector;
 using PetShopApi.Models;
 using System.Data;
@@ -14,57 +15,33 @@ namespace PetShopApi.DAL
             _conexionFll = conexionFll;
         }
 
-        // Ahora retornamos una Tupla con la Salida y el Modelo
-        public (SalidaMod salida, PedidosMod? pedido) ObtenerCarritoPorUsuario(int usuarioId)
+        public (SalidaMod salida, List<CarritoMod> carrito) ObtenerCarritoPorUsuario(int usuarioId)
         {
+            var salida = new SalidaMod();
+            var listaCarrito = new List<CarritoMod>();
+
             try
             {
                 using (var db = _conexionFll.ObtenerConexion())
                 {
-                    // Diccionario temporal para agrupar los detalles bajo un solo Pedido
-                    var pedidoDiccionario = new Dictionary<int, PedidosMod>();
-
-                    // Ejecutamos el SP mapeando el resultado a PedidosMod y DetallePedidosMod
-                    db.Query<PedidosMod, DetallePedidosMod, PedidosMod>(
+                    var resultado = db.Query<CarritoMod>(
                         "sp_ObtenerCarritoPorUsuario",
-                        (pedido, detalle) =>
-                        {
-                            // 1. Verificamos si ya tenemos este pedido en el diccionario
-                            if (!pedidoDiccionario.TryGetValue(pedido.PedidoID, out var pedidoActual))
-                            {
-                                pedidoActual = pedido;
-                                pedidoActual.Detalles = new List<DetallePedidosMod>();
-                                pedidoDiccionario.Add(pedidoActual.PedidoID, pedidoActual);
-                            }
-
-                            // 2. Si el LEFT JOIN trajo detalles (no nulos), los agregamos a la lista
-                            if (detalle != null && detalle.DetalleID > 0)
-                            {
-                                pedidoActual.Detalles.Add(detalle);
-                            }
-
-                            return pedidoActual;
-                        },
-                        new { p_UsuarioID = usuarioId }, // Dapper asigna los parámetros automáticamente
-                        splitOn: "DetalleID", // Le indica a Dapper a partir de qué columna comienza la clase DetallePedidosMod
+                        new { p_UsuarioID = usuarioId },
                         commandType: CommandType.StoredProcedure
-                    );
+                    ).ToList();
 
-                    // Obtenemos el único pedido resultante (si existe)
-                    var pedidoFinal = pedidoDiccionario.Values.FirstOrDefault();
-
-                    if (pedidoFinal == null)
-                    {
-                        return (new SalidaMod { Codigo = 0, Mensaje = "El usuario no tiene un carrito activo." }, null);
-                    }
-
-                    return (new SalidaMod { Codigo = 1, Mensaje = "Carrito obtenido correctamente." }, pedidoFinal);
+                    listaCarrito = resultado;
+                    salida.Codigo = 1;
+                    salida.Mensaje = "Carrito obtenido correctamente.";
                 }
             }
             catch (Exception ex)
             {
-                return (new SalidaMod { Codigo = -1, Mensaje = "Error BD: " + ex.Message }, null);
+                salida.Codigo = -1;
+                salida.Mensaje = "Error al obtener el carrito: " + ex.Message;
             }
+
+            return (salida, listaCarrito);
         }
 
         public SalidaMod AgregarAlCarrito(AgregarCarritoRequest request)
@@ -75,7 +52,6 @@ namespace PetShopApi.DAL
                 {
                     db.Open();
 
-                    // 1. OBTENER EL PRECIO SEGURO DESDE LA BASE DE DATOS
                     decimal precioSeguro = 0;
                     string queryPrecio = "SELECT Precio FROM Productos WHERE Id = @ProductoID";
                     using (var cmdPrecio = new MySqlCommand(queryPrecio, db))
@@ -93,7 +69,6 @@ namespace PetShopApi.DAL
                         }
                     }
 
-                    // 2. EJECUTAR TU PROCEDIMIENTO ALMACENADO CON LOS 4 PARÁMETROS
                     var cmd = new MySqlCommand("sp_AgregarAlCarrito", db);
                     cmd.CommandType = CommandType.StoredProcedure;
 
@@ -101,7 +76,6 @@ namespace PetShopApi.DAL
                     cmd.Parameters.AddWithValue("p_ProductoID", request.ProductoID);
                     cmd.Parameters.AddWithValue("p_Cantidad", request.Cantidad);
 
-                    // Agregamos el parámetro faltante que pedía el SP
                     cmd.Parameters.AddWithValue("p_PrecioUnitario", precioSeguro);
 
                     cmd.ExecuteNonQuery();
@@ -154,9 +128,9 @@ namespace PetShopApi.DAL
                 using (var conexion = _conexionFll.ObtenerConexion())
                 {
                     conexion.Open();
-                    using (var cmd = new MySqlConnector.MySqlCommand("sp_ObtenerTodosLosPedidos", (MySqlConnector.MySqlConnection)conexion))
+                    using (var cmd = new MySqlCommand("sp_ObtenerTodosLosPedidos", (MySqlConnection)conexion))
                     {
-                        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                        cmd.CommandType = CommandType.StoredProcedure;
                         using (var reader = cmd.ExecuteReader())
                         {
                             while (reader.Read())
@@ -165,10 +139,10 @@ namespace PetShopApi.DAL
                                 {
                                     pedidoID = Convert.ToInt32(reader["PedidoID"]),
                                     total = Convert.ToDecimal(reader["Total"]),
-                                    estado = reader["Estado"].ToString(),
-                                    fecha = Convert.ToDateTime(reader["Fecha"]),
-                                    clienteNombre = reader["ClienteNombre"].ToString(),
-                                    clienteEmail = reader["ClienteEmail"].ToString()
+                                    estado = reader["Estado"] != DBNull.Value ? reader["Estado"]!.ToString()! : string.Empty,
+                                    ClienteNombre = reader["ClienteNombre"] != DBNull.Value ? reader["ClienteNombre"].ToString()! : string.Empty,
+                                    ClienteEmail = reader["ClienteEmail"] != DBNull.Value ? reader["ClienteEmail"].ToString()! : string.Empty,
+                                    fecha = reader["Fecha"] != DBNull.Value ? Convert.ToDateTime(reader["Fecha"]) : default(DateTime)
                                 });
                             }
                         }
@@ -193,9 +167,9 @@ namespace PetShopApi.DAL
                 using (var conexion = _conexionFll.ObtenerConexion())
                 {
                     conexion.Open();
-                    using (var cmd = new MySqlConnector.MySqlCommand("sp_ObtenerDetallePedidoAdmin", (MySqlConnector.MySqlConnection)conexion))
+                    using (var cmd = new MySqlCommand("sp_ObtenerDetallePedidoAdmin", (MySqlConnection)conexion))
                     {
-                        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                        cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.AddWithValue("p_PedidoID", pedidoId);
 
                         using (var reader = cmd.ExecuteReader())
@@ -208,17 +182,22 @@ namespace PetShopApi.DAL
                                     {
                                         PedidoID = Convert.ToInt32(reader["PedidoID"]),
                                         Total = Convert.ToDecimal(reader["Total"]),
-                                        Estado = reader["Estado"].ToString(),
+                                        Estado = reader["Estado"] != DBNull.Value ? reader["Estado"].ToString() ?? string.Empty : string.Empty,
                                         Fecha = Convert.ToDateTime(reader["Fecha"]),
-                                        ClienteNombre = reader["ClienteNombre"].ToString(),
-                                        ClienteEmail = reader["ClienteEmail"].ToString(),
+                                        ClienteNombre = reader["ClienteNombre"] != DBNull.Value ? reader["ClienteNombre"]!.ToString() ?? string.Empty : string.Empty,
+                                        ClienteEmail = reader["ClienteEmail"] != DBNull.Value ? reader["ClienteEmail"]!.ToString() ?? string.Empty : string.Empty,
+                                        MetodoPago = reader["MetodoPago"] != DBNull.Value ? reader["MetodoPago"]!.ToString() ?? "No especificado" : "No especificado",
+                                        Alias = reader["Alias"] != DBNull.Value ? reader["Alias"].ToString() ?? "Sin alias" : "Sin alias",
+                                        DireccionCompleta = reader["DireccionCompleta"] != DBNull.Value ? reader["DireccionCompleta"]!.ToString() ?? "Retiro en tienda" : "Retiro en tienda",
+                                        Referencias = reader["Referencias"] != DBNull.Value ? reader["Referencias"]!.ToString() ?? string.Empty : string.Empty,
+
                                         Detalles = new List<DetallePedidosMod>()
                                     };
                                 }
 
                                 pedido.Detalles.Add(new DetallePedidosMod
                                 {
-                                    ProductoNombre = reader["ProductoNombre"].ToString(),
+                                    ProductoNombre = reader["ProductoNombre"] != null ? reader["ProductoNombre"].ToString() ?? string.Empty : string.Empty,
                                     Cantidad = Convert.ToInt32(reader["Cantidad"]),
                                     PrecioUnitario = Convert.ToDecimal(reader["PrecioUnitario"])
                                 });
@@ -247,9 +226,9 @@ namespace PetShopApi.DAL
                 using (var conexion = _conexionFll.ObtenerConexion())
                 {
                     conexion.Open();
-                    using (var cmd = new MySqlConnector.MySqlCommand("sp_ActualizarEstadoPedido", (MySqlConnector.MySqlConnection)conexion))
+                    using (var cmd = new MySqlCommand("sp_ActualizarEstadoPedido", (MySqlConnection)conexion))
                     {
-                        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                        cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.AddWithValue("p_PedidoID", pedidoId);
                         cmd.Parameters.AddWithValue("p_Estado", estado);
 
@@ -282,9 +261,9 @@ namespace PetShopApi.DAL
                 using (var conexion = _conexionFll.ObtenerConexion())
                 {
                     conexion.Open();
-                    using (var cmd = new MySqlConnector.MySqlCommand("sp_ActualizarCantidadCarrito", (MySqlConnector.MySqlConnection)conexion))
+                    using (var cmd = new MySqlCommand("sp_ActualizarCantidadCarrito", (MySqlConnection)conexion))
                     {
-                        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                        cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.AddWithValue("p_DetalleID", detalleId);
                         cmd.Parameters.AddWithValue("p_Cantidad", cantidad);
 
@@ -309,5 +288,41 @@ namespace PetShopApi.DAL
             }
             return salida;
         }
+        public SalidaMod ProcesarCheckout(int usuarioId, int direccionId, string metodoPago)
+        {
+            var salida = new SalidaMod();
+            try
+            {
+                using (var conexion = _conexionFll.ObtenerConexion())
+                {
+                    conexion.Open();
+                    using (var cmd = new MySqlCommand("sp_ProcesarCheckout", (MySqlConnection)conexion))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("p_UsuarioID", usuarioId);
+                        cmd.Parameters.AddWithValue("p_DireccionID", direccionId);
+                        cmd.Parameters.AddWithValue("p_MetodoPago", metodoPago);
+
+                        cmd.Parameters.Add(new MySqlParameter("p_PedidoID", MySqlDbType.Int32) { Direction = ParameterDirection.Output });
+                        cmd.Parameters.Add(new MySqlParameter("p_Codigo", MySqlDbType.Int32) { Direction = ParameterDirection.Output });
+                        cmd.Parameters.Add(new MySqlParameter("p_Mensaje", MySqlDbType.VarChar) { Direction = ParameterDirection.Output });
+
+                        cmd.ExecuteNonQuery();
+
+                        salida.Codigo = Convert.ToInt32(cmd.Parameters["p_Codigo"].Value);
+                        salida.Mensaje = cmd.Parameters["p_Mensaje"].Value?.ToString() ?? string.Empty;
+                        salida.Id = Convert.ToInt32(cmd.Parameters["p_PedidoID"].Value);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                salida.Codigo = -1;
+                salida.Mensaje = ex.Message;
+            }
+            return salida;
+        }
+
+        
     }
 }

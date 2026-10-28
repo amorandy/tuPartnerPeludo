@@ -1,4 +1,5 @@
-﻿window.onload = async function () {
+﻿let idDireccionSeleccionada = null;
+window.onload = async function () {
     const sessionStr = localStorage.getItem('user_session');
     if (!sessionStr) {
         window.location.href = "index.html";
@@ -46,7 +47,6 @@ async function cargarResumenCarrito(usuarioId) {
         console.error("Error cargando carrito", e);
     }
 }
-
 async function cargarDirecciones(usuarioId) {
     try {
         const token = localStorage.getItem('token');
@@ -58,7 +58,6 @@ async function cargarDirecciones(usuarioId) {
         const contenedor = document.getElementById('contenedor-direcciones');
         contenedor.innerHTML = '';
 
-        // Manejamos posibles variaciones de mayúsculas desde C#
         const lista = data.direcciones || data.Direcciones || [];
 
         if (lista.length > 0) {
@@ -70,6 +69,10 @@ async function cargarDirecciones(usuarioId) {
                 const badge = esPrincipal ? '<span class="badge bg-success mb-2">Principal</span>' : '';
                 const alias = dir.alias || dir.Alias || 'Dirección';
                 const idDir = dir.direccionID || dir.DireccionID;
+
+                if (esPrincipal) {
+                    idDireccionSeleccionada = idDir;
+                }
 
                 contenedor.innerHTML += `
                     <div class="col-md-6 mb-3">
@@ -94,23 +97,20 @@ async function cargarDirecciones(usuarioId) {
                 </div>`;
         }
     } catch (e) {
-        console.error("Error cargando direcciones:", e);
+        EnviarMensaje(-1, "Error cargando direcciones: " || e);
         document.getElementById('contenedor-direcciones').innerHTML = '<div class="alert alert-danger">Error al cargar direcciones</div>';
     }
 }
 
 function seleccionarDireccion(cardElement, direccionId) {
-    // Restaurar estilo de todas las tarjetas
     document.querySelectorAll('.direccion-card').forEach(c => {
         c.classList.remove('border-dark', 'bg-light');
         c.classList.add('border-secondary', 'opacity-75');
     });
 
-    // Aplicar estilo de seleccionado a la tarjeta clicada
     cardElement.classList.remove('border-secondary', 'opacity-75');
     cardElement.classList.add('border-dark', 'bg-light');
 
-    // Marcar el input radio
     cardElement.querySelector('input[type="radio"]').checked = true;
 }
 
@@ -118,4 +118,68 @@ function seleccionarDireccion(cardElement, direccionId) {
     document.querySelectorAll('.direccion-card').forEach(c => c.classList.remove('selected'));
     cardElement.classList.add('selected');
     cardElement.querySelector('input[type="radio"]').checked = true;
+}
+
+async function confirmarCompra() {
+    const sessionStr = localStorage.getItem('user_session');
+    if (!sessionStr) {
+        EnviarMensaje(0, "Debes iniciar sesión para realizar la compra.");
+        setTimeout(() => window.location.href = "index.html", 2000);
+        return;
+    }
+
+    const userSession = JSON.parse(sessionStr);
+    const idUsuarioLogueado = userSession.id;
+
+    if (!idDireccionSeleccionada) {
+        EnviarMensaje(0, "Por favor selecciona una dirección de envío.");
+        return;
+    }
+
+    const requestBody = {
+        usuarioID: idUsuarioLogueado,
+        direccionID: idDireccionSeleccionada,
+        metodoPago: document.getElementById('metodo-pago').value
+    };
+
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${CONFIG.API_BASE_URL}/Pedidos/procesar-checkout`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(requestBody)
+        });
+
+        const data = await response.json();
+
+        if (data.codigo === 1) {
+            const pedidoId = data.data.pedidoID;
+
+            if (requestBody.metodoPago === 'transferencia') {
+                window.location.href = `pago-transferencia.html?pedido=${pedidoId}`;
+            } else if (requestBody.metodoPago === 'webpay') {
+                window.location.href = `pago-webpay.html?pedido=${pedidoId}`;
+            } else if (requestBody.metodoPago === 'mercadopago') {
+                window.location.href = `pago-mercadopago.html?pedido=${pedidoId}`;
+            } else {
+                window.location.href = `pago-transferencia.html?pedido=${pedidoId}`;
+            }
+        } else {
+            EnviarMensaje(0, data.mensaje || "Error al procesar el pedido.");
+        }
+    } catch (error) {
+        EnviarMensaje(-1, "Error de conexión al procesar el pago.");
+    }
+}
+
+function seleccionarDireccion(cardElement, direccionId) {
+    document.querySelectorAll('.direccion-card').forEach(c => c.classList.remove('selected', 'border-dark', 'bg-light'));
+
+    cardElement.classList.add('selected', 'border-dark', 'bg-light');
+    cardElement.querySelector('input[type="radio"]').checked = true;
+
+    idDireccionSeleccionada = direccionId;
 }

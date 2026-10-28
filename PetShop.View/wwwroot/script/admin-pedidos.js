@@ -48,7 +48,8 @@ function renderizarTablaPedidos(lista) {
     tbody.innerHTML = '';
 
     if (lista.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No se encontraron pedidos.</td></tr>';
+        // Asegúrate de que el colspan sea 7 ahora
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">No se encontraron pedidos.</td></tr>';
         return;
     }
 
@@ -58,23 +59,115 @@ function renderizarTablaPedidos(lista) {
         if (p.estado === 'Entregado') badgeClass = 'bg-success';
 
         tbody.innerHTML += `
-            <tr>
+            <!-- FILA PRINCIPAL -->
+            <tr class="align-middle">
+                <td class="text-center">
+                    <button class="btn btn-sm btn-light border-0 text-muted shadow-sm" onclick="toggleFilaDetalle(${p.pedidoID}, this)" style="border-radius: 50%; width: 30px; height: 30px; padding: 0;">
+                        <i class="fas fa-chevron-right transition-icon"></i>
+                    </button>
+                </td>
                 <td class="fw-bold text-primary">#${p.pedidoID}</td>
                 <td>
                     <div class="fw-bold">${p.clienteNombre}</div>
                     <small class="text-muted">${p.clienteEmail}</small>
                 </td>
                 <td>${new Date(p.fecha).toLocaleDateString()}</td>
-                <td class="fw-bold">$${p.total.toLocaleString()}</td>
+                <td class="fw-bold text-success">$${p.total.toLocaleString()}</td>
                 <td><span class="badge ${badgeClass}">${p.estado}</span></td>
                 <td class="text-center">
-                    <button class="btn btn-sm btn-outline-primary" onclick="verDetallePedido(${p.pedidoID})">
-                        <i class="fas fa-eye"></i> Ver Detalle
+                    <button class="btn btn-sm btn-outline-primary fw-bold" onclick="verDetallePedido(${p.pedidoID})">
+                        <i class="fas fa-eye me-1"></i> Ver Detalle
                     </button>
+                </td>
+            </tr>
+            <!-- FILA OCULTA DESPLEGABLE -->
+            <tr id="fila-expandida-${p.pedidoID}" class="d-none" style="background-color: #f8f9fa;">
+                <td colspan="7" class="p-0 border-bottom">
+                    <div class="p-3 m-2 border rounded bg-white shadow-sm" id="contenido-expandido-${p.pedidoID}">
+                        <div class="text-center text-muted small py-2">
+                            <i class="fas fa-spinner fa-spin me-2"></i>Cargando detalles...
+                        </div>
+                    </div>
                 </td>
             </tr>
         `;
     });
+}
+
+async function toggleFilaDetalle(pedidoId, btnElement) {
+    const fila = document.getElementById(`fila-expandida-${pedidoId}`);
+    const contenido = document.getElementById(`contenido-expandido-${pedidoId}`);
+    const icono = btnElement.querySelector('i');
+
+    if (fila.classList.contains('d-none')) {
+        fila.classList.remove('d-none');
+        icono.classList.replace('fa-chevron-right', 'fa-chevron-down');
+
+        if (contenido.dataset.cargado === "true") return;
+
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${CONFIG.API_BASE_URL}/Pedidos/detalle/${pedidoId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+
+            const p = data.data || data.pedido;
+
+            if ((data.codigo === 1 || data.salida?.codigo === 1) && p) {
+                let itemsHTML = '';
+                p.detalles.forEach(item => {
+                    itemsHTML += `
+                        <tr class="align-middle">
+                            <td class="text-start text-muted small fw-bold">${item.productoNombre}</td>
+                            <td class="text-center small">${item.cantidad}</td>
+                            <td class="text-end small">$${item.precioUnitario.toLocaleString()}</td>
+                            <td class="text-end fw-bold small text-dark">$${(item.cantidad * item.precioUnitario).toLocaleString()}</td>
+                        </tr>
+                    `;
+                });
+
+                const aliasDir = p.alias ? ` <strong>${p.alias}, </strong>` : "";
+
+                contenido.innerHTML = `
+                    <div class="row px-2 align-items-center">
+                        <div class="col-md-4 border-end mb-3 mb-md-0">
+                            <h6 class="text-uppercase text-muted fw-bold mb-2" style="font-size: 0.75rem;">Resumen de Envío</h6>
+                            <p class="mb-1 small"><strong>Método:</strong> ${p.metodoPago || 'No especificado'}</p>
+            
+                            <p class="mb-0 small text-muted">
+                                <i class="fas fa-map-marker-alt me-1"></i> ${aliasDir + (p.direccionCompleta || 'Retiro en tienda')}
+                            </p>
+                        </div>
+                        <div class="col-md-8">
+                            <table class="table table-sm table-borderless table-striped mb-0">
+                                <!-- ... resto de tu tabla (thead y tbody) ... -->
+                                <thead class="border-bottom">
+                                    <tr class="text-muted small text-uppercase">
+                                        <th class="text-start py-2">Producto</th>
+                                        <th class="text-center py-2">Cant.</th>
+                                        <th class="text-end py-2">Precio</th>
+                                        <th class="text-end py-2">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${itemsHTML}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+                contenido.dataset.cargado = "true";
+            } else {
+                contenido.innerHTML = `<div class="text-danger text-center small py-2">Error al cargar: ${data.mensaje}</div>`;
+            }
+        } catch (error) {
+            contenido.innerHTML = `<div class="text-danger text-center small py-2">Error de conexión al obtener el detalle.</div>`;
+        }
+    } else {
+        fila.classList.add('d-none');
+        icono.classList.replace('fa-chevron-down', 'fa-chevron-right');
+    }
 }
 
 function filtrarPedidos(estado, botonElement) {
@@ -120,12 +213,18 @@ async function verDetallePedido(pedidoId) {
         });
         const data = await response.json();
 
-        if (data.codigo === 1) {
+        if (data.salida.codigo === 1) {
             const p = data.pedido;
 
             document.getElementById('lbl-pedido-id').innerText = p.pedidoID;
             document.getElementById('lbl-cliente-nombre').innerText = p.clienteNombre;
             document.getElementById('lbl-cliente-email').innerText = p.clienteEmail;
+
+            document.getElementById('lbl-metodo-pago').innerText = p.metodoPago || "No especificado";
+            const aliasDir = p.alias ? ` (${p.alias})` : "";
+            document.getElementById('lbl-direccion').innerText = (p.direccionCompleta || "Retiro en tienda") + aliasDir;
+            document.getElementById('lbl-referencias').innerText = p.referencias || "";
+
             document.getElementById('lbl-estado').innerText = p.estado;
             document.getElementById('select-estado').value = p.estado;
             document.getElementById('lbl-total').innerText = `$${p.total.toLocaleString()}`;
@@ -134,7 +233,7 @@ async function verDetallePedido(pedidoId) {
             tbodyDetalles.innerHTML = '';
             let totalCalculado = 0;
 
-            p.items.forEach(item => {
+            p.detalles.forEach(item => {
                 const subtotal = item.cantidad * item.precioUnitario;
                 totalCalculado += subtotal;
 
@@ -147,6 +246,7 @@ async function verDetallePedido(pedidoId) {
                     </tr>
                 `;
             });
+
             document.getElementById('lbl-total').innerText = `$${totalCalculado.toLocaleString()}`;
             if (modalDetalle) modalDetalle.show();
         } else {

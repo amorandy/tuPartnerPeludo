@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PetShopApi.DAL;
 using PetShopApi.Models;
+using PetShopApi.Services;
 
 namespace PetShopApi.Controllers
 {
@@ -11,10 +12,12 @@ namespace PetShopApi.Controllers
     public class PedidosController : ControllerBase
     {
         private readonly PedidosDAL _pedidoDAL;
+        private readonly EmailService _emailService;
 
-        public PedidosController(PedidosDAL pedidoDAL)
+        public PedidosController(PedidosDAL pedidoDAL, EmailService emailService)
         {
             _pedidoDAL = pedidoDAL;
+            _emailService = emailService; // <-- 3. Inicializa la variable
         }
 
         [HttpGet("carrito/{usuarioId}")]
@@ -24,16 +27,16 @@ namespace PetShopApi.Controllers
             {
                 const decimal IMPUESTO_TASA = 0.19m;
 
-                var (salida, pedido) = _pedidoDAL.ObtenerCarritoPorUsuario(usuarioId);
+                var (salida, listaCarrito) = _pedidoDAL.ObtenerCarritoPorUsuario(usuarioId);
 
                 if (salida.Codigo == -1) return StatusCode(500, salida);
 
-                if (pedido == null)
+                if (listaCarrito == null || listaCarrito.Count == 0)
                 {
                     return Ok(new { Items = new List<object>(), Subtotal = 0, Impuesto = 0, Total = 0, salida });
                 }
 
-                decimal totalFinal = pedido.Detalles.Sum(d => d.Cantidad * d.PrecioUnitario);
+                decimal totalFinal = listaCarrito.Sum(d => d.Cantidad * d.PrecioUnitario);
 
                 decimal subtotalNeto = Math.Round(totalFinal / (1 + IMPUESTO_TASA), 0);
 
@@ -42,11 +45,10 @@ namespace PetShopApi.Controllers
                 return Ok(new
                 {
                     salida,
-                    pedido.PedidoID,
                     subtotal = subtotalNeto,
                     impuesto = montoImpuesto,
                     total = totalFinal,
-                    Items = pedido.Detalles
+                    Items = listaCarrito
                 });
             }
             catch (Exception ex)
@@ -98,26 +100,14 @@ namespace PetShopApi.Controllers
 
                 if (salida.Codigo == 1 && pedido != null)
                 {
-                    return Ok(new
-                    {
-                        codigo = 1,
-                        pedido = new
-                        {
-                            pedidoID = pedido.PedidoID,
-                            clienteNombre = pedido.ClienteNombre,
-                            clienteEmail = pedido.ClienteEmail,
-                            estado = pedido.Estado,
-                            total = pedido.Total,
-                            items = pedido.Detalles
-                        }
-                    });
+                    return Ok(new { salida, pedido });
                 }
 
-                return BadRequest(new { codigo = salida.Codigo, mensaje = salida.Mensaje });
+                return BadRequest(salida);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { codigo = -1, mensaje = ex.Message });
+                return StatusCode(500, new SalidaMod { Codigo = -1, Mensaje = ex.Message });
             }
         }
         [HttpGet("todos")]
@@ -184,6 +174,42 @@ namespace PetShopApi.Controllers
             {
                 return StatusCode(500, new { codigo = -1, mensaje = ex.Message });
             }
+        }
+        [HttpPost("procesar-checkout")]
+        public async Task<IActionResult> ProcesarCheckout([FromBody] CheckoutRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.MetodoPago))
+            {
+                return BadRequest(new SalidaMod { Codigo = 0, Mensaje = "El método de pago es obligatorio." });
+            }
+
+            var salida = _pedidoDAL.ProcesarCheckout(request.UsuarioID, request.DireccionID, request.MetodoPago);
+
+            if (salida.Codigo == 1 && salida.Id.HasValue)
+            {
+                int nuevoPedidoId = salida.Id.Value;
+
+                var (salidaDetalle, pedidoCompleto) = _pedidoDAL.ObtenerDetallePedidoAdmin(nuevoPedidoId);
+
+                if (salidaDetalle.Codigo == 1 && pedidoCompleto != null)
+                {
+                    try
+                    {
+                        await _emailService.EnviarReciboCompra(pedidoCompleto.ClienteEmail, pedidoCompleto);
+                    }
+                    catch (Exception)
+                    {
+                        // Silenciamos el error del correo para no detener la compra
+                    }
+
+                    // Devolvemos el modelo estándar SalidaMod
+                    salida.Data = pedidoCompleto;
+                    salida.Mensaje = "Pedido generado con éxito";
+                    return Ok(salida);
+                }
+            }
+
+            return BadRequest(salida);
         }
     }
 }
