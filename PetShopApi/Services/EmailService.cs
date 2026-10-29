@@ -22,7 +22,7 @@ namespace PetShopApi.Services
             _smtpHost = _configuration["EmailSettings:SMTP_HOST"] ?? "smtp-relay.brevo.com";
             _smtpPort = int.Parse(_configuration["EmailSettings:SMTP_PORT"] ?? "2525");
             _smtpUser = _configuration["EmailSettings:SMTP_USER"] ?? "adb95a001@smtp-brevo.com";
-            _smtpPass = _configuration["EmailSettings:SMTP_PASS"] ?? "xsmtpsib-b206b8390a395271d19d28fad8990400817f1b97a438ef7614e108a8049ee693-zm4tbqpjjCnjgN5g";
+            _smtpPass = _configuration["EmailSettings:SMTP_PASS"] ?? "xsmtpsib-b206b8390a395271d19d28fad8990400817f1b97a438ef7614e108a8049ee693-FwqHmfFJ9nJLrnDw";
             _emailFrom = _configuration["EmailSettings:EMAIL_FROM"] ?? "partnerpeludo@gmail.com";
         }
         public async Task<SalidaMod> EnviarCorreoValidacion(string emailDestino, string nombre, string token)
