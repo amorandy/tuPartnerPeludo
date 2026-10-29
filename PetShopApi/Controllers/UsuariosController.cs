@@ -271,6 +271,12 @@ public class UsuariosController : ControllerBase
     {
         return Ok(new { salida = _usuarioDAL.ValidarToken(token) });
     }
+    [HttpGet("validar-token-recuperacion")]
+    [AllowAnonymous]
+    public IActionResult ValidaTokenRecuperacion(string token)
+    {
+        return Ok(new { salida = _usuarioDAL.ValidaTokenRecuperacion(token) });
+    }
     [HttpGet("metodos-recuperacion")]
     [AllowAnonymous]
     public async Task<IActionResult> ObtenerMetodos()

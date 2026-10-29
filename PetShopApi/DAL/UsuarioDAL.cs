@@ -399,6 +399,37 @@ namespace PetShopApi.DAL
                 Mensaje = "Token inválido o expirado"
             };
         }
+        public SalidaMod ValidaTokenRecuperacion(string token)
+        {
+            using (var conexion = _conexionFll.ObtenerConexion())
+            {
+                conexion.Open();
+
+                using (var cmd = new MySqlCommand("sp_ValidaTokenRecuperacion", conexion))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("p_Token", token);
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            return new SalidaMod
+                            {
+                                Codigo = 1,
+                                Mensaje = "Token válido",
+                            };
+                        }
+                    }
+                }
+            }
+
+            return new SalidaMod
+            {
+                Codigo = 0,
+                Mensaje = "Token inválido o expirado"
+            };
+        }
         public (SalidaMod, Usuario) ObtenerUsuarioPorId(int usuarioId)
         {
             try

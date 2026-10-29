@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     try {
-        const res = await fetch(`${CONFIG.API_BASE_URL}/usuarios/validar-token?token=${encodeURIComponent(tokenActual)}`);
+        const res = await fetch(`${CONFIG.API_BASE_URL}/usuarios/validar-token-recuperacion?token=${encodeURIComponent(tokenActual)}`);
         const response = await res.json();
         const data = response.salida;
         
