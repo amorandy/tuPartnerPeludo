@@ -273,7 +273,7 @@ namespace PetShopApi.DAL
             SalidaMod salida = new SalidaMod();
             try
             {
-                DateTime expiracion = DateTime.Now.AddMinutes(15);
+                DateTime expiracion = DateTime.Now.AddHours(1);
                 using var conexion = _conexionFll.ObtenerConexion();
                 await conexion.OpenAsync();
                 string sql = @"UPDATE Usuarios 
