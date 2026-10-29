@@ -1,0 +1,91 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Pedidos - Tu Partner Peludo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body class="bg-light">
+    <!-- Navbar simple para el panel de usuario -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white p-3 border-bottom">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center fw-bold" href="main.html">
+                <img src="images/logo.png" alt="Logo" width="45" height="45" class="me-2 rounded-circle border border-dark">
+                Tu Partner Peludo
+            </a>
+            <a href="main.html" class="btn btn-outline-secondary btn-sm"><i class="fas fa-arrow-left"></i> Volver a la tienda</a>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <h2 class="mb-4"><i class="fas fa-box-open me-2"></i>Historial de Mis Pedidos</h2>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th># Pedido</th>
+                                <th>Fecha</th>
+                                <th>Método de Pago</th>
+                                <th>Total</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-mis-pedidos">
+                            <!-- Los pedidos se inyectarán aquí vía JS -->
+                            <tr><td colspan="6" class="text-center py-4">Cargando pedidos...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Detalles del Pedido -->
+    <div class="modal fade" id="modalDetallePedido" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title">Detalle del Pedido #<span id="detalle-id"></span></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Precio Unit.</th>
+                                    <th>Cantidad</th>
+                                    <th>Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-detalle-items">
+                                <!-- Los items se inyectarán aquí -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <h4 class="text-end mt-3 fw-bold">Total: $<span id="detalle-total">0</span></h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts al final del body -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="script/config.js"></script>
+    <script src="script/master.js"></script>
+    <script src="script/auth-utils.js"></script>
+    <script src="script/mis-pedidos.js"></script>
+</body>
+</html>

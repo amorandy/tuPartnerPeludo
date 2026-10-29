@@ -131,6 +131,27 @@ namespace PetShopApi.Controllers
                 return StatusCode(500, new { codigo = -1, mensaje = ex.Message });
             }
         }
+        [HttpGet("usuario/{usuarioId}")]
+        public IActionResult ObtenerPorUsuario(int usuarioId)
+        {
+            try
+            {
+                var (salida, pedidos) = _pedidoDAL.ObtenerPedidosPorUsuario(usuarioId);
+
+                if (salida.Codigo == 1)
+                {
+                    return Ok(pedidos);
+                }
+                else
+                {
+                    return BadRequest(new { codigo = salida.Codigo, mensaje = salida.Mensaje });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { codigo = -1, mensaje = ex.Message });
+            }
+        }
         [HttpPut("actualizar-estado")]
         // Opcional: [TypeFilter(typeof(ValidarSesionAttribute), Arguments = new object[] { "Admin" })]
         public IActionResult ActualizarEstado([FromBody] ActualizarEstadoRequest request)

@@ -157,6 +157,44 @@ namespace PetShopApi.DAL
 
             return (salida, listaPedidos);
         }
+        public (SalidaMod, List<object>) ObtenerPedidosPorUsuario(int usuarioId)
+        {
+            SalidaMod salida = new SalidaMod();
+            List<object> pedidos = new List<object>();
+
+            try
+            {
+                using var conexion = _conexionFll.ObtenerConexion();
+                conexion.Open();
+
+                string sql = "sp_ObtenerPedidosPorUsuario";
+                using var cmd = new MySqlCommand(sql, conexion);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("p_UsuarioID", usuarioId);
+
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    pedidos.Add(new
+                    {
+                        PedidoID = Convert.ToInt32(reader["PedidoID"]),
+                        FechaPedido = Convert.ToDateTime(reader["FechaPedido"]),
+                        Total = Convert.ToDecimal(reader["Total"]),
+                        Estado = reader["Estado"].ToString(),
+                        MetodoPago = reader["MetodoPago"] != DBNull.Value ? reader["MetodoPago"].ToString() : "N/A"
+                    });
+                }
+                salida.Codigo = 1;
+                salida.Mensaje = "Pedidos obtenidos correctamente.";
+            }
+            catch (Exception ex)
+            {
+                salida.Codigo = -1;
+                salida.Mensaje = "Error: " + ex.Message;
+            }
+
+            return (salida, pedidos);
+        }
         public (SalidaMod salida, PedidosMod? pedido) ObtenerDetallePedidoAdmin(int pedidoId)
         {
             var salida = new SalidaMod();
