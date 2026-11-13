@@ -20,7 +20,7 @@ window.onload = function () {
         }
 
         if (session.rol === 'admin') {
-            const btnAdmin = document.getElementById('btn-admin');
+            const btnAdmin = document.getElementById('btn-admin-dropdown');
             if (btnAdmin) btnAdmin.classList.remove('d-none');
         }
     }

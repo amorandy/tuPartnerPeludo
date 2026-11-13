@@ -20,23 +20,33 @@
                 Tu Partner Peludo
             </a>
 
-            <div class="d-flex align-items-center">
-                <a href="#" class="text-dark me-4 position-relative" onclick="abrirCarrito()">
-                    <i class="fas fa-shopping-cart fa-lg"></i>
-                    <span id="contador-carrito" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
+            <div class="dropdown ms-3">
+                <a href="#" class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle border-0" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
+                    <div class="text-end me-2 d-none d-md-block">
+                        <div class="fw-bold text-uppercase" id="user-name" style="font-size: 0.9rem;">USUARIO</div>
+                        <div class="text-muted" id="user-email" style="font-size: 0.75rem;">correo@ejemplo.com</div>
+                    </div>
+                    <img src="images/default-avatar.png" id="icono-usuario" class="rounded-circle border border-2 border-dark" width="45" height="45" style="object-fit: cover;" alt="Perfil">
                 </a>
 
-                <a href="mis-pedidos.html" class="text-dark me-4 text-decoration-none position-relative">
-                    <i class="fas fa-box-open fa-lg"></i> Mis Pedidos
-                </a>
-
-                <div class="d-flex flex-column align-items-end me-2">
-                    <span id="user-name" class="fw-bold small text-uppercase mb-0"></span>
-                    <span id="user-email" class="text-muted" style="font-size: 0.75rem;"></span>
-                </div>
-                <!--<img id="user-img" src="" class="rounded-circle user-avatar" width="40" height="40">-->
-                <img id="user-img" src="" class="rounded-circle user-avatar" width="40" height="40">
-                <button onclick="logout()" class="btn btn-sm ms-3 btn-outline-danger"><i class="fas fa-sign-out-alt"></i></button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2" aria-labelledby="dropdownUser">
+                    <li>
+                        <a class="dropdown-item py-2" href="perfil.html">
+                            <i class="fa fa-user me-2 text-muted"></i> Mi Perfil
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item py-2 d-none" href="admin-productos.html" id="btn-admin-dropdown">
+                            <i class="fa fa-shield-alt me-2 text-primary"></i> Panel Admin
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item py-2 text-danger" href="javascript:void(0)" onclick="logout()">
+                            <i class="fa fa-sign-out-alt me-2"></i> Cerrar Sesión
+                        </a>
+                    </li>
+                </ul>
             </div>
         </div>
     </nav>

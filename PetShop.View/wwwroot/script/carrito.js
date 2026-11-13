@@ -1,10 +1,7 @@
-// Variable global para nuestro carrito
 let carrito = JSON.parse(localStorage.getItem('carrito')) || [];
 
-// Función para añadir productos
 async function agregarAlCarrito(productoId) {
     try {
-        // 1. Obtener la sesión actual
         const sessionStr = localStorage.getItem('user_session') || '{}';
         const session = JSON.parse(sessionStr);
         const usuarioId = Number(session.id || session.UsuarioId || session.UsuarioID || session.usuarioId || 0);
@@ -12,7 +9,6 @@ async function agregarAlCarrito(productoId) {
 
         if (usuarioId === 0) {
             EnviarMensaje(-1, "Debes iniciar sesión para agregar productos a tu carrito.");
-            //alert("Debes iniciar sesión para agregar productos a tu carrito.");
             return;
         }
 
@@ -42,16 +38,28 @@ async function agregarAlCarrito(productoId) {
             EnviarMensaje(data.codigo, data.mensaje);
         }
     } catch (error) {
-        //console.error("Error en agregarAlCarrito:", error);
         EnviarMensaje(data.codigo, data.mensaje);
     }
 }
 
 function procederPago() {
+    const contadorBadge = document.getElementById('contador-carrito');
+    const cantidadItems = contadorBadge ? parseInt(contadorBadge.innerText) || 0 : 0;
+
+    if (cantidadItems <= 0) {
+        const modalElement = document.getElementById('modalCarrito');
+        if (modalElement) {
+            const modalInstance = bootstrap.Modal.getInstance(modalElement);
+            if (modalInstance) {
+                modalInstance.hide();
+            }
+        }
+        EnviarMensaje(0, "Tu carrito está vacío. Agrega productos para continuar.");
+        return; 
+    }
     window.location.href = "checkout.html";
 }
 
-// Función para calcular el total (¡Aquí usamos el .reduce que vimos!)
 function obtenerTotal() {
     return carrito.reduce((total, item) => total + (item.precio * item.cantidad), 0);
 }
@@ -60,7 +68,6 @@ async function actualizarVistaCarrito() {
     if (!badgeCarrito) return;
 
     try {
-        // 1. Obtener datos de la sesión actual
         const sessionStr = localStorage.getItem('user_session') || '{}';
         const session = JSON.parse(sessionStr);
         const usuarioId = Number(session.id || session.UsuarioId || session.UsuarioID || session.usuarioId || 0);
@@ -71,7 +78,6 @@ async function actualizarVistaCarrito() {
             return;
         }
 
-        // 2. Consultar el carrito en la base de datos
         const response = await fetch(`${CONFIG.API_BASE_URL}/Pedidos/carrito/${usuarioId}`, {
             method: 'GET',
             headers: { 'Authorization': `Bearer ${token}` }
@@ -81,10 +87,8 @@ async function actualizarVistaCarrito() {
             const data = await response.json();
             const items = data.items || data.Items || [];
 
-            // 3. Sumar las cantidades de los productos traídos de la BD
             const totalArticulos = items.reduce((total, item) => total + (item.cantidad || 1), 0);
 
-            // 4. Actualizar el globo rojo
             badgeCarrito.innerText = totalArticulos;
 
             if (totalArticulos === 0) {
@@ -96,26 +100,22 @@ async function actualizarVistaCarrito() {
             badgeCarrito.style.display = 'none';
         }
     } catch (error) {
-        console.error("Error al actualizar el globo del carrito:", error);
+        EnviarMensaje(0, "Error al actualizar el globo del carrito:" + error);
         badgeCarrito.style.display = 'none';
     }
 }
 
-// Ejecutar la función apenas cargue la página
 document.addEventListener('DOMContentLoaded', actualizarVistaCarrito);
 
 async function abrirCarrito() {
-    // 1. Verificamos el valor actual del contador en el HTML (el badge rojo)
     const contadorBadge = document.getElementById('contador-carrito');
     const cantidadItems = contadorBadge ? parseInt(contadorBadge.innerText) || 0 : 0;
 
-    // 2. Si no hay productos, evitamos que se abra el modal y avisamos al usuario
     if (cantidadItems <= 0) {
         toastr.info("Tu carrito está vacío. ¡Agrega algunos productos para continuar!");
-        return; // Detiene la ejecución para que el modal no se levante
+        return; 
     }
 
-    // 3. Si sí hay productos, procedemos a abrir el modal normalmente
     const modalElement = document.getElementById('modalCarrito');
     const modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
     modalInstance.show();
@@ -124,8 +124,8 @@ async function abrirCarrito() {
 }
 
 async function refrescarTablaCarrito() {
-    const tbody = document.getElementById('lista-carrito-body'); // Asegúrate de usar este ID en tu HTML
-    const spanTotal = document.getElementById('total-carrito'); // Asegúrate de usar este ID en tu HTML
+    const tbody = document.getElementById('lista-carrito-body');
+    const spanTotal = document.getElementById('total-carrito');
 
     tbody.innerHTML = '<tr><td colspan="5" class="text-center">Cargando tu carrito...</td></tr>';
 
@@ -156,7 +156,7 @@ async function refrescarTablaCarrito() {
         if (items.length === 0) {
             tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Tu carrito está vacío.</td></tr>';
             spanTotal.innerText = '0';
-            actualizarVistaCarrito(); // Actualiza el globo rojo a 0
+            actualizarVistaCarrito();
             return;
         }
 
@@ -165,7 +165,6 @@ async function refrescarTablaCarrito() {
             const subtotal = precio * item.cantidad;
             totalCalculado += subtotal;
 
-            // Capturamos el identificador real proveniente de la tabla (Id)
             const idItem = item.id || item.Id || item.carritoID || item.CarritoID || item.detalleID;
 
             tbody.innerHTML += `
@@ -190,7 +189,7 @@ async function refrescarTablaCarrito() {
         });
 
         spanTotal.innerText = totalCalculado.toLocaleString();
-        actualizarVistaCarrito(); // Actualiza el globo rojo con las nuevas cantidades
+        actualizarVistaCarrito(); 
 
     } catch (error) {
         EnviarMensaje(-1, "Error al visualizar Carrito: " + error);
@@ -205,7 +204,6 @@ async function cambiarCantidad(detalleId, nuevaCantidad) {
         return;
     }
     try {
-        console.log(detalleId);
         const token = localStorage.getItem('token');
         const response = await fetch(`${CONFIG.API_BASE_URL}/Pedidos/actualizar-cantidad`, {
             method: 'PUT',

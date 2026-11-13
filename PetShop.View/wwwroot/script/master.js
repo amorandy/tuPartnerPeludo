@@ -81,3 +81,48 @@ function ConfirmarTabla(mensaje, datos, target = 'body') {
 //    `;
 //    return Promise.all();
 //}
+
+async function validarSesionActivaGlobal() {
+    if (window.location.pathname.includes("index.html") || window.location.pathname === "/") {
+        return;
+    }
+
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+        ejecutarLogoutGlobal();
+        return;
+    }
+
+    try {
+        const response = await fetch(`${CONFIG.API_BASE_URL}/usuarios/validar-token`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.status === 401) {
+            ejecutarLogoutGlobal();
+            return;
+        }
+
+        if (response.ok) {
+            const data = await response.json();
+            if (data.codigo === 0 || (data.salida && data.salida.codigo === 0)) {
+                ejecutarLogoutGlobal();
+            }
+        }
+    } catch (error) {
+        EnviarMensaje(-1,"Error validando sesión:", error);
+    }
+}
+
+function ejecutarLogoutGlobal() {
+    EnviarMensaje(0,"Sesión inválida o expirada. Redirigiendo al login...");
+    localStorage.clear();
+    window.location.replace("index.html");
+}
+
+document.addEventListener('DOMContentLoaded', validarSesionActivaGlobal);
