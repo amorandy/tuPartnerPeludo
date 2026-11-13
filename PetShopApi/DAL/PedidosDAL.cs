@@ -302,7 +302,7 @@ namespace PetShopApi.DAL
                     using (var cmd = new MySqlCommand("sp_ActualizarCantidadCarrito", (MySqlConnection)conexion))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
-                        cmd.Parameters.AddWithValue("p_DetalleID", detalleId);
+                        cmd.Parameters.AddWithValue("p_ProductoID", detalleId);
                         cmd.Parameters.AddWithValue("p_Cantidad", cantidad);
 
                         int filas = cmd.ExecuteNonQuery();

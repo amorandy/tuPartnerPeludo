@@ -36,6 +36,21 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+    const togglePassword = document.getElementById("togglePassword");
+    const passwordInput = document.getElementById("loginPass");
+    const iconEye = document.getElementById("iconEye");
+
+    if (togglePassword) {
+        togglePassword.addEventListener("click", function () {
+            const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
+            passwordInput.setAttribute("type", type);
+            iconEye.classList.toggle("fa-eye");
+            iconEye.classList.toggle("fa-eye-slash");
+        });
+    }
+});
 // --- FUNCIÓN AGREGADA/CORREGIDA PARA EL LOGIN NORMAL ---
 //async function realizarLogin(email, password) {
 //    const btnLogin = document.querySelector("#formLogin button[type='submit']");
@@ -84,6 +99,46 @@ document.addEventListener("DOMContentLoaded", function () {
 //}
 // --------------------------------------------------------
 
+async function realizarLogin(email, password) {
+    const btnIniciar = document.querySelector("#formLogin button[type='submit']");
+    btnIniciar.disabled = true;
+    btnIniciar.innerText = "Iniciando Sesion...";
+    try {
+        const response = await fetch(`${CONFIG.API_BASE_URL}/usuarios/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email, password: password })
+        });
+
+        const data = await response.json();
+
+        if (data.codigo === 1) {
+            localStorage.setItem('token', data.token);
+            const userSession = {
+                id: data.id,
+                email: data.email,
+                nombre: data.user,
+                rol: data.rol
+            };
+            localStorage.setItem('user_session', JSON.stringify(userSession));
+            if (data.rol === 'admin') {
+                window.location.href = "admin-productos.html";
+                btnIniciar.innerText = "ACCESO ADMINISTRADOR";
+            } else {
+                window.location.href = "main.html";
+            }
+        } else {
+            ProcesarRespuesta(data);
+        }
+    } catch (error) {
+        EnviarMensaje(-1, "Error de conexión con el servidor" + error);
+    }
+    finally {
+        btnIniciar.disabled = false;
+        btnIniciar.innerText = "ENTRAR";
+    }
+}
+
 async function registrarUsuario(datosUsuario) {
     const btnRegistrar = document.querySelector("#formRegistro button[type='submit']");
     btnRegistrar.disabled = true;
@@ -106,7 +161,7 @@ async function registrarUsuario(datosUsuario) {
             EnviarMensaje(codigo || 0, mensaje || "Error al registrar.");
         }
     } catch (error) {
-        console.error("Error completo:", error);
+        //console.error("Error completo:", error);
         EnviarMensaje(-1, "Error: Error al Procesar el registro");
     } finally {
         btnRegistrar.disabled = false;
@@ -133,7 +188,8 @@ async function cargarMetodosRecuperacion() {
 
         alternarCamposRecuperacion();
     } catch (e) {
-        console.error("Error al cargar métodos:", e);
+        EnviarMensaje(-1, "Error al cargar métodos: " + e);
+        //console.error("Error al cargar métodos:", e);
     }
 }
 
@@ -226,8 +282,8 @@ async function solicitarRecuperacion() {
         EnviarMensaje(data.codigo, data.mensaje);
         if (data.codigo === 1) setTimeout(() => mostrarLogin(), 3000);
     } catch (error) {
-        console.error("Error Recuperación:", error);
-        EnviarMensaje(-1, "Error de conexión.");
+        //console.error("Error Recuperación:", error);
+        EnviarMensaje(-1, "Error de conexión: " + error);
     }
 }
 
@@ -358,7 +414,7 @@ async function confirmarCodigo() {
             mostrarLogin();
         }
     } catch (error) {
-        console.error("Error al verificar:", error);
+        //console.error("Error al verificar:", error);
         EnviarMensaje(-1, "Error al conectar con el servidor.");
     }
     finally {

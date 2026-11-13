@@ -1,5 +1,3 @@
-// auth-utils.js
-
 function parseJwt(token) {
     if (!token) return null;
     try {
@@ -8,7 +6,7 @@ function parseJwt(token) {
         return JSON.parse(window.atob(base64));
     } catch (e) {
         EnviarMensaje(-1, "Error al decodificar el token: " + e)
-        console.error("Error al decodificar el token:", e);
+        //console.error("Error al decodificar el token:", e);
         return null;
     }
 }
@@ -18,7 +16,7 @@ function initAuth(onAuthenticatedCallback) {
 
     if (!userSession) {
         EnviarMensaje(-1, "No hay sesión activa. Redirigiendo al login...");
-        console.warn("No hay sesión activa. Redirigiendo al login...");
+        //console.warn("No hay sesión activa. Redirigiendo al login...");
         window.location.replace("index.html");
         return;
     }
@@ -29,6 +27,7 @@ function initAuth(onAuthenticatedCallback) {
             onAuthenticatedCallback(data);
         } catch (e) {
             EnviarMensaje(-1, "Error al parsear user_session: " + e);
+            //console.error("Error al parsear user_session:", e);
             logout();
         }
     }
@@ -39,23 +38,54 @@ fetch(`${CONFIG.API_BASE_URL}/usuarios/validar-token?token=${token}`)
     .then(res => res.json())
     .then(data => {
         if (data.salida && data.salida.codigo === 0) {
+            EnviarMensaje(0, "Sesion Expirada");
             logout();
         }
     });
 
 async function logout() {
-    const token = localStorage.getItem('token');
-    if (token) {
-        try {
-            await fetch(`${CONFIG.API_BASE_URL}/usuarios/logout`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(token) // Asegúrate de que el endpoint lo reciba correctamente
-            });
-        } catch (e) { console.error(e); }
-    }
     localStorage.clear();
     window.location.replace("index.html");
+}
+
+async function realizarLogin(email, password) {
+    const btnIniciar = document.querySelector("#formLogin button[type='submit']");
+    btnIniciar.disabled = true;
+    btnIniciar.innerText = "Iniciando Sesion...";
+    try {
+        const response = await fetch(`${CONFIG.API_BASE_URL}/usuarios/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email, password: password })
+        });
+
+        const data = await response.json();
+
+        if (data.codigo === 1) {
+            localStorage.setItem('token', data.token);
+            const userSession = {
+                id: data.id,
+                email: data.email,
+                nombre: data.user,
+                rol: data.rol
+            };
+            localStorage.setItem('user_session', JSON.stringify(userSession));
+            if (data.rol === 'admin') {
+                window.location.href = "admin-productos.html";
+                btnIniciar.innerText = "ACCESO ADMINISTRADOR";
+            } else {
+                window.location.href = "main.html";
+            }
+        } else {
+            ProcesarRespuesta(data);
+        }
+    } catch (error) {
+        EnviarMensaje(-1, "Error de conexión con el servidor" + error);
+    }
+    finally {
+        btnIniciar.disabled = false;
+        btnIniciar.innerText = "ENTRAR";
+    }
 }
 
 function protegerRutaAdmin() {
@@ -72,10 +102,8 @@ function protegerRutaAdmin() {
             window.location.replace("main.html");
         }
     } catch (e) {
-        console.error("Error verificando rol de admin:", e);
+        EnviarMensaje(-1, "Error verificando rol de admin: " + e);
+        //console.error("Error verificando rol de admin:", e);
         window.location.replace("index.html");
     }
 }
-
-// ELIMINAMOS la llamada global a protegerRutaAdmin() de la línea 36
-// protegerRutaAdmin(); <-- Esto causaba problemas si se incluía en main.html

@@ -42,35 +42,8 @@ async function agregarAlCarrito(productoId) {
             EnviarMensaje(data.codigo, data.mensaje);
         }
     } catch (error) {
-        console.error("Error en agregarAlCarrito:", error);
+        //console.error("Error en agregarAlCarrito:", error);
         EnviarMensaje(data.codigo, data.mensaje);
-    }
-}
-
-function eliminarDelCarrito(productoId) {
-    carrito = carrito.filter(item => item.id !== productoId);
-    localStorage.setItem('carrito', JSON.stringify(carrito));
-    actualizarVistaCarrito();
-}
-
-//async function cambiarCantidad(detalleId, variacion) {
-//    // Aquí harás el fetch a tu API para actualizar la cantidad (ej: PUT /Pedidos/carrito/actualizar)
-//    // Si la API responde OK, llamas de nuevo a la función que renderiza el carrito.
-//    console.log(`Cambiando cantidad del detalle ${detalleId} en ${variacion}`);
-//}
-
-async function eliminarItem(detalleId) {
-    try {
-        const response = await fetch(`${CONFIG.API_BASE_URL}/Pedidos/eliminar/${detalleId}`, { method: 'DELETE' });
-        const data = await response.json();
-        if (data.codigo === 1) {
-            // Recargar carrito
-            cargarCarrito();
-        } else {
-            EnviarMensaje(0, data.mensaje);
-        }
-    } catch (e) {
-        EnviarMensaje(-1, "Error al eliminar");
     }
 }
 
@@ -192,20 +165,23 @@ async function refrescarTablaCarrito() {
             const subtotal = precio * item.cantidad;
             totalCalculado += subtotal;
 
+            // Capturamos el identificador real proveniente de la tabla (Id)
+            const idItem = item.id || item.Id || item.carritoID || item.CarritoID || item.detalleID;
+
             tbody.innerHTML += `
                 <tr>
                     <td class="align-middle">${item.productoNombre || item.nombreProducto || 'Producto'}</td>
                     <td class="align-middle">$${precio.toLocaleString()}</td>
                     <td class="align-middle">
                         <div class="input-group input-group-sm mx-auto" style="width: 100px;">
-                            <button class="btn btn-outline-secondary fw-bold" onclick="cambiarCantidad(${item.detalleID}, ${item.cantidad - 1})">-</button>
+                            <button class="btn btn-outline-secondary fw-bold" onclick="cambiarCantidad(${idItem}, ${item.cantidad - 1})">-</button>
                             <input type="text" class="form-control text-center bg-white" value="${item.cantidad}" readonly>
-                            <button class="btn btn-outline-secondary fw-bold" onclick="cambiarCantidad(${item.detalleID}, ${item.cantidad + 1})">+</button>
+                            <button class="btn btn-outline-secondary fw-bold" onclick="cambiarCantidad(${idItem}, ${item.cantidad + 1})">+</button>
                         </div>
                     </td>
                     <td class="align-middle fw-bold">$${subtotal.toLocaleString()}</td>
                     <td class="align-middle">
-                        <button class="btn btn-outline-danger btn-sm" onclick="eliminarItem(${item.detalleID})">
+                        <button class="btn btn-outline-danger btn-sm" onclick="eliminarItem(${idItem})">
                             <i class="fa fa-trash"></i>
                         </button>
                     </td>
@@ -217,6 +193,7 @@ async function refrescarTablaCarrito() {
         actualizarVistaCarrito(); // Actualiza el globo rojo con las nuevas cantidades
 
     } catch (error) {
+        EnviarMensaje(-1, "Error al visualizar Carrito: " + error);
         console.error(error);
         tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger">${error.message}</td></tr>`;
     }
@@ -227,8 +204,8 @@ async function cambiarCantidad(detalleId, nuevaCantidad) {
         eliminarItem(detalleId);
         return;
     }
-
     try {
+        console.log(detalleId);
         const token = localStorage.getItem('token');
         const response = await fetch(`${CONFIG.API_BASE_URL}/Pedidos/actualizar-cantidad`, {
             method: 'PUT',
@@ -238,15 +215,11 @@ async function cambiarCantidad(detalleId, nuevaCantidad) {
             },
             body: JSON.stringify({ DetalleID: detalleId, Cantidad: nuevaCantidad })
         });
-
         const data = await response.json();
-        if (data.codigo === 1) {
-            await refrescarTablaCarrito();
-        } else {
-            EnviarMensaje(0, data.mensaje);
-        }
+        EnviarMensaje(data.codigo, data.mensaje);
+        await refrescarTablaCarrito();
     } catch (e) {
-        EnviarMensaje(-1, "Error al actualizar cantidad");
+        EnviarMensaje(data.codigo, "Error al actualizar cantidad");
     }
 }
 
@@ -256,12 +229,9 @@ async function eliminarItem(detalleId) {
             method: 'DELETE'
         });
         const data = await response.json();
-        if (data.codigo === 1) {
-            await refrescarTablaCarrito();
-        } else {
-            EnviarMensaje(0, data.mensaje);
-        }
+        EnviarMensaje(data.codigo, data.mensaje);
+        await refrescarTablaCarrito();
     } catch (e) {
-        EnviarMensaje(-1, "Error al eliminar");
+        EnviarMensaje(data.codigo, data.mensaje);
     }
 }
