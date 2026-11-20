@@ -104,4 +104,9 @@
     <None Include="wwwroot\script\reset-password.js" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Dapper" Version="2.1.79" />
+    <PackageReference Include="MimeKit" Version="4.17.0" />
+  </ItemGroup>
+
 </Project>
