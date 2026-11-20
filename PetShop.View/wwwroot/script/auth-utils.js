@@ -33,15 +33,15 @@ function initAuth(onAuthenticatedCallback) {
     }
 }
 
-const token = localStorage.getItem('token');
-fetch(`${CONFIG.API_BASE_URL}/usuarios/validar-token?token=${token}`)
-    .then(res => res.json())
-    .then(data => {
-        if (data.salida && data.salida.codigo === 0) {
-            EnviarMensaje(0, "Sesion Expirada");
-            logout();
-        }
-    });
+//const token = localStorage.getItem('token');
+//fetch(`${CONFIG.API_BASE_URL}/usuarios/validar-token?token=${token}`)
+//    .then(res => res.json())
+//    .then(data => {
+//        if (data.salida && data.salida.codigo === 0) {
+//            EnviarMensaje(0, "Sesion Expirada");
+//            logout();
+//        }
+//    });
 
 async function logout() {
     localStorage.clear();

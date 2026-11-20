@@ -15,39 +15,58 @@
 <body class="bg-light">
     <nav class="navbar navbar-expand-lg navbar-light bg-white p-3 border-bottom">
         <div class="container-fluid">
+
+            <!-- Izquierda: Logo y Marca -->
             <a class="navbar-brand d-flex align-items-center fw-bold" href="#">
                 <img src="images/logo.png" alt="Logo" width="45" height="45" class="me-2 rounded-circle border border-dark">
                 Tu Partner Peludo
             </a>
 
-            <div class="dropdown ms-3">
-                <a href="#" class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle border-0" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
-                    <div class="text-end me-2 d-none d-md-block">
-                        <div class="fw-bold text-uppercase" id="user-name" style="font-size: 0.9rem;">USUARIO</div>
-                        <div class="text-muted" id="user-email" style="font-size: 0.75rem;">correo@ejemplo.com</div>
-                    </div>
-                    <img src="images/default-avatar.png" id="icono-usuario" class="rounded-circle border border-2 border-dark" width="45" height="45" style="object-fit: cover;" alt="Perfil">
+            <!-- Derecha: Agrupamos el Carrito y el Perfil con 'ms-auto' para empujarlos al final -->
+            <div class="d-flex ms-auto align-items-center">
+
+                <!-- Botón del Carrito -->
+                <a href="#" class="text-dark text-decoration-none me-4 position-relative" onclick="abrirCarrito()">
+                    <i class="fas fa-shopping-cart fs-5"></i>
+                    <span class="ms-1 fw-bold d-none d-md-inline">Mis Pedidos</span>
+                    <!-- Globo rojo contador -->
+                    <span id="contador-carrito" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none; font-size: 0.6rem;">
+                        0
+                    </span>
                 </a>
 
-                <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2" aria-labelledby="dropdownUser">
-                    <li>
-                        <a class="dropdown-item py-2" href="perfil.html">
-                            <i class="fa fa-user me-2 text-muted"></i> Mi Perfil
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item py-2 d-none" href="admin-productos.html" id="btn-admin-dropdown">
-                            <i class="fa fa-shield-alt me-2 text-primary"></i> Panel Admin
-                        </a>
-                    </li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li>
-                        <a class="dropdown-item py-2 text-danger" href="javascript:void(0)" onclick="logout()">
-                            <i class="fa fa-sign-out-alt me-2"></i> Cerrar Sesión
-                        </a>
-                    </li>
-                </ul>
-            </div>
+                <!-- Menú de Usuario con Dropdown -->
+                <div class="dropdown">
+                    <a href="#" class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle border-0" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="text-end me-2 d-none d-md-block">
+                            <div class="fw-bold text-uppercase" id="user-name" style="font-size: 0.9rem;">USUARIO</div>
+                            <div class="text-muted" id="user-email" style="font-size: 0.75rem;">correo@ejemplo.com</div>
+                        </div>
+                        <img src="images/default-user.png" id="icono-usuario" class="rounded-circle border border-2 border-dark" width="45" height="45" style="object-fit: cover;" alt="Perfil">
+                    </a>
+
+                    <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2" aria-labelledby="dropdownUser">
+                        <li>
+                            <a class="dropdown-item py-2" href="perfil.html">
+                                <i class="fa fa-user me-2 text-muted"></i> Mi Perfil
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item py-2 d-none" href="admin-productos.html" id="btn-admin-dropdown">
+                                <i class="fa fa-shield-alt me-2 text-primary"></i> Panel Admin
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item py-2 text-danger" href="javascript:void(0)" onclick="logout()">
+                                <i class="fa fa-sign-out-alt me-2"></i> Cerrar Sesión
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+            </div> <!-- Fin de la agrupación derecha -->
+
         </div>
     </nav>
     <div class="container-fluid">
@@ -102,7 +121,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Seguir Comprando</button>
-                    <button type="button" class="btn btn-dark" style="background: #836f14; border:none;" onclick="procederPago()">Proceder al Pago</button>
+                    <button type="button" id="btn-proceder-pago" class="btn btn-warning" onclick="procederPago()">Proceder al Pago</button>
                 </div>
             </div>
         </div>

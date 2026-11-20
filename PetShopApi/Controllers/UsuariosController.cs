@@ -267,8 +267,17 @@ public class UsuariosController : ControllerBase
     }
     [HttpGet("validar-token")]
     [AllowAnonymous]
-    public IActionResult ValidarToken(string token)
+    public IActionResult ValidarToken()
     {
+        var tokenHeader = HttpContext.Request.Headers["Authorization"].FirstOrDefault();
+
+        if (string.IsNullOrEmpty(tokenHeader) || !tokenHeader.StartsWith("Bearer "))
+        {
+            return Unauthorized(new { codigo = 0, mensaje = "Token no proporcionado" });
+        }
+
+        var token = tokenHeader.Substring("Bearer ".Length).Trim();
+
         return Ok(new { salida = _usuarioDAL.ValidarToken(token) });
     }
     [HttpGet("validar-token-recuperacion")]

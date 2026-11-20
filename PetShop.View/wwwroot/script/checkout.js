@@ -1,4 +1,55 @@
-﻿let idDireccionSeleccionada = null;
+﻿document.addEventListener('DOMContentLoaded', validarYCargarCheckout);
+
+async function validarYCargarCheckout() {
+    const sessionStr = localStorage.getItem('user_session');
+    const token = localStorage.getItem('token');
+
+    // Si no hay sesión, lo devolvemos al login
+    if (!sessionStr || !token) {
+        window.location.replace("index.html");
+        return;
+    }
+
+    const session = JSON.parse(sessionStr);
+    const usuarioId = Number(session.id || session.UsuarioId || session.UsuarioID || session.usuarioId || 0);
+
+    try {
+        const response = await fetch(`${CONFIG.API_BASE_URL}/Pedidos/carrito/${usuarioId}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            window.location.replace("main.html");
+            return;
+        }
+
+        const data = await response.json();
+        const items = data.items || data.Items || [];
+        console.log(data);
+        // Si el carrito está vacío, lo devolvemos a la tienda
+        if (items.length === 0) {
+            EnviarMensaje(0, "Tu carrito está vacío. Volviendo a la tienda...");
+            setTimeout(() => {
+                window.location.replace("main.html");
+            }, 1200); // Pausa breve para que alcance a leer el aviso
+            return;
+        }
+
+        // Si hay productos, aquí llamas a tu función actual que pinta el resumen del checkout
+        // ejemplo: renderizarResumenCheckout(items);
+
+    } catch (error) {
+        EnviarMensaje(-1, "Error al verificar el carrito.");
+        window.location.replace("main.html");
+    }
+}
+
+
+let idDireccionSeleccionada = null;
 window.onload = async function () {
     const sessionStr = localStorage.getItem('user_session');
     if (!sessionStr) {
@@ -44,7 +95,7 @@ async function cargarResumenCarrito(usuarioId) {
             document.getElementById('chk-total').innerText = `$${data.total.toLocaleString()}`;
         }
     } catch (e) {
-        console.error("Error cargando carrito", e);
+        EnviarMensaje(-1,"Error cargando carrito:" + e);
     }
 }
 async function cargarDirecciones(usuarioId) {

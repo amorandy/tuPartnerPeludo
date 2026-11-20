@@ -1,0 +1,302 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil - Tu Partner Peludo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <link rel="icon" type="image/png" href="images/logo.png">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .profile-card {
+            background: #ffffff;
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            padding: 1.75rem;
+            height: 100%;
+        }
+
+        .profile-input {
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            border: 1px solid #e2e8f0;
+            font-size: 0.95rem;
+        }
+
+            .profile-input:focus {
+                border-color: #9e8123;
+                box-shadow: 0 0 0 0.2rem rgba(158, 129, 35, 0.15);
+            }
+
+            .profile-input[readonly] {
+                background-color: #f8fafc;
+                color: #198754;
+                font-weight: 500;
+            }
+
+        .avatar-wrapper {
+            position: relative;
+            width: 180px;
+            height: 180px;
+            margin: 1.5rem auto;
+        }
+
+        .avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 36px; /* Estilo squircle limpio */
+            border: 3px solid #f1f5f9;
+        }
+
+        .btn-camera {
+            position: absolute;
+            bottom: -6px;
+            right: -6px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background-color: #9e8123;
+            color: white;
+            border: 3px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+            .btn-camera:hover {
+                background-color: #82691b;
+                transform: scale(1.05);
+            }
+
+        .btn-gold {
+            background-color: #9e8123;
+            color: white;
+            border-radius: 10px;
+            padding: 0.7rem;
+            font-weight: 600;
+            border: none;
+        }
+
+            .btn-gold:hover {
+                background-color: #82691b;
+                color: white;
+            }
+
+        .address-preview-box {
+            background-color: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 1.25rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar Principal -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white p-3 border-bottom">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center fw-bold" href="main.html">
+                <img src="images/logo.png" alt="Logo" width="45" height="45" class="me-2 rounded-circle border border-dark">
+                Tu Partner Peludo
+            </a>
+
+            <div class="d-flex ms-auto align-items-center">
+                <a href="main.html" class="btn btn-outline-dark btn-sm me-3 rounded-pill px-3">
+                    <i class="fas fa-arrow-left me-1"></i> Volver a la Tienda
+                </a>
+
+                <!-- Menú de Usuario con Dropdown -->
+                <div class="dropdown">
+                    <a href="#" class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle border-0" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="text-end me-2 d-none d-md-block">
+                            <div class="fw-bold text-uppercase" id="user-name" style="font-size: 0.9rem;">USUARIO</div>
+                            <div class="text-muted" id="user-email" style="font-size: 0.75rem;">correo@ejemplo.com</div>
+                        </div>
+                        <img src="images/logo.png" id="icono-usuario" class="rounded-circle border border-2 border-dark" width="45" height="45" style="object-fit: cover;" alt="Perfil">
+                    </a>
+
+                    <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2" aria-labelledby="dropdownUser">
+                        <li>
+                            <a class="dropdown-item py-2 active bg-light text-dark fw-bold" href="perfil.html">
+                                <i class="fa fa-user me-2 text-muted"></i> Mi Perfil
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item py-2 d-none" href="admin-productos.html" id="btn-admin-dropdown">
+                                <i class="fa fa-shield-alt me-2 text-primary"></i> Panel Admin
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item py-2 text-danger" href="javascript:void(0)" onclick="logout()">
+                                <i class="fa fa-sign-out-alt me-2"></i> Cerrar Sesión
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido Principal: 3 Columnas limpias -->
+    <div class="container py-5">
+        <div class="row g-4 justify-content-center">
+
+            <!-- 1. INFORMACIONES GENERALES -->
+            <div class="col-lg-4">
+                <div class="profile-card">
+                    <h5 class="fw-bold text-center mb-4">Informaciones Generales</h5>
+
+                    <form id="form-perfil">
+                        <div class="mb-3">
+                            <label class="form-label small text-muted mb-1">Nombre</label>
+                            <input type="text" id="perfil-nombre" class="form-control profile-input" placeholder="Tu nombre" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small text-muted mb-1">Apellido</label>
+                            <input type="text" id="perfil-apellido" class="form-control profile-input" placeholder="Tu apellido">
+                        </div>
+
+                        <!-- Correo (Solo lectura con check verificado) -->
+                        <div class="mb-3">
+                            <label class="form-label small text-muted mb-1">Correo electrónico</label>
+                            <div class="position-relative">
+                                <input type="email" id="perfil-email" class="form-control profile-input pe-5" readonly>
+                                <i class="fas fa-check-circle text-success position-absolute top-50 end-0 translate-middle-y me-3" title="Correo verificado"></i>
+                            </div>
+                        </div>
+
+                        <!-- Teléfono con botón de verificación -->
+                        <div class="mb-3">
+                            <label class="form-label small text-muted mb-1">Teléfono</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0" style="border-radius: 10px 0 0 10px;">🇨🇱 +56</span>
+                                <input type="tel" id="perfil-telefono" class="form-control profile-input border-start-0" style="border-radius: 0 10px 10px 0;" placeholder="9 1234 5678" readonly>
+                            </div>
+                        </div>
+
+                        <button type="button" id="btn-verificar-telefono" class="btn btn-outline-dark w-100 mb-3 rounded-3 py-2 fw-semibold" onclick="abrirModalVerificarTelefono()">
+                            <i class="fas fa-mobile-alt me-1"></i> Verificar / Cambiar Teléfono
+                        </button>
+
+                        <button type="submit" id="btn-guardar-perfil" class="btn btn-gold w-100">
+                            Guardar Cambios
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 2. DIRECCIONES -->
+            <div class="col-lg-4">
+                <div class="profile-card d-flex flex-column justify-content-between">
+                    <div>
+                        <h5 class="fw-bold text-center mb-4">Dirección <i class="fas fa-map-marker-alt text-danger ms-1"></i></h5>
+
+                        <div class="address-preview-box text-center mb-4" id="direccion-principal-box">
+                            <i class="fas fa-home fa-2x text-muted mb-2"></i>
+                            <h6 class="fw-bold mb-1" id="dir-alias">Sin dirección principal</h6>
+                            <p class="text-muted small mb-0" id="dir-detalle">
+                                Agrega una dirección de envío para agilizar tus compras.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <button type="button" class="btn btn-dark w-100 py-2 rounded-3 fw-semibold" data-bs-toggle="modal" data-bs-target="#modalDirecciones" onclick="cargarDirecciones()">
+                            <i class="fas fa-map-marked-alt me-2"></i> Gestionar Direcciones
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. FOTO DE PERFIL -->
+            <div class="col-lg-4">
+                <div class="profile-card text-center d-flex flex-column justify-content-between">
+                    <div>
+                        <h5 class="fw-bold mb-3">Foto de perfil <i class="fas fa-camera text-secondary ms-1"></i></h5>
+
+                        <div class="avatar-wrapper">
+                            <img src="images/logo.png" id="perfil-avatar-preview" class="avatar-img shadow-sm" alt="Foto de perfil">
+                            <label for="input-foto-perfil" class="btn-camera shadow" title="Cambiar foto">
+                                <i class="fas fa-camera"></i>
+                            </label>
+                            <input type="file" id="input-foto-perfil" accept="image/*" class="d-none">
+                        </div>
+
+                        <p class="text-muted small px-3">
+                            Formatos permitidos: JPG, PNG o WEBP. Tamaño máximo 2MB.
+                        </p>
+                    </div>
+
+                    <button type="button" id="btn-subir-foto" class="btn btn-outline-secondary w-100 py-2 rounded-3 d-none" onclick="subirFotoPerfil()">
+                        <i class="fas fa-cloud-upload-alt me-1"></i> Guardar Nueva Foto
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MODAL: GESTIONAR DIRECCIONES -->
+    <div class="modal fade" id="modalDirecciones" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-map-marker-alt text-danger me-2"></i>Mis Direcciones</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Lista de direcciones guardadas -->
+                    <div id="lista-direcciones" class="mb-4">
+                        <p class="text-muted text-center small py-3">Cargando tus direcciones...</p>
+                    </div>
+
+                    <hr>
+
+                    <!-- Formulario para agregar nueva dirección -->
+                    <h6 class="fw-bold mb-3">Agregar Nueva Dirección</h6>
+                    <form id="form-nueva-direccion" class="row g-3">
+                        <div class="col-md-4">
+                            <input type="text" id="dir-alias" class="form-control form-control-perfil" placeholder="Alias (ej. Casa, Trabajo)" required>
+                        </div>
+                        <div class="col-md-8">
+                            <input type="text" id="dir-completa" class="form-control form-control-perfil" placeholder="Dirección completa (Calle, número, comuna)" required>
+                        </div>
+                        <div class="col-12">
+                            <input type="text" id="dir-referencias" class="form-control form-control-perfil" placeholder="Referencias (ej. Depto 402, portón negro)">
+                        </div>
+                        <div class="col-12 d-flex justify-content-between align-items-center">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="dir-es-principal" checked>
+                                <label class="form-check-label small" for="dir-es-principal">Establecer como dirección principal</label>
+                            </div>
+                            <button type="submit" class="btn btn-dark rounded-pill px-4">
+                                <i class="fas fa-plus me-1"></i> Guardar Dirección
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="script/config.js"></script>
+    <script src="script/master.js"></script>
+    <script src="script/auth-utils.js"></script>
+    <script src="script/perfil.js"></script>
+</body>
+</html>

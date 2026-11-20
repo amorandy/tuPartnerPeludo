@@ -45,8 +45,8 @@ async function cargarProductos() {
                         <h5>${prod.nombre}</h5>
                         <p class="small text-muted">${prod.descripcion}</p>
                         <p class="fw-bold">$${prod.precio.toLocaleString()}</p>
-                        <button class="btn btn-dark w-100" onclick='agregarAlCarrito(${prod.id})'>
-                            <i class="fas fa-shopping-cart"></i> Añadir
+                        <button class="btn btn-dark w-100" onclick="agregarAlCarrito(${prod.id}, this)">
+                            <i class="fas fa-shopping-cart me-1"></i> Añadir
                         </button>
                     </div>
                 </div>
